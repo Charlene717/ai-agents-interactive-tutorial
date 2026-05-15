@@ -1,0 +1,271 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 4: Tool Use — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html" class="active">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 4 / 12 · <span data-zh="核心元件" data-en="CORE COMPONENT">核心元件</span></div>
+<h1 data-zh="工具呼叫 (Tool Use)" data-en="Tool Use / Function Calling">工具呼叫 (Tool Use)</h1>
+<p class="subtitle" data-lang="zh">Function calling 是 LLM 從「會說」變成「會做」的橋樑。Schema 設計、描述、錯誤處理、並行呼叫——一次學完。</p>
+<p class="subtitle" data-lang="en">Function calling is the bridge from LLM "talking" to "doing." Schema design, descriptions, error handling, parallel calls — all in one chapter.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、什麼是 Function Calling？" data-en="I. What is function calling?">一、什麼是 Function Calling？</h2>
+<div data-lang="zh">
+<p>2023 年 OpenAI 發布 function calling 後，整個 agent 生態就改變了。在此之前，要讓 LLM 觸發外部動作只能靠脆弱的 regex 解析；之後，LLM 學會了用<strong>結構化的 JSON 物件</strong>請求工具呼叫。</p>
+<p>機制很單純：你在 API 呼叫時附上 <code>tools</code> 列表（每個工具是 name + description + JSON schema），模型就可以選擇回傳一個普通文字回覆，或回傳「我要用 tool X，參數是 Y」。你（程式）執行該工具、把結果塞回對話，模型再決定下一步。</p>
+<p>這就是 agent 的核心動力。沒有 tool use，LLM 就只是一個會說漂亮話的 chatbot。</p>
+</div>
+<div data-lang="en">
+<p>When OpenAI released function calling in 2023, the entire agent ecosystem changed. Before, triggering external actions required brittle regex parsing; after, the LLM could request tool calls as <strong>structured JSON objects</strong>.</p>
+<p>The mechanism is simple: pass a <code>tools</code> list (each = name + description + JSON schema) when calling the API. The model either returns a plain text reply or a "I want to call tool X with arguments Y." You execute the tool, push the result back into the conversation, and the model decides what to do next.</p>
+<p>This is the powerhouse of every agent. Without tool use, an LLM is just a well-spoken chatbot.</p>
+</div>
+<div class="diagram-box">User → LLM ──tool_call──▶ Your code ──result──▶ LLM ──tool_call──▶ ...
+                                                       ↘ final answer → User</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="設計工具" data-en="DESIGN A TOOL">設計工具</div>
+<h2 data-zh="二、一個工具長什麼樣子" data-en="II. The anatomy of a tool definition">二、一個工具長什麼樣子</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active">Anthropic format</button><button class="code-tab-btn">OpenAI format</button></div>
+<div class="code-tab-content active"><pre>{
+  <span class="str">"name"</span>: <span class="str">"search_papers"</span>,
+  <span class="str">"description"</span>: <span class="str">"Search PubMed for papers matching a query. "</span>
+                 <span class="str">"Use when the user asks about scientific literature. "</span>
+                 <span class="str">"Returns up to 10 result objects with title, authors, year, doi."</span>,
+  <span class="str">"input_schema"</span>: {
+    <span class="str">"type"</span>: <span class="str">"object"</span>,
+    <span class="str">"properties"</span>: {
+      <span class="str">"query"</span>: { <span class="str">"type"</span>: <span class="str">"string"</span>, <span class="str">"description"</span>: <span class="str">"PubMed boolean query syntax"</span> },
+      <span class="str">"max_results"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span>, <span class="str">"minimum"</span>: <span class="num">1</span>, <span class="str">"maximum"</span>: <span class="num">50</span>, <span class="str">"default"</span>: <span class="num">10</span> },
+      <span class="str">"year_min"</span>: { <span class="str">"type"</span>: <span class="str">"integer"</span>, <span class="str">"description"</span>: <span class="str">"Inclusive lower bound"</span> }
+    },
+    <span class="str">"required"</span>: [<span class="str">"query"</span>]
+  }
+}</pre></div>
+<div class="code-tab-content"><pre>{
+  <span class="str">"type"</span>: <span class="str">"function"</span>,
+  <span class="str">"function"</span>: {
+    <span class="str">"name"</span>: <span class="str">"search_papers"</span>,
+    <span class="str">"description"</span>: <span class="str">"Search PubMed ..."</span>,
+    <span class="str">"parameters"</span>: {
+      <span class="str">"type"</span>: <span class="str">"object"</span>,
+      <span class="str">"properties"</span>: {
+        <span class="str">"query"</span>: {<span class="str">"type"</span>:<span class="str">"string"</span>},
+        <span class="str">"max_results"</span>: {<span class="str">"type"</span>:<span class="str">"integer"</span>,<span class="str">"default"</span>:<span class="num">10</span>}
+      },
+      <span class="str">"required"</span>: [<span class="str">"query"</span>],
+      <span class="str">"additionalProperties"</span>: <span class="kw">false</span>
+    },
+    <span class="str">"strict"</span>: <span class="kw">true</span>
+  }
+}</pre></div>
+</div>
+<div class="callout tip"><span class="callout-icon">🎯</span><div>
+<span data-lang="zh"><strong>Description 是 Agent 選工具的唯一線索。</strong>不要只寫「Search papers」，要寫「<em>When to use</em>」+「<em>Inputs/Outputs</em>」+「<em>Edge cases</em>」。一個好 description 通常 2–4 句、含至少 1 個範例。</span>
+<span data-lang="en"><strong>Description is the agent's only signal for picking a tool.</strong> Don't write "Search papers" — write "<em>When to use</em>" + "<em>Inputs/Outputs</em>" + "<em>Edge cases</em>." A good description is usually 2–4 sentences with at least one example.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="設計原則" data-en="DESIGN PRINCIPLES">設計原則</div>
+<h2 data-zh="三、設計工具的七條準則" data-en="III. Seven principles of tool design">三、設計工具的七條準則</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>① <span data-zh="少而精" data-en="Few but powerful">少而精</span></h4>
+<div data-lang="zh"><p>研究顯示工具數 &gt;15 後，模型挑錯工具的機率明顯上升。能用一個高階工具解的就不要拆三個。</p></div>
+<div data-lang="en"><p>Studies show tool selection accuracy drops sharply past ~15 tools. Prefer one high-level tool over three low-level ones if it solves the same problem.</p></div></div>
+<div class="card"><h4>② <span data-zh="動詞 + 名詞命名" data-en="Verb + noun naming">動詞 + 名詞命名</span></h4>
+<div data-lang="zh"><p><code>search_papers</code> ✅；<code>papers</code> ❌；<code>do_thing</code> ❌。動作明確的名稱讓模型推理更快。</p></div>
+<div data-lang="en"><p><code>search_papers</code> ✅; <code>papers</code> ❌; <code>do_thing</code> ❌. Action-clear names speed up reasoning.</p></div></div>
+<div class="card"><h4>③ <span data-zh="冪等性 (Idempotent)" data-en="Idempotent where possible">冪等性</span></h4>
+<div data-lang="zh"><p>同樣參數呼叫多次得到同樣結果。Agent 會 retry，非冪等工具會引爆 bug（重複收費、重複建單）。</p></div>
+<div data-lang="en"><p>Same args = same result. Agents retry; non-idempotent tools explode bugs (double-charges, duplicate tickets).</p></div></div>
+<div class="card"><h4>④ <span data-zh="返回結構化錯誤" data-en="Return structured errors">返回結構化錯誤</span></h4>
+<div data-lang="zh"><p>失敗回 <code>{"error": "...", "hint": "try X"}</code>，別 throw exception。讓 agent 能看到錯誤就調整。</p></div>
+<div data-lang="en"><p>On failure return <code>{"error": "...", "hint": "try X"}</code>, don't throw. The agent can read and adjust.</p></div></div>
+<div class="card"><h4>⑤ <span data-zh="最小權限" data-en="Least privilege">最小權限</span></h4>
+<div data-lang="zh"><p><code>read_file</code> ≠ <code>execute_arbitrary_shell</code>。提供 agent 「夠用」的權限，不是「方便」的權限。</p></div>
+<div data-lang="en"><p><code>read_file</code> ≠ <code>execute_arbitrary_shell</code>. Give the agent "enough" permission, not "convenient" permission.</p></div></div>
+<div class="card"><h4>⑥ <span data-zh="輸出大小可控" data-en="Bounded output size">輸出大小可控</span></h4>
+<div data-lang="zh"><p>單次工具回傳避免 &gt; 5KB；過大會塞爆 context。提供 pagination 或 summary 模式。</p></div>
+<div data-lang="en"><p>Cap single tool returns at ≲ 5KB; oversized returns blow up context. Offer pagination or summary mode.</p></div></div>
+<div class="card"><h4>⑦ <span data-zh="敏感操作要二次確認" data-en="Confirm destructive actions">敏感操作要二次確認</span></h4>
+<div data-lang="zh"><p><code>delete_user</code>、<code>send_money</code>、<code>send_email</code> 應強制 <code>confirm: true</code> 參數。或暴露為「low-impact preview + high-impact commit」兩階段工具。</p></div>
+<div data-lang="en"><p><code>delete_user</code>, <code>send_money</code>, <code>send_email</code> should force a <code>confirm: true</code> param — or split into "preview" + "commit" pairs.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="四、Agent 工具迴圈模擬器" data-en="IV. Agent tool-loop simulator">四、Agent 工具迴圈模擬器</h2>
+<div class="interactive-panel">
+<div data-lang="zh"><p>下方模擬一個 ReAct agent 接收使用者問題後的內部對話。按「下一步」逐步執行：</p></div>
+<div data-lang="en"><p>The simulator below shows a ReAct agent's internal log after receiving a user question. Click "Next step" to advance:</p></div>
+<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+<button class="btn" id="simNext" data-zh="下一步 ▶" data-en="Next step ▶">下一步 ▶</button>
+<button class="btn secondary" id="simReset" data-zh="重設" data-en="Reset">重設</button>
+<span class="sim-stat info" id="simStep">Step 0 / 6</span>
+</div>
+<div class="agent-sim" id="simBox"></div>
+</div>
+<script>
+const simSteps=[
+  {t:'thought', zh:'💭 [Thought] 使用者問「BRCA1 c.5266dupC 是致病嗎？」我需要：(1) 查文獻 (2) 查 ClinVar 分類 (3) 整合答案。先用 search_papers。',
+                 en:'💭 [Thought] User asked: "Is BRCA1 c.5266dupC pathogenic?" I need to: (1) search literature (2) check ClinVar (3) synthesize. Start with search_papers.'},
+  {t:'action',   zh:'🔧 [Action] search_papers({query: "BRCA1 c.5266dupC pathogenicity", max_results: 5})',
+                 en:'🔧 [Action] search_papers({query: "BRCA1 c.5266dupC pathogenicity", max_results: 5})'},
+  {t:'observation', zh:'👁 [Observation] 5 papers found. Top: Mavaddat et al. 2019 — c.5266dupC linked to ~70% lifetime breast cancer risk in HR+/HER2- families.',
+                    en:'👁 [Observation] 5 papers found. Top: Mavaddat et al. 2019 — c.5266dupC linked to ~70% lifetime breast cancer risk in HR+/HER2- families.'},
+  {t:'thought', zh:'💭 [Thought] 文獻支持致病。現在驗證 ClinVar 官方分類。',
+                en:'💭 [Thought] Literature supports pathogenicity. Now verify with ClinVar official classification.'},
+  {t:'action',   zh:'🔧 [Action] clinvar_lookup({variant: "NM_007294.3:c.5266dupC"})',
+                 en:'🔧 [Action] clinvar_lookup({variant: "NM_007294.3:c.5266dupC"})'},
+  {t:'observation', zh:'👁 [Observation] ClinVar: VCV000017677.46 = Pathogenic, 5 stars (expert panel).',
+                    en:'👁 [Observation] ClinVar: VCV000017677.46 = Pathogenic, 5 stars (expert panel).'},
+  {t:'final',   zh:'✅ [Final] BRCA1 c.5266dupC（俗稱 5382insC）為已知致病變異，ClinVar 5 星專家共識，與 HBOC 高風險直接相關。建議遵循 NCCN 指南。',
+                en:'✅ [Final] BRCA1 c.5266dupC (a.k.a. 5382insC) is a well-established pathogenic variant — ClinVar 5-star expert consensus, directly tied to HBOC risk. Follow NCCN management guidelines.'}
+];
+let simIdx=0;
+function simRender(){
+  const lang=document.documentElement.lang.startsWith('zh')?'zh':'en';
+  const box=document.getElementById('simBox');
+  box.innerHTML=simSteps.slice(0,simIdx).map(s=>`<div class="${s.t}">${s[lang]}</div>`).join('');
+  document.getElementById('simStep').textContent=`Step ${simIdx} / ${simSteps.length}`;
+  box.scrollTop=box.scrollHeight;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('simNext').onclick=()=>{ if(simIdx<simSteps.length){simIdx++;simRender();} };
+  document.getElementById('simReset').onclick=()=>{ simIdx=0; simRender(); };
+  simRender();
+});
+document.addEventListener('langchange',simRender);
+</script>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="進階：並行" data-en="ADVANCED: PARALLEL">進階：並行</div>
+<h2 data-zh="五、並行工具呼叫 (Parallel Tool Use)" data-en="V. Parallel tool calls">五、並行工具呼叫 (Parallel Tool Use)</h2>
+<div data-lang="zh"><p>2024 年起，旗艦模型支援單一輪次回傳<strong>多個</strong> tool_use blocks。比如 agent 想同時查 PubMed、ClinVar、OMIM，就一次回傳 3 個 tool_use，後端可並行執行，再把 3 個 tool_result 一次塞回去。</p>
+<p>實務效益：對網路 I/O 密集的 agent，p95 延遲可降 3–5 倍。</p></div>
+<div data-lang="en"><p>Since 2024 flagship models can emit <strong>multiple</strong> tool_use blocks in a single turn. The agent can call PubMed, ClinVar, and OMIM concurrently — your runtime fans out, awaits all results, and returns them as one tool_result batch.</p>
+<p>Production payoff: p95 latency cuts 3–5× for network-bound agents.</p></div>
+<div class="code-tabs"><div class="code-tab-btns"><button class="code-tab-btn active">Python (asyncio)</button><button class="code-tab-btn">JavaScript (Promise.all)</button></div>
+<div class="code-tab-content active"><pre><span class="kw">import</span> asyncio
+<span class="kw">async def</span> <span class="func">run_tools_parallel</span>(tool_uses):
+    <span class="kw">async def</span> <span class="func">one</span>(tu):
+        result = <span class="kw">await</span> TOOL_REGISTRY[tu.name](**tu.input)
+        <span class="kw">return</span> {<span class="str">"type"</span>:<span class="str">"tool_result"</span>,<span class="str">"tool_use_id"</span>:tu.id,<span class="str">"content"</span>:result}
+    <span class="kw">return</span> <span class="kw">await</span> asyncio.<span class="func">gather</span>(*[<span class="func">one</span>(tu) <span class="kw">for</span> tu <span class="kw">in</span> tool_uses])
+
+<span class="comment"># In the agent loop:</span>
+tool_uses = [b <span class="kw">for</span> b <span class="kw">in</span> resp.content <span class="kw">if</span> b.type==<span class="str">"tool_use"</span>]
+results   = <span class="kw">await</span> <span class="func">run_tools_parallel</span>(tool_uses)
+messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>:results})</pre></div>
+<div class="code-tab-content"><pre><span class="kw">async function</span> <span class="func">runToolsParallel</span>(toolCalls) {
+  <span class="kw">return</span> <span class="func">Promise.all</span>(toolCalls.<span class="func">map</span>(<span class="kw">async</span> tc => {
+    <span class="kw">const</span> args = <span class="func">JSON.parse</span>(tc.function.arguments);
+    <span class="kw">const</span> result = <span class="kw">await</span> TOOL_REGISTRY[tc.function.name](args);
+    <span class="kw">return</span> { role:<span class="str">"tool"</span>, tool_call_id:tc.id, content:<span class="func">JSON.stringify</span>(result) };
+  }));
+}
+<span class="kw">const</span> outs = <span class="kw">await</span> <span class="func">runToolsParallel</span>(msg.tool_calls);
+messages.<span class="func">push</span>(...outs);</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="錯誤處理" data-en="ERROR HANDLING">錯誤處理</div>
+<h2 data-zh="六、四種常見工具錯誤與恢復策略" data-en="VI. Four common tool errors & recovery">六、四種常見工具錯誤與恢復策略</h2>
+<div class="comp-table-wrap"><table class="comp-table">
+<thead><tr><th data-zh="錯誤類型" data-en="Error type">錯誤類型</th><th data-zh="該回傳給 agent 的訊息" data-en="What to return">該回傳給 agent 的訊息</th><th data-zh="預期 agent 行為" data-en="Expected behavior">預期行為</th></tr></thead>
+<tbody>
+<tr><td data-lang="zh"><strong>參數驗證失敗</strong></td><td data-lang="en"><strong>Invalid arguments</strong></td><td><code>{error:"validation", details:"max_results must be ≤ 50, got 200"}</code></td><td data-lang="zh">調整參數後重試</td><td data-lang="en">Adjust args & retry</td></tr>
+<tr><td data-lang="zh"><strong>API 暫時性故障</strong></td><td data-lang="en"><strong>Transient API failure</strong></td><td><code>{error:"transient", retry_after:5}</code></td><td data-lang="zh">等待後重試（注意總次數）</td><td data-lang="en">Wait & retry (cap retries)</td></tr>
+<tr><td data-lang="zh"><strong>權限不足</strong></td><td data-lang="en"><strong>Permission denied</strong></td><td><code>{error:"permission", hint:"escalate or ask user"}</code></td><td data-lang="zh">詢問使用者或 escalate</td><td data-lang="en">Ask user / escalate</td></tr>
+<tr><td data-lang="zh"><strong>找不到結果</strong></td><td data-lang="en"><strong>Empty result</strong></td><td><code>{result:[], hint:"try broader query"}</code></td><td data-lang="zh">放寬條件再試</td><td data-lang="en">Broaden query & retry</td></tr>
+</tbody>
+</table></div>
+<div class="callout danger"><span class="callout-icon">🚫</span><div>
+<span data-lang="zh"><strong>反模式：</strong>千萬不要在工具失敗時 <code>raise Exception</code> 讓整個 agent loop 崩潰。Agent 應該能讀到錯誤訊息並自我修復——這正是它的價值。</span>
+<span data-lang="en"><strong>Anti-pattern:</strong> never let tool failure <code>raise Exception</code> and crash the loop. The agent should see the error and self-recover — that's the whole point.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="2026 趨勢" data-en="2026 TREND">2026 趨勢</div>
+<h2 data-zh="七、Computer Use 與 Browser Use" data-en="VII. Computer Use & Browser Use">七、Computer Use 與 Browser Use</h2>
+<div data-lang="zh"><p>2024 年 Anthropic 發布 <strong>Computer Use</strong> beta，2025 年進入正式版：模型可以直接「看截圖、移動滑鼠、點按鈕、輸入文字」。OpenAI 也在 2025 年推出對應的 Operator/Computer Use。</p>
+<p>本質上這是<strong>把整個 GUI 變成一組 tool</strong>：<code>screenshot()</code>、<code>click(x,y)</code>、<code>type(text)</code>。最大的優勢是不再需要 API——任何能用滑鼠的網站都能被 agent 操作。</p>
+<p>但代價也大：每一步都要 vision LLM 處理截圖，又貴又慢；且<strong>安全風險顯著</strong>（agent 看到惡意網頁的 prompt injection 就會點 phishing 連結）。Anthropic 與 OpenAI 都建議 Computer Use 只在沙箱環境執行。</p></div>
+<div data-lang="en"><p>Anthropic released <strong>Computer Use</strong> beta in 2024 and went GA in 2025: the model directly "sees screenshots, moves the mouse, clicks buttons, types." OpenAI shipped Operator/Computer Use the same year.</p>
+<p>Conceptually this is <strong>turning the whole GUI into a toolset</strong>: <code>screenshot()</code>, <code>click(x,y)</code>, <code>type(text)</code>. The big win: no API required — any website usable with a mouse becomes operable by an agent.</p>
+<p>The cost: every step needs a vision LLM on the screenshot — expensive and slow. And <strong>safety risk is real</strong>: a malicious page's injected prompt can trick the agent into phishing clicks. Both Anthropic and OpenAI recommend running Computer Use only in sandboxes.</p></div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz (3 questions)">🎓 章節小測</h3>
+<div class="quiz-q">
+<p data-lang="zh">Q1. 工具描述 (description) 寫得不好會發生什麼？</p>
+<p data-lang="en">Q1. What happens if a tool description is poor?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) API 會拒絕" data-en="A) The API will reject it">A) API 會拒絕</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Agent 會選錯工具或漏選正確工具" data-en="B) The agent picks wrong tools or misses the right one">B) Agent 會選錯工具或漏選正確工具</span></div>
+<div class="quiz-opt"><span data-zh="C) 模型會 crash" data-en="C) The model crashes">C) 模型會 crash</span></div>
+<div class="quiz-opt"><span data-zh="D) 工具會自動重啟" data-en="D) The tool auto-restarts">D) 工具會自動重啟</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ Description 是 LLM 唯一用來「選工具」的線索。</span><span data-lang="en">✅ The description is the only signal the LLM uses to choose a tool.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q2. 為什麼工具最好設計成「冪等」？</p>
+<p data-lang="en">Q2. Why design tools to be idempotent?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 可以加密" data-en="A) Enables encryption">A) 可以加密</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Agent 可能 retry，非冪等會造成重複副作用" data-en="B) Agents retry; non-idempotent calls cause duplicate side-effects">B) Agent 可能 retry，非冪等會造成重複副作用</span></div>
+<div class="quiz-opt"><span data-zh="C) 為了讓回應更快" data-en="C) For faster responses">C) 為了讓回應更快</span></div>
+<div class="quiz-opt"><span data-zh="D) 只是慣例" data-en="D) Just a convention">D) 只是慣例</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 重複收費、重複建單都是非冪等惹的禍。</span><span data-lang="en">✅ Double-charges and duplicate tickets all stem from non-idempotent tools.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q3. 一個工具失敗時，下列哪種回傳對 agent 最有用？</p>
+<p data-lang="en">Q3. Which failure response is most useful to the agent?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) raise Exception" data-en="A) raise Exception">A) raise Exception</span></div>
+<div class="quiz-opt"><span data-zh="B) 回 \"error\" 字串" data-en="B) Return the string 'error'">B) 回 \"error\" 字串</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="C) 結構化錯誤含 hint，例如 {error:'rate_limit', retry_after:30}" data-en="C) Structured error with hint, e.g. {error:'rate_limit', retry_after:30}">C) 結構化錯誤含 hint</span></div>
+<div class="quiz-opt"><span data-zh="D) 完全不回應" data-en="D) Don't respond at all">D) 完全不回應</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ Agent 能讀到 hint 並自我修復，這是 agentic 的核心優勢。</span><span data-lang="en">✅ The agent can read the hint and self-recover — this is the core agentic advantage.</span></div>
+</div>
+</section>
+
+<div class="page-nav">
+<a href="03-prompting.html"><span class="nav-dir" data-zh="← Step 3" data-en="← Step 3">← Step 3</span><span class="nav-title" data-zh="Prompt 工程" data-en="Prompt Engineering">Prompt 工程</span></a>
+<a href="05-memory.html" class="next"><span class="nav-dir" data-zh="Step 5 →" data-en="Step 5 →">Step 5 →</span><span class="nav-title" data-zh="記憶系統" data-en="Memory Systems">記憶系統</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

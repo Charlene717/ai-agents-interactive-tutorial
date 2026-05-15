@@ -1,0 +1,314 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 11: Model Context Protocol (MCP) — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html" class="active">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 11 / 12 · <span data-zh="生產實戰" data-en="PRODUCTION">生產實戰</span></div>
+<h1 data-zh="MCP：AI 應用的「USB-C」" data-en="MCP: The 'USB-C' of AI Applications">MCP：AI 應用的「USB-C」</h1>
+<p class="subtitle" data-lang="zh">Model Context Protocol——2024 由 Anthropic 發布、2025 進入 Linux Foundation 的開放標準，把工具與資料連接 LLM 的方式統一了。</p>
+<p class="subtitle" data-lang="en">Model Context Protocol — an open standard released by Anthropic in 2024, hosted by the Linux Foundation since 2025. It standardizes how LLMs connect to tools and data.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、為什麼需要 MCP？" data-en="I. Why do we need MCP?">一、為什麼需要 MCP？</h2>
+<div data-lang="zh">
+<p>2024 年中之前，每個 agent 框架、每個 IDE 整合、每個 LLM 廠商都有自己的「工具」格式：</p>
+<ul>
+<li>OpenAI function calling 用 JSON schema 一種寫法</li>
+<li>Anthropic tool use 又一種</li>
+<li>LangChain Tool 又一種</li>
+<li>Cursor、Windsurf、Claude Desktop 也各自設計外掛機制</li>
+</ul>
+<p>一個工具開發者要支援所有平台，得寫四套相同的東西。這就是 M×N 整合地獄。</p>
+<p>2024 年 11 月，Anthropic 受到 LSP (Language Server Protocol) 啟發，發布 <strong>Model Context Protocol (MCP)</strong>——一個基於 JSON-RPC 2.0 的開放標準，讓任何 LLM 應用都能用同一套協定連接任何工具/資料源。</p>
+<p>2025 年 4 月 OpenAI 採用，下載量從 200 萬／月跳到 2200 萬。2025 年 12 月 Anthropic 把 MCP 捐給 <strong>Agentic AI Foundation</strong>（Linux Foundation 下，由 Anthropic / Block / OpenAI 共同創立）。MCP 已成為事實上的業界標準。</p>
+</div>
+<div data-lang="en">
+<p>Before mid-2024, every agent framework, IDE integration, and LLM vendor had its own "tool" format:</p>
+<ul>
+<li>OpenAI function calling JSON schema</li>
+<li>Anthropic tool use schema</li>
+<li>LangChain Tool format</li>
+<li>Cursor, Windsurf, Claude Desktop each had bespoke plugin mechanisms</li>
+</ul>
+<p>A tool author had to write the same thing four times — M×N integration hell.</p>
+<p>In November 2024, inspired by the LSP (Language Server Protocol), Anthropic published <strong>Model Context Protocol (MCP)</strong> — a JSON-RPC 2.0 open standard letting any LLM application connect to any tool/data source via one protocol.</p>
+<p>OpenAI adopted MCP in April 2025; downloads jumped from 2M/month to 22M. In December 2025 Anthropic donated MCP to the <strong>Agentic AI Foundation</strong> (Linux Foundation, co-founded by Anthropic / Block / OpenAI). MCP is the de facto industry standard.</p>
+</div>
+<div class="callout info"><span class="callout-icon">🔌</span><div>
+<span data-lang="zh"><strong>類比：</strong>MCP 之於 AI Agents，就像 <strong>USB-C</strong> 之於電子產品——一個接頭通用所有設備。也像 <strong>LSP</strong> 之於 IDE——一個協定支援所有編輯器。</span>
+<span data-lang="en"><strong>Analogy:</strong> MCP : AI agents :: <strong>USB-C</strong> : consumer electronics — one connector for everything. Or <strong>LSP</strong> : IDEs — one protocol all editors can speak.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="架構" data-en="ARCHITECTURE">架構</div>
+<h2 data-zh="二、MCP 的客戶端 / 伺服器架構" data-en="II. MCP's client / server architecture">二、MCP 的客戶端 / 伺服器架構</h2>
+<div class="diagram-box">┌──────────────────┐                       ┌──────────────────┐
+│ MCP Client (Host)│ ◄── JSON-RPC 2.0 ───► │  MCP Server      │
+│                  │   (stdio or HTTP+SSE) │                  │
+│ Claude Desktop   │                       │ filesystem       │
+│ Cursor IDE       │                       │ github           │
+│ Custom agent     │                       │ postgres         │
+│ Cowork mode      │                       │ slack            │
+└──────────────────┘                       │ ... thousands    │
+                                            └──────────────────┘
+                              Capabilities exposed by server:
+                              • tools     (callable functions)
+                              • resources (files / DB rows)
+                              • prompts   (parameterized templates)</div>
+<div data-lang="zh"><p>關鍵概念：</p>
+<ul>
+<li><strong>Host</strong>：使用者面對的 LLM 應用（Claude Desktop、Cursor、Cowork、你自己的 agent）。</li>
+<li><strong>Server</strong>：暴露能力給 host 的後端。每個 server 通常包一個系統或服務（如 GitHub、Postgres、Slack）。</li>
+<li><strong>Transport</strong>：兩種——本地 <code>stdio</code>（子程序）或遠端 HTTP+SSE。2026 草案有 stateless HTTP 變體可水平擴展。</li>
+<li><strong>三大原語</strong>：
+  <ul>
+  <li><strong>Tools</strong>：可被 LLM 呼叫的函式（最常用）</li>
+  <li><strong>Resources</strong>：可被讀取的資料（檔案、DB 列、API 回應）</li>
+  <li><strong>Prompts</strong>：可被使用者選用的參數化模板</li>
+  </ul>
+</li>
+</ul></div>
+<div data-lang="en"><p>Key concepts:</p>
+<ul>
+<li><strong>Host:</strong> the user-facing LLM app (Claude Desktop, Cursor, Cowork, your own agent).</li>
+<li><strong>Server:</strong> the backend exposing capabilities to the host. Each server usually wraps one system or service (GitHub, Postgres, Slack).</li>
+<li><strong>Transport:</strong> two — local <code>stdio</code> (subprocess) or remote HTTP+SSE. A 2026 draft adds stateless HTTP for horizontal scaling.</li>
+<li><strong>Three primitives:</strong>
+  <ul>
+  <li><strong>Tools:</strong> functions the LLM can call (most common)</li>
+  <li><strong>Resources:</strong> readable data (files, DB rows, API responses)</li>
+  <li><strong>Prompts:</strong> parameterized templates users can pick</li>
+  </ul>
+</li>
+</ul></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作 MCP Server" data-en="WRITE AN MCP SERVER">實作 MCP Server</div>
+<h2 data-zh="三、寫一個最小 MCP Server" data-en="III. Write a minimal MCP server">三、寫一個最小 MCP Server</h2>
+<div data-lang="zh"><p>下方用 Anthropic 官方 SDK 寫一個「天氣查詢」MCP server。完成後它可被 Claude Desktop、Cursor、Cowork 等所有 host 立刻使用。</p></div>
+<div data-lang="en"><p>Below: a "weather lookup" MCP server using Anthropic's official SDK. Once running, it's instantly usable from Claude Desktop, Cursor, Cowork, and any MCP host.</p></div>
+<div class="code-tabs">
+<div class="code-tab-btns">
+<button class="code-tab-btn active">Python (mcp-server)</button>
+<button class="code-tab-btn">TypeScript (@modelcontextprotocol/sdk)</button>
+</div>
+<div class="code-tab-content active"><pre><span class="comment"># pip install mcp httpx</span>
+<span class="kw">from</span> mcp.server.fastmcp <span class="kw">import</span> FastMCP
+<span class="kw">import</span> httpx
+
+app = <span class="func">FastMCP</span>(<span class="str">"weather"</span>)
+
+<span class="kw">@app.tool</span>()
+<span class="kw">async def</span> <span class="func">get_weather</span>(city: <span class="cls">str</span>) -&gt; <span class="cls">str</span>:
+    <span class="str">"""Get current weather for a city. Returns a one-line summary."""</span>
+    <span class="kw">async with</span> httpx.<span class="func">AsyncClient</span>() <span class="kw">as</span> c:
+        r = <span class="kw">await</span> c.<span class="func">get</span>(<span class="str">f"https://wttr.in/{city}?format=3"</span>)
+        <span class="kw">return</span> r.text.<span class="func">strip</span>()
+
+<span class="kw">@app.resource</span>(<span class="str">"weather://history/{city}"</span>)
+<span class="kw">async def</span> <span class="func">history</span>(city: <span class="cls">str</span>) -&gt; <span class="cls">str</span>:
+    <span class="str">"""Return last 7-day weather log for a city."""</span>
+    <span class="kw">return</span> <span class="func">load_history</span>(city)
+
+<span class="kw">@app.prompt</span>()
+<span class="kw">def</span> <span class="func">trip_planner</span>(destination: <span class="cls">str</span>, days: <span class="cls">int</span>) -&gt; <span class="cls">str</span>:
+    <span class="str">"""Build a packing checklist using current weather."""</span>
+    <span class="kw">return</span> <span class="str">f"Plan a {days}-day trip to {destination}. Check the weather first via get_weather."</span>
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    app.<span class="func">run</span>(transport=<span class="str">"stdio"</span>)   <span class="comment"># local; use "sse" for remote</span></pre></div>
+<div class="code-tab-content"><pre><span class="comment">// npm install @modelcontextprotocol/sdk</span>
+<span class="kw">import</span> { McpServer } <span class="kw">from</span> <span class="str">"@modelcontextprotocol/sdk/server/mcp.js"</span>;
+<span class="kw">import</span> { StdioServerTransport } <span class="kw">from</span> <span class="str">"@modelcontextprotocol/sdk/server/stdio.js"</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">"zod"</span>;
+
+<span class="kw">const</span> server = <span class="kw">new</span> <span class="func">McpServer</span>({ name:<span class="str">"weather"</span>, version:<span class="str">"1.0.0"</span> });
+
+server.<span class="func">tool</span>(<span class="str">"get_weather"</span>,
+  { city: z.<span class="func">string</span>().<span class="func">describe</span>(<span class="str">"City name"</span>) },
+  <span class="kw">async</span> ({ city }) =&gt; {
+    <span class="kw">const</span> r = <span class="kw">await</span> <span class="func">fetch</span>(<span class="str">`https://wttr.in/${city}?format=3`</span>);
+    <span class="kw">return</span> { content:[{ type:<span class="str">"text"</span>, text:<span class="kw">await</span> r.<span class="func">text</span>() }] };
+  }
+);
+
+<span class="kw">await</span> server.<span class="func">connect</span>(<span class="kw">new</span> <span class="func">StdioServerTransport</span>());</pre></div>
+</div>
+<div class="callout tip"><span class="callout-icon">⚡</span><div>
+<span data-lang="zh"><strong>把這個 server 加到 Claude Desktop：</strong>編輯 <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>，加入：<br>
+<code>{"mcpServers":{"weather":{"command":"python","args":["/path/to/server.py"]}}}</code><br>
+重啟 Claude Desktop，使用者立刻能說「東京現在天氣？」由 LLM 自動呼叫工具。</span>
+<span data-lang="en"><strong>Wire this to Claude Desktop:</strong> edit <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>:<br>
+<code>{"mcpServers":{"weather":{"command":"python","args":["/path/to/server.py"]}}}</code><br>
+Restart Claude Desktop — users can now ask "what's the weather in Tokyo?" and the LLM auto-invokes the tool.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="客戶端" data-en="MCP CLIENT">客戶端</div>
+<h2 data-zh="四、在自己的 Agent 中當 MCP Client" data-en="IV. Be an MCP client inside your own agent">四、在自己的 Agent 中當 MCP Client</h2>
+<div data-lang="zh"><p>反過來，如果你自己寫 agent，也可以用 MCP client SDK 連接<strong>別人寫好</strong>的 MCP server（GitHub、Slack、Postgres 都有官方 server）：</p></div>
+<div data-lang="en"><p>Conversely, your own agent can act as an MCP client and connect to <strong>existing</strong> MCP servers (GitHub, Slack, Postgres all ship official servers):</p></div>
+<div class="code-tabs"><div class="code-tab-btns"><button class="code-tab-btn active">Python (MCP client)</button></div>
+<div class="code-tab-content active"><pre><span class="kw">from</span> mcp <span class="kw">import</span> ClientSession, StdioServerParameters
+<span class="kw">from</span> mcp.client.stdio <span class="kw">import</span> stdio_client
+<span class="kw">import</span> anthropic
+
+<span class="comment"># 1) Launch GitHub MCP server as subprocess</span>
+params = <span class="func">StdioServerParameters</span>(command=<span class="str">"npx"</span>, args=[<span class="str">"-y"</span>,<span class="str">"@modelcontextprotocol/server-github"</span>],
+                                env={<span class="str">"GITHUB_TOKEN"</span>: os.environ[<span class="str">"GH_TOKEN"</span>]})
+
+<span class="kw">async with</span> <span class="func">stdio_client</span>(params) <span class="kw">as</span> (read, write):
+    <span class="kw">async with</span> <span class="func">ClientSession</span>(read, write) <span class="kw">as</span> session:
+        <span class="kw">await</span> session.<span class="func">initialize</span>()
+        tools = <span class="kw">await</span> session.<span class="func">list_tools</span>()
+
+        <span class="comment"># 2) Convert MCP tools to Anthropic tool schema</span>
+        ant_tools = [{<span class="str">"name"</span>:t.name, <span class="str">"description"</span>:t.description,
+                      <span class="str">"input_schema"</span>:t.inputSchema} <span class="kw">for</span> t <span class="kw">in</span> tools.tools]
+
+        <span class="comment"># 3) Run agent loop, route tool calls back to MCP server</span>
+        client = anthropic.<span class="func">Anthropic</span>()
+        messages = [{<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>:<span class="str">"List open issues in my repo modelcontextprotocol/python-sdk"</span>}]
+        <span class="kw">while</span> <span class="kw">True</span>:
+            r = client.messages.<span class="func">create</span>(model=<span class="str">"claude-sonnet-4-6"</span>, max_tokens=<span class="num">1024</span>,
+                                       tools=ant_tools, messages=messages)
+            <span class="kw">if</span> r.stop_reason == <span class="str">"end_turn"</span>: <span class="kw">break</span>
+            messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"assistant"</span>,<span class="str">"content"</span>: r.content})
+            results = []
+            <span class="kw">for</span> b <span class="kw">in</span> r.content:
+                <span class="kw">if</span> b.type == <span class="str">"tool_use"</span>:
+                    out = <span class="kw">await</span> session.<span class="func">call_tool</span>(b.name, b.input)
+                    results.<span class="func">append</span>({<span class="str">"type"</span>:<span class="str">"tool_result"</span>,<span class="str">"tool_use_id"</span>:b.id,
+                                    <span class="str">"content"</span>: <span class="func">str</span>(out.content)})
+            messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>: results})</pre></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="生態" data-en="ECOSYSTEM">生態</div>
+<h2 data-zh="五、2026 MCP 生態圖譜" data-en="V. The 2026 MCP ecosystem">五、2026 MCP 生態圖譜</h2>
+<div class="card-grid cols-3">
+<div class="card"><h4 data-zh="📦 官方 Servers" data-en="📦 Official servers">📦 官方 Servers</h4>
+<div data-lang="zh"><p>GitHub、Slack、Postgres、Filesystem、Brave Search、Puppeteer、Google Drive……Anthropic 與社群維護的 reference 實作。</p></div>
+<div data-lang="en"><p>GitHub, Slack, Postgres, Filesystem, Brave Search, Puppeteer, Google Drive… reference implementations from Anthropic and the community.</p></div></div>
+<div class="card"><h4 data-zh="🌐 第三方 Registry" data-en="🌐 Third-party registries">🌐 第三方 Registry</h4>
+<div data-lang="zh"><p>2026 年湧現的「MCP 應用商店」：mcp.so、Smithery、PulseMCP……搜尋、評分、安裝皆有 GUI。</p></div>
+<div data-lang="en"><p>"MCP app stores" rose in 2026: mcp.so, Smithery, PulseMCP… searchable with reviews and one-click install.</p></div></div>
+<div class="card"><h4 data-zh="🧑‍💼 企業內部 Servers" data-en="🧑‍💼 Enterprise internal servers">🧑‍💼 企業內部</h4>
+<div data-lang="zh"><p>各公司把自家 API（CRM、ERP、內部 DB）包裝成 MCP server，員工的 Cursor / Cowork 直接連，免去十幾種整合。</p></div>
+<div data-lang="en"><p>Companies wrap internal APIs (CRM, ERP, DBs) as MCP servers — employee's Cursor / Cowork connects directly, replacing a dozen integrations.</p></div></div>
+<div class="card"><h4 data-zh="🛠️ Cowork / Claude Desktop" data-en="🛠️ Cowork / Claude Desktop">🛠️ Cowork / Claude Desktop</h4>
+<div data-lang="zh"><p>使用者端的 MCP host：直接點 GUI 連線到任意 server，看到的「工具」就是 server 暴露的 tools。</p></div>
+<div data-lang="en"><p>User-facing MCP hosts: connect to any server via GUI; the "tools" you see are the server's exposed tools.</p></div></div>
+<div class="card"><h4 data-zh="🔐 安全層" data-en="🔐 Security layer">🔐 安全層</h4>
+<div data-lang="zh"><p>2026 出現的 MCP gateway / proxy（如 Microsoft Agent Governance Toolkit）：集中審計、權限、注入過濾。</p></div>
+<div data-lang="en"><p>MCP gateways / proxies (e.g., Microsoft Agent Governance Toolkit) emerged 2026: centralized audit, permissions, injection filtering.</p></div></div>
+<div class="card"><h4 data-zh="🚀 2026 Roadmap" data-en="🚀 2026 roadmap">🚀 2026 Roadmap</h4>
+<div data-lang="zh"><p>無狀態 HTTP transport（水平擴展用）、Tasks 原語（長跑非同步任務）、官方註冊表治理（Linux Foundation）。</p></div>
+<div data-lang="en"><p>Stateless HTTP transport (horizontal scaling), Tasks primitive (long-running async), official registry governance (Linux Foundation).</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="安全注意" data-en="SECURITY NOTE">安全注意</div>
+<h2 data-zh="六、MCP 的安全責任邊界" data-en="VI. MCP's security responsibilities">六、MCP 的安全責任邊界</h2>
+<div data-lang="zh"><p>MCP 是<strong>協定</strong>，本身不保證安全。它把「LLM ↔ 工具」的接口統一了，但沒有解決：</p>
+<ul>
+<li>使用者裝了惡意 MCP server → 等於開後門</li>
+<li>MCP 工具被 prompt injection 觸發 → 可能執行未授權動作</li>
+<li>遠端 MCP server 認證 / OAuth → 你必須自己加</li>
+<li>多 MCP server 間的權限隔離 → host 端負責</li>
+</ul>
+<p>2026 業界的解法：</p>
+<ol>
+<li><strong>官方註冊表 + 簽章</strong>：類似 npm + Sigstore，可驗證 server 來源</li>
+<li><strong>權限粒度設定</strong>：host 提供 GUI 讓使用者勾選「這個 server 可以做什麼」</li>
+<li><strong>沙箱執行</strong>：每個 server 在獨立 process / container 中</li>
+<li><strong>注入過濾</strong>：MCP gateway 攔下高風險工具回應再給 LLM</li>
+</ol>
+<p>詳細安全討論見 <a href="12-safety.html">Step 12</a>。</p></div>
+<div data-lang="en"><p>MCP is a <strong>protocol</strong>; it does not guarantee security on its own. It unifies the "LLM ↔ tools" interface but does not solve:</p>
+<ul>
+<li>User installs a malicious MCP server → effectively opens a backdoor</li>
+<li>MCP tools triggered by prompt injection → may execute unauthorized actions</li>
+<li>Remote MCP server auth / OAuth → you must add it</li>
+<li>Permission isolation between multiple MCP servers → host's responsibility</li>
+</ul>
+<p>2026 industry mitigations:</p>
+<ol>
+<li><strong>Official registry + signing</strong> (npm + Sigstore-style) for source verification</li>
+<li><strong>Granular permissions</strong>: host provides a GUI to opt-in per capability</li>
+<li><strong>Sandbox execution</strong>: each server in its own process / container</li>
+<li><strong>Injection filtering</strong>: MCP gateway sanitizes risky tool responses before forwarding to LLM</li>
+</ol>
+<p>Full security discussion in <a href="12-safety.html">Step 12</a>.</p></div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz">🎓 章節小測</h3>
+<div class="quiz-q">
+<p data-lang="zh">Q1. MCP 主要解決什麼問題？</p>
+<p data-lang="en">Q1. What problem does MCP primarily solve?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 提升 LLM 推理品質" data-en="A) Improve LLM reasoning quality">A) 提升 LLM 推理品質</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 標準化 LLM 應用與工具/資料源的整合介面，解決 M×N 整合問題" data-en="B) Standardize LLM-app ↔ tool/data integration — eliminates the M×N integration problem">B) 標準化 LLM 應用與工具的整合介面</span></div>
+<div class="quiz-opt"><span data-zh="C) 取代 RAG" data-en="C) Replace RAG">C) 取代 RAG</span></div>
+<div class="quiz-opt"><span data-zh="D) 訓練更快" data-en="D) Faster training">D) 訓練更快</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ MCP 是接口協定，類似 LSP 之於 IDE。</span><span data-lang="en">✅ MCP is an interface protocol — LSP-for-agents.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q2. MCP 的三大原語是？</p>
+<p data-lang="en">Q2. The three MCP primitives?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) Server / Client / Host" data-en="A) Server / Client / Host">A) Server / Client / Host</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Tools / Resources / Prompts" data-en="B) Tools / Resources / Prompts">B) Tools / Resources / Prompts</span></div>
+<div class="quiz-opt"><span data-zh="C) Plan / Act / Observe" data-en="C) Plan / Act / Observe">C) Plan / Act / Observe</span></div>
+<div class="quiz-opt"><span data-zh="D) JSON / RPC / 2.0" data-en="D) JSON / RPC / 2.0">D) JSON / RPC / 2.0</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ Tools 是可呼叫函式、Resources 是可讀資料、Prompts 是參數化模板。</span><span data-lang="en">✅ Tools are callable, resources are readable data, prompts are templates.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q3. 下列哪一項對 MCP 的描述<strong>不正確</strong>？</p>
+<p data-lang="en">Q3. Which statement about MCP is <strong>incorrect</strong>?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 由 Anthropic 2024 年發布" data-en="A) Released by Anthropic in 2024">A) 由 Anthropic 2024 年發布</span></div>
+<div class="quiz-opt"><span data-zh="B) 基於 JSON-RPC 2.0" data-en="B) Built on JSON-RPC 2.0">B) 基於 JSON-RPC 2.0</span></div>
+<div class="quiz-opt"><span data-zh="C) OpenAI 已採用" data-en="C) Adopted by OpenAI">C) OpenAI 已採用</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="D) 內建解決所有安全問題（無需額外配置）" data-en="D) Inherently solves all security problems (no extra config needed)">D) 內建解決所有安全問題</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ MCP 是協定，不是安全方案；認證、權限、沙箱要自己加。</span><span data-lang="en">✅ MCP is a protocol, not a security solution — auth, permissions, sandbox are your job.</span></div>
+</div>
+</section>
+
+<div class="page-nav">
+<a href="10-frameworks.html"><span class="nav-dir" data-zh="← Step 10" data-en="← Step 10">← Step 10</span><span class="nav-title" data-zh="框架比較" data-en="Frameworks">框架比較</span></a>
+<a href="12-safety.html" class="next"><span class="nav-dir" data-zh="Step 12 →" data-en="Step 12 →">Step 12 →</span><span class="nav-title" data-zh="安全與部署" data-en="Safety & Deployment">安全與部署</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 6: Planning & Reasoning — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html" class="active">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 6 / 12 · <span data-zh="核心元件" data-en="CORE COMPONENT">核心元件</span></div>
+<h1 data-zh="規劃與推理" data-en="Planning & Reasoning">規劃與推理</h1>
+<p class="subtitle" data-lang="zh">ReAct、Plan-and-Execute、Tree-of-Thoughts、Reflection——四種主流規劃迴圈與何時用哪個。</p>
+<p class="subtitle" data-lang="en">ReAct, Plan-and-Execute, Tree-of-Thoughts, Reflection — four mainstream planning loops and when to use each.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、規劃迴圈是 Agent 的「控制流」" data-en="I. The planning loop is the agent's control flow">一、規劃迴圈是 Agent 的「控制流」</h2>
+<div data-lang="zh">
+<p>單一 LLM 呼叫只能「想一次」。Agent 要解決多步驟任務，必須把「想 → 行動 → 觀察」做成迴圈。這個迴圈如何組織，就是<strong>規劃模式 (planning pattern)</strong>。</p>
+<p>2026 年生產界的主流分四種：</p>
+<ol>
+<li><strong>ReAct</strong>：邊想邊做，最普及</li>
+<li><strong>Plan-and-Execute</strong>：先寫完整計劃再執行</li>
+<li><strong>Tree-of-Thoughts (ToT)</strong>：同時探索多條路徑</li>
+<li><strong>Reflection</strong>：行動後自我批判 + 重做</li>
+</ol>
+<p>不同任務適合不同模式。本章把四者拆解、給選擇指南、附完整程式碼。</p>
+</div>
+<div data-lang="en">
+<p>A single LLM call thinks once. For multi-step tasks the agent must loop "think → act → observe." How that loop is organized = the <strong>planning pattern</strong>.</p>
+<p>Four 2026 production-grade patterns dominate:</p>
+<ol>
+<li><strong>ReAct</strong> — think and act interleaved, most popular</li>
+<li><strong>Plan-and-Execute</strong> — write the full plan first, then execute</li>
+<li><strong>Tree-of-Thoughts (ToT)</strong> — explore multiple paths in parallel</li>
+<li><strong>Reflection</strong> — self-critique after each action and redo</li>
+</ol>
+<p>Different tasks suit different patterns. This chapter dissects all four with selection rules and full code.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模式一" data-en="PATTERN 1">模式一</div>
+<h2 data-zh="二、ReAct：Reasoning + Acting" data-en="II. ReAct: Reasoning + Acting">二、ReAct：Reasoning + Acting</h2>
+<div data-lang="zh"><p>ReAct (Yao et al. 2023) 是最有影響力的 agent 規劃模式。核心 prompt 結構：</p></div>
+<div data-lang="en"><p>ReAct (Yao et al. 2023) is the most influential agent pattern. The core prompt structure:</p></div>
+<div class="diagram-box">Thought: I need to find X. Let me call tool Y.
+Action: Y[args]
+Observation: <tool result>
+Thought: Now I have X. I still need Z.
+Action: ...
+...
+Thought: I have enough. Final answer.
+Final Answer: <text></div>
+<div data-lang="zh"><p><strong>優勢：</strong>單一 LLM 即可實作；推理 trace 可審計；錯誤恢復自然——觀察到失敗 → 下一個 Thought 自動調整。</p>
+<p><strong>劣勢：</strong>每步都呼叫 LLM，慢且貴；長迴圈中容易陷入無窮重複；推理品質依賴 prompt 質量。</p>
+<p><strong>適用：</strong>3–8 步左右、工具呼叫為主、任務難度中等的場景。也是 LangChain 的預設模式。</p></div>
+<div data-lang="en"><p><strong>Pros:</strong> implementable with one LLM; reasoning trace is auditable; natural error recovery — observe failure → next Thought adjusts.</p>
+<p><strong>Cons:</strong> every step is an LLM call, slow and expensive; can loop infinitely on hard tasks; reasoning quality leans on prompt quality.</p>
+<p><strong>Best for:</strong> 3–8 step tool-call-heavy tasks of moderate difficulty. LangChain's default mode.</p></div>
+<div class="code-tabs"><div class="code-tab-btns"><button class="code-tab-btn active">Python (manual ReAct)</button></div>
+<div class="code-tab-content active"><pre>REACT_SYS = <span class="str">"""You are a ReAct agent. Solve the user's task by alternating:
+Thought: ...
+Action: tool_name[args]   (one tool call)
+After receiving the tool result you'll see an Observation, then continue.
+When you have the answer, output:
+Final Answer: ..."""</span>
+
+messages = [{<span class="str">"role"</span>:<span class="str">"system"</span>,<span class="str">"content"</span>:REACT_SYS},
+            {<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>: user_question}]
+<span class="kw">for</span> step <span class="kw">in</span> <span class="func">range</span>(MAX_STEPS):
+    resp = client.messages.<span class="func">create</span>(model=<span class="str">"claude-sonnet-4-6"</span>, tools=TOOLS,
+                                    max_tokens=<span class="num">1024</span>, messages=messages)
+    messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"assistant"</span>,<span class="str">"content"</span>: resp.content})
+    <span class="kw">if</span> resp.stop_reason == <span class="str">"end_turn"</span>:  <span class="kw">break</span>
+    tool_results = [{<span class="str">"type"</span>:<span class="str">"tool_result"</span>,
+                     <span class="str">"tool_use_id"</span>:b.id,
+                     <span class="str">"content"</span>: <span class="func">run_tool</span>(b.name, b.input)}
+                    <span class="kw">for</span> b <span class="kw">in</span> resp.content <span class="kw">if</span> b.type==<span class="str">"tool_use"</span>]
+    messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>: tool_results})</pre></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模式二" data-en="PATTERN 2">模式二</div>
+<h2 data-zh="三、Plan-and-Execute：先規劃、後執行" data-en="III. Plan-and-Execute: plan first, execute later">三、Plan-and-Execute：先規劃、後執行</h2>
+<div data-lang="zh"><p>把規劃與執行<strong>解耦</strong>：</p>
+<ol>
+<li><strong>Planner LLM</strong>：把使用者目標拆成 5–15 步的明確計劃，輸出 JSON。</li>
+<li><strong>Executor</strong>：逐步執行（可用更便宜的模型或腳本）。</li>
+<li><strong>Re-planner</strong>：若執行偏離計劃，回頭重新規劃。</li>
+</ol>
+<p><strong>優勢：</strong>Planner 用昂貴模型一次想清楚，後面 Executor 用便宜模型大量跑——成本大幅下降；計劃可給人類審查；步驟可並行。</p>
+<p><strong>劣勢：</strong>初始計劃若錯，整路都偏；中途新資訊難以利用（需要 re-plan）。</p>
+<p><strong>適用：</strong>步驟多 (&gt;10)、流程穩定、可預測的任務。LangGraph 的「planner / executor」範例就是這模式。</p></div>
+<div data-lang="en"><p><strong>Decouples</strong> planning from execution:</p>
+<ol>
+<li><strong>Planner LLM</strong>: decomposes the goal into a 5–15 step JSON plan.</li>
+<li><strong>Executor</strong>: runs each step (cheaper model or script).</li>
+<li><strong>Re-planner</strong>: re-plans if execution diverges.</li>
+</ol>
+<p><strong>Pros:</strong> one expensive call to plan, many cheap calls to execute — large cost reduction; plan is human-reviewable; steps can run in parallel.</p>
+<p><strong>Cons:</strong> a bad initial plan cascades; mid-execution discoveries are hard to incorporate without re-planning.</p>
+<p><strong>Best for:</strong> long flows (&gt;10 steps), stable and predictable. LangGraph's planner/executor example uses this.</p></div>
+<div class="diagram-box">User goal ─► [Planner LLM] ─► PLAN[step1, step2, ..., stepN]
+                                  │
+                                  ▼
+                        ┌─ Execute step1 ─┐
+                        ├─ Execute step2 ─┤  ◄─ re-plan if needed
+                        └─ Execute stepN ─┘
+                                  ▼
+                              Final result</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模式三" data-en="PATTERN 3">模式三</div>
+<h2 data-zh="四、Tree-of-Thoughts (ToT)：分支搜尋" data-en="IV. Tree-of-Thoughts (ToT): branch search">四、Tree-of-Thoughts (ToT)：分支搜尋</h2>
+<div data-lang="zh"><p>當任務需要「探索多種解法」時（如數學謎題、博弈、創意寫作），ReAct 的線性推理會卡住——一條路走錯就 GG。ToT (Yao et al. 2023) 把推理變成<strong>樹狀搜尋</strong>：</p>
+<ol>
+<li>每一步生成多個候選 thought (branch 3–5 條)</li>
+<li>用 LLM 評估每條 thought 的「有希望程度」</li>
+<li>用 BFS / DFS 展開最有希望的分支</li>
+<li>抵達終點或預算用盡時停止</li>
+</ol>
+<p><strong>優勢：</strong>對需要回溯的任務（數獨、24-game、創意組合）顯著超越 ReAct。</p>
+<p><strong>劣勢：</strong>呼叫次數爆炸（10×–100× ReAct）；很慢、很貴；多數實務任務用不上。</p>
+<p><strong>適用：</strong>離散搜尋空間、明確可評估的中間狀態。生產上很少用，學術論文常見。</p></div>
+<div data-lang="en"><p>When tasks need to "explore multiple solutions" (math puzzles, games, creative writing), ReAct's linear reasoning gets stuck — one wrong turn dooms you. ToT (Yao et al. 2023) turns reasoning into a <strong>tree search</strong>:</p>
+<ol>
+<li>Generate several candidate thoughts per step (3–5 branches)</li>
+<li>Have the LLM rate each branch's "promise"</li>
+<li>Expand most-promising branches via BFS / DFS</li>
+<li>Stop at goal or budget exhaustion</li>
+</ol>
+<p><strong>Pros:</strong> beats ReAct dramatically on backtracking tasks (Sudoku, 24-game, creative composition).</p>
+<p><strong>Cons:</strong> call count explodes (10×–100× ReAct); slow, costly; most real tasks don't need it.</p>
+<p><strong>Best for:</strong> discrete search spaces with clear intermediate evaluators. Rare in production, common in papers.</p></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模式四" data-en="PATTERN 4">模式四</div>
+<h2 data-zh="五、Reflection：自我批判 + 重做" data-en="V. Reflection: self-critique and redo">五、Reflection：自我批判 + 重做</h2>
+<div data-lang="zh"><p>Reflexion (Shinn et al. 2023) 與 Self-Refine (Madaan et al. 2023) 共同推動：讓 agent 在一個 task 結束後<strong>自我評估</strong>，把「下次該避免什麼 / 該怎麼改」寫進短期記憶，再重做一次。</p>
+<p>常見實作流程：</p>
+<ol>
+<li>Agent 完成第一版答案 A1</li>
+<li><strong>Critic LLM</strong>（可以是同個模型）審查 A1，輸出問題清單</li>
+<li>把 critique 加入 context，Agent 產出 A2</li>
+<li>重複 N 次或直到 critic 滿意</li>
+</ol>
+<p><strong>優勢：</strong>對寫作、程式碼、長推理任務很有效（程式 unit test pass rate 常見 +15%）。</p>
+<p><strong>劣勢：</strong>成本 2–5×；若 critic 本身錯，會強化錯誤。</p>
+<p><strong>適用：</strong>高品質要求、可離線執行、有自動評估訊號（test、規則）的任務。</p></div>
+<div data-lang="en"><p>Reflexion (Shinn et al. 2023) and Self-Refine (Madaan et al. 2023) popularized: after a task, have the agent <strong>self-assess</strong>, write "what to avoid / improve" into memory, and try again.</p>
+<p>Typical flow:</p>
+<ol>
+<li>Agent produces draft A1</li>
+<li><strong>Critic LLM</strong> (often the same model) reviews A1, lists issues</li>
+<li>Critique appended to context, Agent produces A2</li>
+<li>Repeat N times or until critic is satisfied</li>
+</ol>
+<p><strong>Pros:</strong> strong on writing, coding, long reasoning (commonly +15% unit-test pass rate).</p>
+<p><strong>Cons:</strong> 2–5× cost; a wrong critic reinforces errors.</p>
+<p><strong>Best for:</strong> quality-critical, offline tasks with auto-eval signal (tests, rules).</p></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="選擇指南" data-en="SELECTION GUIDE">選擇指南</div>
+<h2 data-zh="六、決策樹：該選哪種規劃模式？" data-en="VI. Decision tree: which planning pattern?">六、決策樹：該選哪種規劃模式？</h2>
+<div class="decision-tree">
+<h4 data-zh="🌳 選擇規劃模式" data-en="🌳 Pick a planning pattern">🌳 選擇規劃模式</h4>
+<div class="dt-node"><span class="dt-q">Q1:</span><span data-lang="zh">任務超過 10 步、流程可預測？</span><span data-lang="en">More than 10 steps and predictable flow?</span><span class="dt-arrow">▶ Plan-and-Execute</span></div>
+<div class="dt-node"><span class="dt-q">Q2:</span><span data-lang="zh">否則，是否需要回溯/分支搜尋（謎題、博弈）？</span><span data-lang="en">Else, need backtracking / search (puzzles, games)?</span><span class="dt-arrow">▶ Tree-of-Thoughts</span></div>
+<div class="dt-node"><span class="dt-q">Q3:</span><span data-lang="zh">否則，任務高品質要求 + 可自動評估？</span><span data-lang="en">Else, quality-critical with auto-eval?</span><span class="dt-arrow">▶ Reflection</span></div>
+<div class="dt-node"><span class="dt-q">Q4:</span><span data-lang="zh">以上皆否（即一般 3–8 步工具呼叫）</span><span data-lang="en">Else (typical 3–8 step tool calls)</span><span class="dt-arrow">▶ ReAct</span></div>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>混合模式：</strong>生產 agent 常常混用。例如外層 Plan-and-Execute 拆分大步驟，每個步驟內部用 ReAct，最後加一層 Reflection 自我審查。LangGraph 設計時就支援這種組合。</span>
+<span data-lang="en"><strong>Hybrid:</strong> production agents often mix patterns. Outer Plan-and-Execute decomposes high-level steps; each step runs ReAct internally; a final Reflection layer self-audits. LangGraph supports this natively.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實用技巧" data-en="PRACTICAL TIPS">實用技巧</div>
+<h2 data-zh="七、防止無窮迴圈的五個保險絲" data-en="VII. Five safeguards against infinite loops">七、防止無窮迴圈的五個保險絲</h2>
+<div data-lang="zh"><p>不論用哪種規劃模式，agent 都可能卡在迴圈。生產系統必裝：</p>
+<ol>
+<li><strong>max_iterations 上限</strong>：超過 N 步強制停止（通常 10–30）。</li>
+<li><strong>相同動作偵測</strong>：連續 3 次呼叫同樣 (tool, args) 就強制結束。</li>
+<li><strong>Token / 成本上限</strong>：累積成本超過閾值就 escalate。</li>
+<li><strong>Progress check</strong>：每 K 步問 LLM「離目標多遠？」沒進展就強制結束或 re-plan。</li>
+<li><strong>Human-in-the-loop checkpoint</strong>：執行敏感操作前必須人類核可。</li>
+</ol></div>
+<div data-lang="en"><p>Regardless of pattern, agents can loop. Production systems must install:</p>
+<ol>
+<li><strong>max_iterations cap</strong>: stop after N steps (usually 10–30).</li>
+<li><strong>Repeat-action detection</strong>: same (tool, args) three times → stop.</li>
+<li><strong>Token / cost cap</strong>: escalate after threshold.</li>
+<li><strong>Progress check</strong>: every K steps ask the LLM "how close to goal?" — no progress → stop or re-plan.</li>
+<li><strong>Human-in-the-loop checkpoint</strong>: human approval before sensitive actions.</li>
+</ol></div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz">🎓 章節小測</h3>
+<div class="quiz-q">
+<p data-lang="zh">Q1. ReAct 模式的核心結構是？</p>
+<p data-lang="en">Q1. The core ReAct structure is?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 同時跑多條推理路徑" data-en="A) Run multiple reasoning paths in parallel">A) 同時跑多條推理路徑</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Thought → Action → Observation 交替循環" data-en="B) Alternate Thought → Action → Observation">B) Thought → Action → Observation 交替循環</span></div>
+<div class="quiz-opt"><span data-zh="C) 先寫完整 plan 再執行" data-en="C) Write a full plan, then execute">C) 先寫完整 plan 再執行</span></div>
+<div class="quiz-opt"><span data-zh="D) 自我批判後重做" data-en="D) Self-critique and redo">D) 自我批判後重做</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ ReAct = Reasoning + Acting，思考與行動交替。</span><span data-lang="en">✅ ReAct = Reasoning + Acting, alternating.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q2. 為什麼 Tree-of-Thoughts 很少用在生產 agent？</p>
+<p data-lang="en">Q2. Why is Tree-of-Thoughts rare in production agents?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 概念太複雜" data-en="A) Too complex conceptually">A) 概念太複雜</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 呼叫次數 10–100×，成本與延遲過高" data-en="B) 10–100× call count → prohibitive cost and latency">B) 呼叫次數 10–100×，成本與延遲過高</span></div>
+<div class="quiz-opt"><span data-zh="C) 模型不支援" data-en="C) Not supported by models">C) 模型不支援</span></div>
+<div class="quiz-opt"><span data-zh="D) 違反 OWASP" data-en="D) OWASP forbids it">D) 違反 OWASP</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 分支搜尋意味著大量 LLM 呼叫，多數實務任務不值得。</span><span data-lang="en">✅ Branch search means many LLM calls — rarely worth it in practice.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q3. 防止 agent 無窮迴圈，下列哪一項<strong>不是</strong>有效手段？</p>
+<p data-lang="en">Q3. Which is <strong>not</strong> an effective safeguard against infinite loops?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) max_iterations 上限" data-en="A) max_iterations cap">A) max_iterations 上限</span></div>
+<div class="quiz-opt"><span data-zh="B) 相同 (tool, args) 偵測" data-en="B) Repeat (tool, args) detection">B) 相同 (tool, args) 偵測</span></div>
+<div class="quiz-opt"><span data-zh="C) 累積成本上限" data-en="C) Cumulative cost cap">C) 累積成本上限</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="D) 把 temperature 設成 0" data-en="D) Set temperature to 0">D) 把 temperature 設成 0</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ Temperature=0 反而可能讓 agent 一直選同一個錯誤動作。</span><span data-lang="en">✅ T=0 can actually make the agent stick to the same wrong action.</span></div>
+</div>
+</section>
+
+<div class="page-nav">
+<a href="05-memory.html"><span class="nav-dir" data-zh="← Step 5" data-en="← Step 5">← Step 5</span><span class="nav-title" data-zh="記憶系統" data-en="Memory Systems">記憶系統</span></a>
+<a href="07-rag.html" class="next"><span class="nav-dir" data-zh="Step 7 →" data-en="Step 7 →">Step 7 →</span><span class="nav-title" data-zh="RAG 檢索增強" data-en="RAG">RAG 檢索增強</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>
