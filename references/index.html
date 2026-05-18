@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI 代理人參考資料 · References</title>
+<meta name="description" content="AI Agents Interactive Tutorial 各主題的學術論文、官方規格、Best Practices 與基準測試的完整佐證。">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.ref-list{list-style:none;padding:0;margin:14px 0 0}
+.ref-list li{padding:14px 16px;background:var(--c-surface-alt);border:1px solid var(--c-border-light);border-radius:var(--radius);margin-bottom:10px;font-size:.92rem;line-height:1.65}
+.ref-list li:hover{background:var(--c-surface);border-color:var(--c-border)}
+.ref-tag{display:inline-block;font-family:var(--font-mono);font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:6px;margin-right:8px;letter-spacing:.5px}
+.ref-tag.paper{background:var(--c-accent-light);color:var(--c-accent-dark)}
+.ref-tag.doc{background:#e3f2fd;color:#1565c0}
+.ref-tag.spec{background:#e0f2fe;color:#075985}
+.ref-tag.bench{background:#fff3e0;color:#e65100}
+.ref-tag.db{background:#fce4ec;color:#ad1457}
+.ref-tag.book{background:#f3e5f5;color:#6a1b9a}
+.ref-tag.bestp{background:var(--c-highlight-light);color:#a06a00;border:1px solid var(--c-highlight)}
+.ref-tag.blog{background:#e8f5e9;color:#2e7d32}
+.ref-tag.report{background:#ede7f6;color:#4527a0}
+.ref-tag.fwk{background:#cffafe;color:#0e7490}
+.ref-author{color:var(--c-ink);font-weight:600}
+.ref-title{color:var(--c-ink);font-weight:500}
+.ref-meta{color:var(--c-ink-muted);font-size:.85rem;margin-top:4px;display:block}
+.ref-list a{color:var(--c-accent);text-decoration:none;border-bottom:1px dotted var(--c-accent)}
+.ref-list a:hover{color:var(--c-accent-dark);border-bottom-style:solid}
+.errata{background:#fef3c7;border-left:4px solid #d97706;border-radius:0 var(--radius-lg) var(--radius-lg) 0;padding:18px 22px;margin:18px 0;font-size:.9rem}
+.errata h4{margin:0 0 8px;color:#92400e;font-family:var(--font-display);font-size:1.05rem}
+.errata p{color:#78350f;margin-bottom:8px}
+.errata p:last-child{margin-bottom:0}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:18px 0}
+.toc-grid a{padding:10px 14px;background:var(--c-surface);border:1px solid var(--c-border-light);border-radius:var(--radius);text-decoration:none;color:var(--c-ink);font-size:.88rem;transition:var(--transition);display:flex;align-items:center;gap:8px}
+.toc-grid a:hover{border-color:var(--c-accent);background:var(--c-accent-light);color:var(--c-accent-dark)}
+.toc-grid a .step-tag{font-family:var(--font-mono);font-size:.72rem;color:var(--c-accent);font-weight:600}
+.section-anchor{scroll-margin-top:80px}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+<div class="top-nav-inner">
+  <a href="../index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="../01-what-is-agent.html">01 What</a></li>
+    <li><a href="../02-llm-brain.html">02 LLM</a></li>
+    <li><a href="../03-prompting.html">03 Prompt</a></li>
+    <li><a href="../04-tool-use.html">04 Tool</a></li>
+    <li><a href="../05-memory.html">05 Memory</a></li>
+    <li><a href="../06-planning.html">06 Plan</a></li>
+    <li><a href="../07-rag.html">07 RAG</a></li>
+    <li><a href="../08-multi-agent.html">08 Multi</a></li>
+    <li><a href="../09-evaluation.html">09 Eval</a></li>
+    <li><a href="../10-frameworks.html">10 Fwk</a></li>
+    <li><a href="../11-mcp.html">11 MCP</a></li>
+    <li><a href="../12-safety.html">12 Safety</a></li>
+    <li><a href="index.html" class="active" style="font-weight:700" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div>
+</nav>
+
+<header class="page-hero">
+<div class="step-badge"><span data-zh="參考資料" data-en="REFERENCES">參考資料</span> · REFERENCES</div>
+<h1 data-zh="學術論文、官方規格與基準測試來源" data-en="Papers, Specifications, and Benchmarks">學術論文、官方規格與基準測試來源</h1>
+<p class="subtitle" data-lang="zh">為 AI Agents Interactive Tutorial 12 個主題提供原始論文、官方規格、廠商文件、Best Practices 綜述與基準測試的完整佐證。</p>
+<p class="subtitle" data-lang="en">Comprehensive citations for the 12-chapter AI Agents Interactive Tutorial — primary papers, official specs, vendor docs, best-practice surveys, and benchmarks.</p>
+</header>
+
+<main class="content-wrap">
+
+<!-- Overview -->
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="如何使用這份資料？" data-en="How to use this reference?">如何使用這份資料？</h2>
+<p data-lang="zh">本頁針對教學中提到的每個演算法、框架、benchmark 與安全議題，整理學術出處與官方規格供讀者深入查閱。引用標籤含義：</p>
+<p data-lang="en">For every algorithm, framework, benchmark, and safety topic in the tutorial, this page provides the primary academic citation, official specification, or vendor documentation. Tag legend:</p>
+<div class="card-grid cols-3">
+  <div class="card"><div class="card-icon" style="background:var(--c-accent-light)">📄</div><h4>Paper</h4><p data-lang="zh">原始論文 · 含 arXiv / DOI</p><p data-lang="en">Primary papers with arXiv / DOI</p></div>
+  <div class="card"><div class="card-icon" style="background:#e3f2fd">📘</div><h4>Doc</h4><p data-lang="zh">官方文件、API 參考、廠商指南</p><p data-lang="en">Official docs, API references, vendor guides</p></div>
+  <div class="card"><div class="card-icon" style="background:#e0f2fe">📜</div><h4>Spec</h4><p data-lang="zh">技術規格（如 MCP）</p><p data-lang="en">Technical specifications (e.g. MCP)</p></div>
+  <div class="card"><div class="card-icon" style="background:#fff3e0">📊</div><h4>Benchmark</h4><p data-lang="zh">基準測試與評比</p><p data-lang="en">Benchmarks and evaluations</p></div>
+  <div class="card"><div class="card-icon" style="background:#cffafe">🛠️</div><h4>Framework</h4><p data-lang="zh">開源 / 商業 framework</p><p data-lang="en">Open-source / commercial frameworks</p></div>
+  <div class="card"><div class="card-icon" style="background:var(--c-highlight-light)">⭐</div><h4>Best Practice</h4><p data-lang="zh">系統綜述、廠商工程文章</p><p data-lang="en">Surveys, vendor engineering posts</p></div>
+  <div class="card"><div class="card-icon" style="background:#e8f5e9">📝</div><h4>Blog</h4><p data-lang="zh">官方部落格 / 工程文章</p><p data-lang="en">Official blogs / engineering posts</p></div>
+  <div class="card"><div class="card-icon" style="background:#ede7f6">📊</div><h4>Report</h4><p data-lang="zh">產業報告 / 政府文件</p><p data-lang="en">Industry / government reports</p></div>
+  <div class="card"><div class="card-icon" style="background:#f3e5f5">📚</div><h4>Book</h4><p data-lang="zh">教科書 / 完整指南</p><p data-lang="en">Textbooks / complete guides</p></div>
+</div>
+
+<h3 data-zh="本頁目錄" data-en="Table of contents">本頁目錄</h3>
+<div class="toc-grid">
+  <a href="#foundations"><span class="step-tag">★</span><span data-zh="基礎與綜述" data-en="Foundations & Surveys">基礎與綜述</span></a>
+  <a href="#bestpractices"><span class="step-tag">★</span><span data-zh="廠商工程指南" data-en="Vendor Engineering">廠商工程指南</span></a>
+  <a href="#step1"><span class="step-tag">Step 1</span><span data-zh="什麼是 Agent" data-en="What is an Agent">什麼是 Agent</span></a>
+  <a href="#step2"><span class="step-tag">Step 2</span><span data-zh="LLM 大腦" data-en="LLM Brain">LLM 大腦</span></a>
+  <a href="#step3"><span class="step-tag">Step 3</span><span data-zh="Prompt 工程" data-en="Prompting">Prompt 工程</span></a>
+  <a href="#step4"><span class="step-tag">Step 4</span><span data-zh="工具呼叫" data-en="Tool Use">工具呼叫</span></a>
+  <a href="#step5"><span class="step-tag">Step 5</span><span data-zh="記憶" data-en="Memory">記憶</span></a>
+  <a href="#step6"><span class="step-tag">Step 6</span><span data-zh="規劃推理" data-en="Planning">規劃推理</span></a>
+  <a href="#step7"><span class="step-tag">Step 7</span><span data-zh="RAG" data-en="RAG">RAG</span></a>
+  <a href="#step8"><span class="step-tag">Step 8</span><span data-zh="多代理人" data-en="Multi-Agent">多代理人</span></a>
+  <a href="#step9"><span class="step-tag">Step 9</span><span data-zh="評估" data-en="Evaluation">評估</span></a>
+  <a href="#step10"><span class="step-tag">Step 10</span><span data-zh="框架" data-en="Frameworks">框架</span></a>
+  <a href="#step11"><span class="step-tag">Step 11</span><span data-zh="MCP 協定" data-en="MCP">MCP 協定</span></a>
+  <a href="#step12"><span class="step-tag">Step 12</span><span data-zh="安全部署" data-en="Safety">安全部署</span></a>
+  <a href="#registries"><span class="step-tag">DB</span><span data-zh="MCP / Plugin 註冊表" data-en="Registries">註冊表</span></a>
+  <a href="#errata"><span class="step-tag">!</span><span data-zh="教學註記與細節" data-en="Tutorial Notes & Details">教學註記與細節</span></a>
+</div>
+</section>
+
+<!-- ===================== Foundations ===================== -->
+<section class="section section-anchor" id="foundations">
+<div class="section-label" data-zh="綜論" data-en="OVERVIEW">綜論</div>
+<h2 data-zh="⭐ 基礎與綜述" data-en="⭐ Foundations & Surveys">⭐ 基礎與綜述</h2>
+<p data-lang="zh">建議先讀以下三篇建立 LLM Agent 領域的全景觀，再深入個別主題。</p>
+<p data-lang="en">Start here for a panoramic view of the LLM agent field before drilling into specific topics.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag book">📚 BOOK</span>
+    <span class="ref-author">Russell S, Norvig P.</span>
+    <span class="ref-title"> Artificial Intelligence: A Modern Approach, 4th ed. </span>
+    <em>Pearson</em> (2020). <strong>(經典教科書 · PEAS、agent 四種分類來源)</strong>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://aima.cs.berkeley.edu/" target="_blank" rel="noopener">aima.cs.berkeley.edu</a></span><span data-lang="en"><a href="https://aima.cs.berkeley.edu/" target="_blank" rel="noopener">aima.cs.berkeley.edu</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Wang L, Ma C, Feng X, et al.</span>
+    <span class="ref-title"> A Survey on Large Language Model based Autonomous Agents. </span>
+    <em>arXiv:2308.11432</em> (2023, updated 2024). <em>Frontiers of Computer Science</em>.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2308.11432" target="_blank" rel="noopener">2308.11432</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2308.11432" target="_blank" rel="noopener">2308.11432</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Xi Z, Chen W, Guo X, et al.</span>
+    <span class="ref-title"> The Rise and Potential of Large Language Model Based Agents: A Survey. </span>
+    <em>arXiv:2309.07864</em> (2023). <em>Science China Information Sciences</em>.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2309.07864" target="_blank" rel="noopener">2309.07864</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2309.07864" target="_blank" rel="noopener">2309.07864</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Sumers T, Yao S, Narasimhan K, Griffiths TL.</span>
+    <span class="ref-title"> Cognitive Architectures for Language Agents (CoALA). </span>
+    <em>arXiv:2309.02427</em> (2023). <em>TMLR</em>.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">2309.02427</a> · 提出工作/情節/語意/程序四記憶分類</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">2309.02427</a> · proposes the working / episodic / semantic / procedural memory taxonomy</span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Vendor engineering ===================== -->
+<section class="section section-anchor" id="bestpractices">
+<div class="section-label" data-zh="廠商工程指南" data-en="VENDOR ENGINEERING">廠商工程指南</div>
+<h2 data-zh="⭐ 廠商發布的權威工程指南" data-en="⭐ Authoritative Vendor Engineering Guides">⭐ 廠商發布的權威工程指南</h2>
+<p data-lang="zh">三大廠（Anthropic、OpenAI、Google）官方部落格的「實作要點」是業界共識的最佳起點。</p>
+<p data-lang="en">The "how-to" posts from Anthropic, OpenAI, and Google are the consensus best starting points.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag bestp">★ BEST</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Building effective agents. </span>
+    <em>Anthropic Engineering Blog</em> (2024-12).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">anthropic.com/engineering/building-effective-agents</a></span><span data-lang="en"><a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">anthropic.com/engineering/building-effective-agents</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> How we built our multi-agent research system. </span>
+    <em>Anthropic Engineering Blog</em> (2025).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.anthropic.com/engineering/built-multi-agent-research-system" target="_blank" rel="noopener">anthropic.com/engineering/built-multi-agent-research-system</a></span><span data-lang="en"><a href="https://www.anthropic.com/engineering/built-multi-agent-research-system" target="_blank" rel="noopener">anthropic.com/engineering/built-multi-agent-research-system</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> A practical guide to building agents. </span>
+    <em>OpenAI Cookbook / White Paper</em> (2025).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf" target="_blank" rel="noopener">openai.com — practical guide PDF</a></span><span data-lang="en"><a href="https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf" target="_blank" rel="noopener">openai.com — practical guide PDF</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Google Cloud / Vertex AI.</span>
+    <span class="ref-title"> Agent Development Kit (ADK) & Vertex AI Agent Builder docs. </span>
+    <em>Google Cloud</em> (2025).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://cloud.google.com/vertex-ai/generative-ai/docs/agent-builder/overview" target="_blank" rel="noopener">cloud.google.com — agent builder</a></span><span data-lang="en"><a href="https://cloud.google.com/vertex-ai/generative-ai/docs/agent-builder/overview" target="_blank" rel="noopener">cloud.google.com — agent builder</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag report">📊 REPORT</span>
+    <span class="ref-author">LangChain.</span>
+    <span class="ref-title"> State of AI Agents Report 2026. </span>
+    <em>LangChain Blog</em> (2026).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.langchain.com/state-of-ai-agents" target="_blank" rel="noopener">langchain.com/state-of-ai-agents</a></span><span data-lang="en"><a href="https://www.langchain.com/state-of-ai-agents" target="_blank" rel="noopener">langchain.com/state-of-ai-agents</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 1 ===================== -->
+<section class="section section-anchor" id="step1">
+<div class="section-label">Step 1</div>
+<h2 data-zh="🤖 什麼是 AI 代理人？" data-en="🤖 What is an AI Agent?">🤖 什麼是 AI 代理人？</h2>
+<p data-lang="zh">PEAS 框架、agent 四種型態、現代 LLM Agent 的解剖。</p>
+<p data-lang="en">PEAS framework, four classical agent types, the modern LLM-agent anatomy.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag book">📚 BOOK</span>
+    <span class="ref-author">Russell S, Norvig P.</span>
+    <span class="ref-title"> AIMA, 4th ed. Chapter 2 (Intelligent Agents). </span>
+    <em>Pearson</em> (2020).
+    <span class="ref-meta"><span data-lang="zh">PEAS、reflex/model/goal/utility agent 分類的權威來源</span><span data-lang="en">Authoritative source for PEAS and the reflex / model / goal / utility agent taxonomy</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Park JS, O'Brien JC, Cai CJ, et al.</span>
+    <span class="ref-title"> Generative Agents: Interactive Simulacra of Human Behavior. </span>
+    <em>UIST 2023</em>. arXiv:2304.03442.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2304.03442" target="_blank" rel="noopener">2304.03442</a> · 25 個 LLM agent 在虛擬小鎮互動的開山之作</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2304.03442" target="_blank" rel="noopener">2304.03442</a> · seminal study of 25 LLM agents interacting in a virtual town</span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Weng L.</span>
+    <span class="ref-title"> LLM Powered Autonomous Agents. </span>
+    <em>Lil'Log (OpenAI)</em> (2023-06).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://lilianweng.github.io/posts/2023-06-23-agent/" target="_blank" rel="noopener">lilianweng.github.io/posts/2023-06-23-agent</a> · 最廣為引用的 agent 架構入門</span><span data-lang="en"><a href="https://lilianweng.github.io/posts/2023-06-23-agent/" target="_blank" rel="noopener">lilianweng.github.io/posts/2023-06-23-agent</a> · the most widely cited primer on agent architecture</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Significant Gravitas.</span>
+    <span class="ref-title"> AutoGPT: An Autonomous GPT-4 Experiment. </span>
+    <em>GitHub</em> (2023).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener">github.com/Significant-Gravitas/AutoGPT</a> · 引爆 agent 熱潮的早期專案</span><span data-lang="en"><a href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener">github.com/Significant-Gravitas/AutoGPT</a> · the early project that sparked the agent boom</span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 2 ===================== -->
+<section class="section section-anchor" id="step2">
+<div class="section-label">Step 2</div>
+<h2 data-zh="🧠 LLM 作為大腦" data-en="🧠 LLM as the Brain">🧠 LLM 作為大腦</h2>
+<p data-lang="zh">Transformer、token、context、sampling、scaling laws、long-context 的限制。</p>
+<p data-lang="en">Transformer, tokens, context, sampling, scaling laws, long-context limits.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Vaswani A, Shazeer N, Parmar N, et al.</span>
+    <span class="ref-title"> Attention Is All You Need. </span>
+    <em>NeurIPS 2017</em>. arXiv:1706.03762.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">1706.03762</a> · Transformer 開山之作</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">1706.03762</a> · the foundational Transformer paper</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Brown TB, Mann B, Ryder N, et al.</span>
+    <span class="ref-title"> Language Models are Few-Shot Learners (GPT-3). </span>
+    <em>NeurIPS 2020</em>. arXiv:2005.14165.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">2005.14165</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">2005.14165</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Kaplan J, McCandlish S, Henighan T, et al.</span>
+    <span class="ref-title"> Scaling Laws for Neural Language Models. </span>
+    <em>arXiv:2001.08361</em> (2020).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noopener">2001.08361</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noopener">2001.08361</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Liu NF, Lin K, Hewitt J, et al.</span>
+    <span class="ref-title"> Lost in the Middle: How Language Models Use Long Contexts. </span>
+    <em>TACL</em> (2024). arXiv:2307.03172.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">2307.03172</a> · 揭露長 context 中段召回失敗</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">2307.03172</a> · documents mid-context recall failures in long-context models</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Holtzman A, Buys J, Du L, et al.</span>
+    <span class="ref-title"> The Curious Case of Neural Text Degeneration (Nucleus / top-p sampling). </span>
+    <em>ICLR 2020</em>. arXiv:1904.09751.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/1904.09751" target="_blank" rel="noopener">1904.09751</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/1904.09751" target="_blank" rel="noopener">1904.09751</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Claude API · Models overview (Opus 4.6 / Sonnet 4.6 / Haiku 4.5). </span>
+    <em>Anthropic Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">docs.claude.com/about-claude/models</a></span><span data-lang="en"><a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">docs.claude.com/about-claude/models</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> OpenAI API · Models (GPT-5 / GPT-4.1 family). </span>
+    <em>OpenAI Platform Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">platform.openai.com/docs/models</a></span><span data-lang="en"><a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">platform.openai.com/docs/models</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Google DeepMind.</span>
+    <span class="ref-title"> Gemini 2.5 model card and long-context capabilities. </span>
+    <em>Google DeepMind</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://deepmind.google/technologies/gemini/" target="_blank" rel="noopener">deepmind.google/technologies/gemini</a></span><span data-lang="en"><a href="https://deepmind.google/technologies/gemini/" target="_blank" rel="noopener">deepmind.google/technologies/gemini</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 3 ===================== -->
+<section class="section section-anchor" id="step3">
+<div class="section-label">Step 3</div>
+<h2 data-zh="💬 Prompt 工程" data-en="💬 Prompt Engineering">💬 Prompt 工程</h2>
+<p data-lang="zh">CoT、self-consistency、結構化輸出、prompt injection 防禦的學術源頭與廠商指南。</p>
+<p data-lang="en">Academic origins and vendor guides for CoT, self-consistency, structured output, and prompt-injection defense.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Wei J, Wang X, Schuurmans D, et al.</span>
+    <span class="ref-title"> Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. </span>
+    <em>NeurIPS 2022</em>. arXiv:2201.11903.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">2201.11903</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">2201.11903</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Kojima T, Gu SS, Reid M, et al.</span>
+    <span class="ref-title"> Large Language Models are Zero-Shot Reasoners ("Let's think step by step"). </span>
+    <em>NeurIPS 2022</em>. arXiv:2205.11916.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2205.11916" target="_blank" rel="noopener">2205.11916</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2205.11916" target="_blank" rel="noopener">2205.11916</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Wang X, Wei J, Schuurmans D, et al.</span>
+    <span class="ref-title"> Self-Consistency Improves Chain of Thought Reasoning in Language Models. </span>
+    <em>ICLR 2023</em>. arXiv:2203.11171.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">2203.11171</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2203.11171" target="_blank" rel="noopener">2203.11171</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Schulhoff S, Ilie M, Balepur N, et al.</span>
+    <span class="ref-title"> The Prompt Report: A Systematic Survey of Prompting Techniques. </span>
+    <em>arXiv:2406.06608</em> (2024).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2406.06608" target="_blank" rel="noopener">2406.06608</a> · 涵蓋 58 種 prompting 技巧</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2406.06608" target="_blank" rel="noopener">2406.06608</a> · covers 58 distinct prompting techniques</span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Prompt engineering overview · XML tags · role · few-shot. </span>
+    <em>Anthropic Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener">docs.claude.com/build-with-claude/prompt-engineering</a></span><span data-lang="en"><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" rel="noopener">docs.claude.com/build-with-claude/prompt-engineering</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> Prompt engineering best practices & structured outputs. </span>
+    <em>OpenAI Platform Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank" rel="noopener">platform.openai.com/docs/guides/prompt-engineering</a> · <a href="https://platform.openai.com/docs/guides/structured-outputs" target="_blank" rel="noopener">structured-outputs</a></span><span data-lang="en"><a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank" rel="noopener">platform.openai.com/docs/guides/prompt-engineering</a> · <a href="https://platform.openai.com/docs/guides/structured-outputs" target="_blank" rel="noopener">structured-outputs</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">DAIR.AI.</span>
+    <span class="ref-title"> <span data-lang="zh">Prompt Engineering Guide (社群版)。</span><span data-lang="en">Prompt Engineering Guide (community edition).</span> </span>
+    <em>DAIR.AI</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.promptingguide.ai/" target="_blank" rel="noopener">promptingguide.ai</a></span><span data-lang="en"><a href="https://www.promptingguide.ai/" target="_blank" rel="noopener">promptingguide.ai</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 4 ===================== -->
+<section class="section section-anchor" id="step4">
+<div class="section-label">Step 4</div>
+<h2 data-zh="🔧 工具呼叫 (Tool Use)" data-en="🔧 Tool Use">🔧 工具呼叫 (Tool Use)</h2>
+<p data-lang="zh">Function calling、Toolformer、Computer Use、並行工具呼叫的學術與廠商來源。</p>
+<p data-lang="en">Academic and vendor sources for function calling, Toolformer, Computer Use, parallel tool calls.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Schick T, Dwivedi-Yu J, Dessì R, et al.</span>
+    <span class="ref-title"> Toolformer: Language Models Can Teach Themselves to Use Tools. </span>
+    <em>NeurIPS 2023</em>. arXiv:2302.04761.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2302.04761" target="_blank" rel="noopener">2302.04761</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2302.04761" target="_blank" rel="noopener">2302.04761</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Qin Y, Liang S, Ye Y, et al.</span>
+    <span class="ref-title"> ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs. </span>
+    <em>ICLR 2024</em>. arXiv:2307.16789.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2307.16789" target="_blank" rel="noopener">2307.16789</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2307.16789" target="_blank" rel="noopener">2307.16789</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> Function calling guide & schema reference. </span>
+    <em>OpenAI Platform Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">platform.openai.com/docs/guides/function-calling</a></span><span data-lang="en"><a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">platform.openai.com/docs/guides/function-calling</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Tool use (function calling) with Claude · parallel & forced tool use. </span>
+    <em>Anthropic Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.claude.com/en/docs/build-with-claude/tool-use" target="_blank" rel="noopener">docs.claude.com/build-with-claude/tool-use</a></span><span data-lang="en"><a href="https://docs.claude.com/en/docs/build-with-claude/tool-use" target="_blank" rel="noopener">docs.claude.com/build-with-claude/tool-use</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Introducing Computer Use (beta) and the Claude 3.5 Sonnet (new). </span>
+    <em>Anthropic News</em> (2024-10).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.anthropic.com/news/3-5-models-and-computer-use" target="_blank" rel="noopener">anthropic.com/news/3-5-models-and-computer-use</a></span><span data-lang="en"><a href="https://www.anthropic.com/news/3-5-models-and-computer-use" target="_blank" rel="noopener">anthropic.com/news/3-5-models-and-computer-use</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> Computer-Using Agent (Operator). </span>
+    <em>OpenAI Blog</em> (2025).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://openai.com/index/computer-using-agent/" target="_blank" rel="noopener">openai.com/index/computer-using-agent</a></span><span data-lang="en"><a href="https://openai.com/index/computer-using-agent/" target="_blank" rel="noopener">openai.com/index/computer-using-agent</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 5 ===================== -->
+<section class="section section-anchor" id="step5">
+<div class="section-label">Step 5</div>
+<h2 data-zh="🧩 記憶系統" data-en="🧩 Memory Systems">🧩 記憶系統</h2>
+<p data-lang="zh">記憶分類、長期記憶儲存、向量檢索式記憶的代表論文。</p>
+<p data-lang="en">Memory taxonomies, long-term storage, vector-retrieval-based memory.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Sumers T, Yao S, Narasimhan K, Griffiths TL.</span>
+    <span class="ref-title"> Cognitive Architectures for Language Agents (CoALA). </span>
+    <em>TMLR</em> (2024). arXiv:2309.02427.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">2309.02427</a> · 工作 / 情節 / 語意 / 程序記憶四分類</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">2309.02427</a> · four-way working / episodic / semantic / procedural memory taxonomy</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Park JS, O'Brien JC, Cai CJ, et al.</span>
+    <span class="ref-title"> Generative Agents: Memory stream + reflection + planning. </span>
+    <em>UIST 2023</em>. arXiv:2304.03442.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2304.03442" target="_blank" rel="noopener">2304.03442</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2304.03442" target="_blank" rel="noopener">2304.03442</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Packer C, Wooders S, Lin K, et al.</span>
+    <span class="ref-title"> MemGPT: Towards LLMs as Operating Systems. </span>
+    <em>arXiv:2310.08560</em> (2023).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener">2310.08560</a> · 把 context 視為「分頁」管理</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener">2310.08560</a> · treats context as paged memory managed like an OS</span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ TOOL</span>
+    <span class="ref-author">Chroma / LanceDB / Weaviate / Qdrant / Pinecone / pgvector.</span>
+    <span class="ref-title"> Vector database options for agent memory. </span>
+    <span class="ref-meta"><span data-lang="zh">官方文件：<a href="https://docs.trychroma.com/" target="_blank" rel="noopener">Chroma</a> · <a href="https://lancedb.github.io/lancedb/" target="_blank" rel="noopener">LanceDB</a> · <a href="https://weaviate.io/developers/weaviate" target="_blank" rel="noopener">Weaviate</a> · <a href="https://qdrant.tech/documentation/" target="_blank" rel="noopener">Qdrant</a> · <a href="https://docs.pinecone.io/" target="_blank" rel="noopener">Pinecone</a> · <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener">pgvector</a></span><span data-lang="en">Official docs: <a href="https://docs.trychroma.com/" target="_blank" rel="noopener">Chroma</a> · <a href="https://lancedb.github.io/lancedb/" target="_blank" rel="noopener">LanceDB</a> · <a href="https://weaviate.io/developers/weaviate" target="_blank" rel="noopener">Weaviate</a> · <a href="https://qdrant.tech/documentation/" target="_blank" rel="noopener">Qdrant</a> · <a href="https://docs.pinecone.io/" target="_blank" rel="noopener">Pinecone</a> · <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener">pgvector</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ TOOL</span>
+    <span class="ref-author">Mem0 (formerly EmbedChain).</span>
+    <span class="ref-title"> Open-source agent memory layer. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://github.com/mem0ai/mem0" target="_blank" rel="noopener">github.com/mem0ai/mem0</a></span><span data-lang="en"><a href="https://github.com/mem0ai/mem0" target="_blank" rel="noopener">github.com/mem0ai/mem0</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">LangChain.</span>
+    <span class="ref-title"> Memory in LangChain & LangGraph (long-term / short-term patterns). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://langchain-ai.github.io/langgraph/concepts/memory/" target="_blank" rel="noopener">langchain-ai.github.io/langgraph/concepts/memory</a></span><span data-lang="en"><a href="https://langchain-ai.github.io/langgraph/concepts/memory/" target="_blank" rel="noopener">langchain-ai.github.io/langgraph/concepts/memory</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 6 ===================== -->
+<section class="section section-anchor" id="step6">
+<div class="section-label">Step 6</div>
+<h2 data-zh="🗺️ 規劃與推理" data-en="🗺️ Planning & Reasoning">🗺️ 規劃與推理</h2>
+<p data-lang="zh">ReAct、Plan-and-Execute、Tree-of-Thoughts、Reflection 的原始論文。</p>
+<p data-lang="en">Primary papers for ReAct, Plan-and-Execute, Tree-of-Thoughts, and Reflection.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Yao S, Zhao J, Yu D, et al.</span>
+    <span class="ref-title"> ReAct: Synergizing Reasoning and Acting in Language Models. </span>
+    <em>ICLR 2023</em>. arXiv:2210.03629.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">2210.03629</a> · <a href="https://react-lm.github.io/" target="_blank" rel="noopener">project page</a> · ReAct 開山之作</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">2210.03629</a> · <a href="https://react-lm.github.io/" target="_blank" rel="noopener">project page</a> · the seminal ReAct paper</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Yao S, Yu D, Zhao J, et al.</span>
+    <span class="ref-title"> Tree of Thoughts: Deliberate Problem Solving with Large Language Models. </span>
+    <em>NeurIPS 2023</em>. arXiv:2305.10601.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2305.10601" target="_blank" rel="noopener">2305.10601</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2305.10601" target="_blank" rel="noopener">2305.10601</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Shinn N, Cassano F, Berman E, et al.</span>
+    <span class="ref-title"> Reflexion: Language Agents with Verbal Reinforcement Learning. </span>
+    <em>NeurIPS 2023</em>. arXiv:2303.11366.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">2303.11366</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">2303.11366</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Madaan A, Tandon N, Gupta P, et al.</span>
+    <span class="ref-title"> Self-Refine: Iterative Refinement with Self-Feedback. </span>
+    <em>NeurIPS 2023</em>. arXiv:2303.17651.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2303.17651" target="_blank" rel="noopener">2303.17651</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2303.17651" target="_blank" rel="noopener">2303.17651</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Wang L, Xu W, Lan Y, et al.</span>
+    <span class="ref-title"> Plan-and-Solve Prompting: Improving Zero-Shot CoT Reasoning. </span>
+    <em>ACL 2023</em>. arXiv:2305.04091.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2305.04091" target="_blank" rel="noopener">2305.04091</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2305.04091" target="_blank" rel="noopener">2305.04091</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">LangChain.</span>
+    <span class="ref-title"> Plan-and-Execute Agents tutorial. </span>
+    <em>LangChain Blog</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://blog.langchain.com/planning-agents/" target="_blank" rel="noopener">blog.langchain.com/planning-agents</a></span><span data-lang="en"><a href="https://blog.langchain.com/planning-agents/" target="_blank" rel="noopener">blog.langchain.com/planning-agents</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 7 ===================== -->
+<section class="section section-anchor" id="step7">
+<div class="section-label">Step 7</div>
+<h2 data-zh="📚 RAG 檢索增強生成" data-en="📚 Retrieval-Augmented Generation">📚 RAG 檢索增強生成</h2>
+<p data-lang="zh">RAG 經典論文、hybrid search、rerank、agentic RAG 的關鍵文獻。</p>
+<p data-lang="en">Foundational RAG paper, hybrid search, rerank, and agentic-RAG references.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Lewis P, Perez E, Piktus A, et al.</span>
+    <span class="ref-title"> Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. </span>
+    <em>NeurIPS 2020</em>. arXiv:2005.11401.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">2005.11401</a> · RAG 名詞來源</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noopener">2005.11401</a> · the paper that coined the term RAG</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Karpukhin V, Oğuz B, Min S, et al.</span>
+    <span class="ref-title"> Dense Passage Retrieval for Open-Domain Question Answering (DPR). </span>
+    <em>EMNLP 2020</em>. arXiv:2004.04906.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2004.04906" target="_blank" rel="noopener">2004.04906</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2004.04906" target="_blank" rel="noopener">2004.04906</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Robertson S, Zaragoza H.</span>
+    <span class="ref-title"> The Probabilistic Relevance Framework: BM25 and Beyond. </span>
+    <em>Foundations and Trends in Information Retrieval</em> 3:333–389 (2009).
+    <span class="ref-meta"><span data-lang="zh">DOI: <a href="https://doi.org/10.1561/1500000019" target="_blank" rel="noopener">10.1561/1500000019</a> · BM25 經典綜述</span><span data-lang="en">DOI: <a href="https://doi.org/10.1561/1500000019" target="_blank" rel="noopener">10.1561/1500000019</a> · the canonical BM25 survey</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Gao Y, Xiong Y, Gao X, et al.</span>
+    <span class="ref-title"> Retrieval-Augmented Generation for Large Language Models: A Survey. </span>
+    <em>arXiv:2312.10997</em> (2024).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">2312.10997</a> · RAG 主流綜述（Naive / Advanced / Modular）</span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">2312.10997</a> · the leading RAG survey (Naive / Advanced / Modular)</span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Asai A, Wu Z, Wang Y, et al.</span>
+    <span class="ref-title"> Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection. </span>
+    <em>ICLR 2024</em>. arXiv:2310.11511.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2310.11511" target="_blank" rel="noopener">2310.11511</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2310.11511" target="_blank" rel="noopener">2310.11511</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Edge D, Trinh H, Cheng N, et al. (Microsoft).</span>
+    <span class="ref-title"> From Local to Global: A GraphRAG Approach to Query-Focused Summarization. </span>
+    <em>arXiv:2404.16130</em> (2024).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">2404.16130</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">2404.16130</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Cohere / Voyage AI / BGE.</span>
+    <span class="ref-title"> Reranker model docs. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.cohere.com/docs/rerank" target="_blank" rel="noopener">Cohere Rerank</a> · <a href="https://docs.voyageai.com/docs/reranker" target="_blank" rel="noopener">Voyage Rerank</a> · <a href="https://github.com/FlagOpen/FlagEmbedding" target="_blank" rel="noopener">BGE Reranker</a></span><span data-lang="en"><a href="https://docs.cohere.com/docs/rerank" target="_blank" rel="noopener">Cohere Rerank</a> · <a href="https://docs.voyageai.com/docs/reranker" target="_blank" rel="noopener">Voyage Rerank</a> · <a href="https://github.com/FlagOpen/FlagEmbedding" target="_blank" rel="noopener">BGE Reranker</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">LlamaIndex.</span>
+    <span class="ref-title"> Advanced RAG patterns (query rewriting, multi-step, agentic). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.llamaindex.ai/en/stable/optimizing/production_rag/" target="_blank" rel="noopener">docs.llamaindex.ai — production RAG</a></span><span data-lang="en"><a href="https://docs.llamaindex.ai/en/stable/optimizing/production_rag/" target="_blank" rel="noopener">docs.llamaindex.ai — production RAG</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 8 ===================== -->
+<section class="section section-anchor" id="step8">
+<div class="section-label">Step 8</div>
+<h2 data-zh="👥 多代理人系統" data-en="👥 Multi-Agent Systems">👥 多代理人系統</h2>
+<p data-lang="zh">Supervisor、Swarm、Debate、Group Chat、Multi-Agent Coding 系統的原始論文。</p>
+<p data-lang="en">Original papers for supervisor, swarm, debate, group chat, multi-agent coding systems.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Wu Q, Bansal G, Zhang J, et al.</span>
+    <span class="ref-title"> AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation Framework. </span>
+    <em>COLM 2024</em>. arXiv:2308.08155.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2308.08155" target="_blank" rel="noopener">2308.08155</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2308.08155" target="_blank" rel="noopener">2308.08155</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Hong S, Zhuge M, Chen J, et al.</span>
+    <span class="ref-title"> MetaGPT: Meta Programming for Multi-Agent Collaborative Framework. </span>
+    <em>ICLR 2024</em>. arXiv:2308.00352.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2308.00352" target="_blank" rel="noopener">2308.00352</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2308.00352" target="_blank" rel="noopener">2308.00352</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Li G, Hammoud H, Itani H, et al.</span>
+    <span class="ref-title"> CAMEL: Communicative Agents for "Mind" Exploration of Large Scale Language Model Society. </span>
+    <em>NeurIPS 2023</em>. arXiv:2303.17760.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2303.17760" target="_blank" rel="noopener">2303.17760</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2303.17760" target="_blank" rel="noopener">2303.17760</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Du Y, Li S, Torralba A, Tenenbaum JB, Mordatch I.</span>
+    <span class="ref-title"> Improving Factuality and Reasoning in Language Models through Multiagent Debate. </span>
+    <em>ICML 2024</em>. arXiv:2305.14325.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2305.14325" target="_blank" rel="noopener">2305.14325</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2305.14325" target="_blank" rel="noopener">2305.14325</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> Swarm: Lightweight multi-agent orchestration (experimental). </span>
+    <em>OpenAI / GitHub</em> (2024).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://github.com/openai/swarm" target="_blank" rel="noopener">github.com/openai/swarm</a></span><span data-lang="en"><a href="https://github.com/openai/swarm" target="_blank" rel="noopener">github.com/openai/swarm</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Multi-agent best practices · the case for "monolith first". </span>
+    <em>Anthropic Engineering</em> (2025).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.anthropic.com/engineering/built-multi-agent-research-system" target="_blank" rel="noopener">anthropic.com/engineering — multi-agent</a></span><span data-lang="en"><a href="https://www.anthropic.com/engineering/built-multi-agent-research-system" target="_blank" rel="noopener">anthropic.com/engineering — multi-agent</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 9 ===================== -->
+<section class="section section-anchor" id="step9">
+<div class="section-label">Step 9</div>
+<h2 data-zh="📊 Agent 評估與基準測試" data-en="📊 Agent Evaluation & Benchmarks">📊 Agent 評估與基準測試</h2>
+<p data-lang="zh">SWE-bench、GAIA、τ-bench、AgentBench、WebArena、evaluation 框架。</p>
+<p data-lang="en">SWE-bench, GAIA, τ-bench, AgentBench, WebArena, and evaluation tooling.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag bench">BENCH</span>
+    <span class="ref-author">Jimenez CE, Yang J, Wettig A, et al.</span>
+    <span class="ref-title"> SWE-bench: Can Language Models Resolve Real-World GitHub Issues? </span>
+    <em>ICLR 2024</em>. arXiv:2310.06770.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2310.06770" target="_blank" rel="noopener">2310.06770</a> · <a href="https://www.swebench.com/" target="_blank" rel="noopener">swebench.com (leaderboard)</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2310.06770" target="_blank" rel="noopener">2310.06770</a> · <a href="https://www.swebench.com/" target="_blank" rel="noopener">swebench.com (leaderboard)</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag bench">BENCH</span>
+    <span class="ref-author">Mialon G, Fourrier C, Wolf T, et al.</span>
+    <span class="ref-title"> GAIA: a benchmark for General AI Assistants. </span>
+    <em>ICLR 2024</em>. arXiv:2311.12983.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2311.12983" target="_blank" rel="noopener">2311.12983</a> · <a href="https://huggingface.co/spaces/gaia-benchmark/leaderboard" target="_blank" rel="noopener">HF Leaderboard</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2311.12983" target="_blank" rel="noopener">2311.12983</a> · <a href="https://huggingface.co/spaces/gaia-benchmark/leaderboard" target="_blank" rel="noopener">HF Leaderboard</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag bench">BENCH</span>
+    <span class="ref-author">Yao S, Shunyu, Yu P, et al. (Sierra).</span>
+    <span class="ref-title"> τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains. </span>
+    <em>arXiv:2406.12045</em> (2024).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2406.12045" target="_blank" rel="noopener">2406.12045</a> · <a href="https://sierra.ai/blog/benchmarking-ai-agents" target="_blank" rel="noopener">Sierra blog</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2406.12045" target="_blank" rel="noopener">2406.12045</a> · <a href="https://sierra.ai/blog/benchmarking-ai-agents" target="_blank" rel="noopener">Sierra blog</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag bench">BENCH</span>
+    <span class="ref-author">Liu X, Yu H, Zhang H, et al.</span>
+    <span class="ref-title"> AgentBench: Evaluating LLMs as Agents (across 8 distinct environments). </span>
+    <em>ICLR 2024</em>. arXiv:2308.03688.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2308.03688" target="_blank" rel="noopener">2308.03688</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2308.03688" target="_blank" rel="noopener">2308.03688</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag bench">BENCH</span>
+    <span class="ref-author">Zhou S, Xu FF, Zhu H, et al.</span>
+    <span class="ref-title"> WebArena: A Realistic Web Environment for Building Autonomous Agents. </span>
+    <em>ICLR 2024</em>. arXiv:2307.13854.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2307.13854" target="_blank" rel="noopener">2307.13854</a> · <a href="https://webarena.dev/" target="_blank" rel="noopener">webarena.dev</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2307.13854" target="_blank" rel="noopener">2307.13854</a> · <a href="https://webarena.dev/" target="_blank" rel="noopener">webarena.dev</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Google Cloud.</span>
+    <span class="ref-title"> Vertex AI Agent Evaluation (trajectory metrics & response quality). </span>
+    <em>Google Cloud Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-agents" target="_blank" rel="noopener">cloud.google.com — evaluate-agents</a></span><span data-lang="en"><a href="https://cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-agents" target="_blank" rel="noopener">cloud.google.com — evaluate-agents</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ TOOL</span>
+    <span class="ref-author">DeepEval / Confident AI.</span>
+    <span class="ref-title"> Open-source LLM & agent evaluation framework. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://github.com/confident-ai/deepeval" target="_blank" rel="noopener">github.com/confident-ai/deepeval</a> · <a href="https://deepeval.com/" target="_blank" rel="noopener">deepeval.com</a></span><span data-lang="en"><a href="https://github.com/confident-ai/deepeval" target="_blank" rel="noopener">github.com/confident-ai/deepeval</a> · <a href="https://deepeval.com/" target="_blank" rel="noopener">deepeval.com</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ TOOL</span>
+    <span class="ref-author">LangSmith / Langfuse / Arize Phoenix / Galileo / OpenAI Traces.</span>
+    <span class="ref-title"> <span data-lang="zh">主流 agent 觀測平台。</span><span data-lang="en">Leading agent observability platforms.</span> </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.smith.langchain.com/" target="_blank" rel="noopener">LangSmith</a> · <a href="https://langfuse.com/" target="_blank" rel="noopener">Langfuse</a> · <a href="https://phoenix.arize.com/" target="_blank" rel="noopener">Arize Phoenix</a> · <a href="https://www.galileo.ai/" target="_blank" rel="noopener">Galileo</a></span><span data-lang="en"><a href="https://docs.smith.langchain.com/" target="_blank" rel="noopener">LangSmith</a> · <a href="https://langfuse.com/" target="_blank" rel="noopener">Langfuse</a> · <a href="https://phoenix.arize.com/" target="_blank" rel="noopener">Arize Phoenix</a> · <a href="https://www.galileo.ai/" target="_blank" rel="noopener">Galileo</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 10 ===================== -->
+<section class="section section-anchor" id="step10">
+<div class="section-label">Step 10</div>
+<h2 data-zh="⚙️ Agent 框架" data-en="⚙️ Agent Frameworks">⚙️ Agent 框架</h2>
+<p data-lang="zh">LangGraph、CrewAI、AutoGen / AG2、LlamaIndex Agents、OpenAI / Anthropic / Microsoft SDK。</p>
+<p data-lang="en">LangGraph, CrewAI, AutoGen / AG2, LlamaIndex Agents, plus vendor SDKs.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">LangChain AI.</span>
+    <span class="ref-title"> LangGraph · stateful, multi-actor applications with LLMs. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">langchain-ai.github.io/langgraph</a> · GitHub <a href="https://github.com/langchain-ai/langgraph" target="_blank" rel="noopener">langchain-ai/langgraph</a></span><span data-lang="en"><a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">langchain-ai.github.io/langgraph</a> · GitHub <a href="https://github.com/langchain-ai/langgraph" target="_blank" rel="noopener">langchain-ai/langgraph</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">crewAIInc.</span>
+    <span class="ref-title"> CrewAI · role-playing agents framework. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.crewai.com/" target="_blank" rel="noopener">docs.crewai.com</a> · GitHub <a href="https://github.com/crewAIInc/crewAI" target="_blank" rel="noopener">crewAIInc/crewAI</a></span><span data-lang="en"><a href="https://docs.crewai.com/" target="_blank" rel="noopener">docs.crewai.com</a> · GitHub <a href="https://github.com/crewAIInc/crewAI" target="_blank" rel="noopener">crewAIInc/crewAI</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">Microsoft / AG2 community.</span>
+    <span class="ref-title"> AutoGen (Microsoft) / AG2 (community fork). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://microsoft.github.io/autogen/" target="_blank" rel="noopener">microsoft.github.io/autogen</a> · <a href="https://docs.ag2.ai/" target="_blank" rel="noopener">docs.ag2.ai</a> · GitHub <a href="https://github.com/ag2ai/ag2" target="_blank" rel="noopener">ag2ai/ag2</a></span><span data-lang="en"><a href="https://microsoft.github.io/autogen/" target="_blank" rel="noopener">microsoft.github.io/autogen</a> · <a href="https://docs.ag2.ai/" target="_blank" rel="noopener">docs.ag2.ai</a> · GitHub <a href="https://github.com/ag2ai/ag2" target="_blank" rel="noopener">ag2ai/ag2</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">LlamaIndex.</span>
+    <span class="ref-title"> LlamaIndex Agents (formerly AgentLabs). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/" target="_blank" rel="noopener">docs.llamaindex.ai — agents</a></span><span data-lang="en"><a href="https://docs.llamaindex.ai/en/stable/module_guides/deploying/agents/" target="_blank" rel="noopener">docs.llamaindex.ai — agents</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">OpenAI.</span>
+    <span class="ref-title"> OpenAI Agents SDK (Python / TypeScript). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://openai.github.io/openai-agents-python/" target="_blank" rel="noopener">openai.github.io/openai-agents-python</a> · GitHub <a href="https://github.com/openai/openai-agents-python" target="_blank" rel="noopener">openai/openai-agents-python</a></span><span data-lang="en"><a href="https://openai.github.io/openai-agents-python/" target="_blank" rel="noopener">openai.github.io/openai-agents-python</a> · GitHub <a href="https://github.com/openai/openai-agents-python" target="_blank" rel="noopener">openai/openai-agents-python</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Claude Agent SDK (formerly Claude Code SDK). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.claude.com/en/docs/claude-code/sdk" target="_blank" rel="noopener">docs.claude.com — Agent SDK</a></span><span data-lang="en"><a href="https://docs.claude.com/en/docs/claude-code/sdk" target="_blank" rel="noopener">docs.claude.com — Agent SDK</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">Microsoft.</span>
+    <span class="ref-title"> <span data-lang="zh">Microsoft Agent Framework (Semantic Kernel + AutoGen 整合)。</span><span data-lang="en">Microsoft Agent Framework (Semantic Kernel + AutoGen integration).</span> </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://learn.microsoft.com/en-us/agent-framework/" target="_blank" rel="noopener">learn.microsoft.com/agent-framework</a></span><span data-lang="en"><a href="https://learn.microsoft.com/en-us/agent-framework/" target="_blank" rel="noopener">learn.microsoft.com/agent-framework</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ FWK</span>
+    <span class="ref-author">Google.</span>
+    <span class="ref-title"> Agent Development Kit (ADK) for Vertex AI. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://google.github.io/adk-docs/" target="_blank" rel="noopener">google.github.io/adk-docs</a></span><span data-lang="en"><a href="https://google.github.io/adk-docs/" target="_blank" rel="noopener">google.github.io/adk-docs</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 11 ===================== -->
+<section class="section section-anchor" id="step11">
+<div class="section-label">Step 11</div>
+<h2 data-zh="🔌 Model Context Protocol (MCP)" data-en="🔌 Model Context Protocol (MCP)">🔌 Model Context Protocol (MCP)</h2>
+<p data-lang="zh">MCP 規格、官方公告、生態系與安全相關文件。</p>
+<p data-lang="en">MCP specification, official announcements, ecosystem, and security docs.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag spec">📜 SPEC</span>
+    <span class="ref-author">Model Context Protocol.</span>
+    <span class="ref-title"> Specification (latest stable: 2025-11-25). </span>
+    <em>modelcontextprotocol.io</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://modelcontextprotocol.io/specification/2025-11-25" target="_blank" rel="noopener">modelcontextprotocol.io/specification/2025-11-25</a></span><span data-lang="en"><a href="https://modelcontextprotocol.io/specification/2025-11-25" target="_blank" rel="noopener">modelcontextprotocol.io/specification/2025-11-25</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Introducing the Model Context Protocol. </span>
+    <em>Anthropic News</em> (2024-11-25).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener">anthropic.com/news/model-context-protocol</a></span><span data-lang="en"><a href="https://www.anthropic.com/news/model-context-protocol" target="_blank" rel="noopener">anthropic.com/news/model-context-protocol</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> MCP Quickstart for server developers / client developers. </span>
+    <em>Anthropic Docs</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://modelcontextprotocol.io/quickstart" target="_blank" rel="noopener">modelcontextprotocol.io/quickstart</a></span><span data-lang="en"><a href="https://modelcontextprotocol.io/quickstart" target="_blank" rel="noopener">modelcontextprotocol.io/quickstart</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-author">Model Context Protocol.</span>
+    <span class="ref-title"> GitHub: specification & reference SDKs (Python / TypeScript / Java / C# / Kotlin). </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://github.com/modelcontextprotocol" target="_blank" rel="noopener">github.com/modelcontextprotocol</a></span><span data-lang="en"><a href="https://github.com/modelcontextprotocol" target="_blank" rel="noopener">github.com/modelcontextprotocol</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Linux Foundation / Agentic AI Foundation.</span>
+    <span class="ref-title"> Anthropic donates MCP to the Agentic AI Foundation. </span>
+    <em>Linux Foundation announcement</em> (2025-12).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.linuxfoundation.org/press/agentic-ai-foundation" target="_blank" rel="noopener">linuxfoundation.org — Agentic AI Foundation</a></span><span data-lang="en"><a href="https://www.linuxfoundation.org/press/agentic-ai-foundation" target="_blank" rel="noopener">linuxfoundation.org — Agentic AI Foundation</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Anthropic.</span>
+    <span class="ref-title"> Code execution with MCP: building more efficient AI agents. </span>
+    <em>Anthropic Engineering</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener">anthropic.com/engineering/code-execution-with-mcp</a></span><span data-lang="en"><a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener">anthropic.com/engineering/code-execution-with-mcp</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Step 12 ===================== -->
+<section class="section section-anchor" id="step12">
+<div class="section-label">Step 12</div>
+<h2 data-zh="🛡️ 安全、對齊與部署" data-en="🛡️ Safety, Alignment & Deployment">🛡️ 安全、對齊與部署</h2>
+<p data-lang="zh">OWASP Top 10、prompt injection、Constitutional AI、政府與業界安全報告。</p>
+<p data-lang="en">OWASP Top 10, prompt injection, Constitutional AI, government & industry safety reports.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag report">📊 REPORT</span>
+    <span class="ref-author">OWASP Foundation.</span>
+    <span class="ref-title"> OWASP Top 10 for LLM Applications. </span>
+    <em>2025 edition</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noopener">genai.owasp.org/llm-top-10</a></span><span data-lang="en"><a href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noopener">genai.owasp.org/llm-top-10</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag report">📊 REPORT</span>
+    <span class="ref-author">OWASP Foundation.</span>
+    <span class="ref-title"> Agentic AI Threats and Mitigations · Top 10 for Agentic Applications. </span>
+    <em>2025–2026</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/" target="_blank" rel="noopener">genai.owasp.org — agentic AI</a></span><span data-lang="en"><a href="https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/" target="_blank" rel="noopener">genai.owasp.org — agentic AI</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Greshake K, Abdelnabi S, Mishra S, et al.</span>
+    <span class="ref-title"> Not what you've signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. </span>
+    <em>AISec 2023</em>. arXiv:2302.12173.
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2302.12173" target="_blank" rel="noopener">2302.12173</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2302.12173" target="_blank" rel="noopener">2302.12173</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Perez F, Ribeiro I.</span>
+    <span class="ref-title"> Ignore Previous Prompt: Attack Techniques For Language Models. </span>
+    <em>arXiv:2211.09527</em> (2022).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2211.09527" target="_blank" rel="noopener">2211.09527</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2211.09527" target="_blank" rel="noopener">2211.09527</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag paper">PAPER</span>
+    <span class="ref-author">Bai Y, Kadavath S, Kundu S, et al. (Anthropic).</span>
+    <span class="ref-title"> Constitutional AI: Harmlessness from AI Feedback. </span>
+    <em>arXiv:2212.08073</em> (2022).
+    <span class="ref-meta"><span data-lang="zh">arXiv: <a href="https://arxiv.org/abs/2212.08073" target="_blank" rel="noopener">2212.08073</a></span><span data-lang="en">arXiv: <a href="https://arxiv.org/abs/2212.08073" target="_blank" rel="noopener">2212.08073</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag report">📊 REPORT</span>
+    <span class="ref-author">UK AI Safety Institute / International Panel.</span>
+    <span class="ref-title"> International AI Safety Report 2026. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://internationalaisafetyreport.org/" target="_blank" rel="noopener">internationalaisafetyreport.org</a></span><span data-lang="en"><a href="https://internationalaisafetyreport.org/" target="_blank" rel="noopener">internationalaisafetyreport.org</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag blog">📝 BLOG</span>
+    <span class="ref-author">Bessemer Venture Partners.</span>
+    <span class="ref-title"> Securing AI agents: the defining cybersecurity challenge of 2026. </span>
+    <em>BVP Atlas</em>.
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.bvp.com/atlas/securing-ai-agents-the-defining-cybersecurity-challenge-of-2026" target="_blank" rel="noopener">bvp.com/atlas — securing AI agents</a></span><span data-lang="en"><a href="https://www.bvp.com/atlas/securing-ai-agents-the-defining-cybersecurity-challenge-of-2026" target="_blank" rel="noopener">bvp.com/atlas — securing AI agents</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ TOOL</span>
+    <span class="ref-author">Microsoft.</span>
+    <span class="ref-title"> Agent Governance Toolkit: open-source runtime security for AI agents. </span>
+    <em>Microsoft Open Source Blog</em> (2026-04).
+    <span class="ref-meta"><span data-lang="zh"><a href="https://opensource.microsoft.com/blog/2026/04/02/introducing-the-agent-governance-toolkit-open-source-runtime-security-for-ai-agents/" target="_blank" rel="noopener">opensource.microsoft.com — agent governance</a></span><span data-lang="en"><a href="https://opensource.microsoft.com/blog/2026/04/02/introducing-the-agent-governance-toolkit-open-source-runtime-security-for-ai-agents/" target="_blank" rel="noopener">opensource.microsoft.com — agent governance</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag fwk">🛠️ TOOL</span>
+    <span class="ref-author">Lakera / ProtectAI / NVIDIA NeMo Guardrails.</span>
+    <span class="ref-title"> Prompt-injection & guardrail tooling. </span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.lakera.ai/" target="_blank" rel="noopener">Lakera</a> · <a href="https://protectai.com/" target="_blank" rel="noopener">ProtectAI</a> · <a href="https://github.com/NVIDIA/NeMo-Guardrails" target="_blank" rel="noopener">NeMo Guardrails</a></span><span data-lang="en"><a href="https://www.lakera.ai/" target="_blank" rel="noopener">Lakera</a> · <a href="https://protectai.com/" target="_blank" rel="noopener">ProtectAI</a> · <a href="https://github.com/NVIDIA/NeMo-Guardrails" target="_blank" rel="noopener">NeMo Guardrails</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Registries ===================== -->
+<section class="section section-anchor" id="registries">
+<div class="section-label" data-zh="MCP / Plugin 註冊表" data-en="MCP / PLUGIN REGISTRIES">MCP / Plugin 註冊表</div>
+<h2 data-zh="🗄️ MCP Server 與 Plugin 註冊表" data-en="🗄️ MCP server & plugin registries">🗄️ MCP Server 與 Plugin 註冊表</h2>
+<p data-lang="zh">2026 興起的「MCP 應用商店」，含 reference 實作與第三方註冊表。</p>
+<p data-lang="en">"MCP app stores" that emerged in 2026 — reference implementations and third-party registries.</p>
+<ul class="ref-list">
+  <li>
+    <span class="ref-tag db">DB</span>
+    <span class="ref-title"><span data-lang="zh">MCP 官方 reference servers · GitHub、Slack、Postgres、Filesystem、Brave Search、Puppeteer、Google Drive 等。</span><span data-lang="en">Official MCP reference servers · GitHub, Slack, Postgres, Filesystem, Brave Search, Puppeteer, Google Drive, and more.</span></span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://github.com/modelcontextprotocol/servers" target="_blank" rel="noopener">github.com/modelcontextprotocol/servers</a></span><span data-lang="en"><a href="https://github.com/modelcontextprotocol/servers" target="_blank" rel="noopener">github.com/modelcontextprotocol/servers</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag db">DB</span>
+    <span class="ref-title"><span data-lang="zh">mcp.so · 社群維護的 MCP server 註冊表（搜尋、評分、安裝）。</span><span data-lang="en">mcp.so · community-maintained MCP server registry (search, ratings, install).</span></span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://mcp.so/" target="_blank" rel="noopener">mcp.so</a></span><span data-lang="en"><a href="https://mcp.so/" target="_blank" rel="noopener">mcp.so</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag db">DB</span>
+    <span class="ref-title"><span data-lang="zh">Smithery · 一鍵安裝 MCP server。</span><span data-lang="en">Smithery · one-click MCP server install.</span></span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://smithery.ai/" target="_blank" rel="noopener">smithery.ai</a></span><span data-lang="en"><a href="https://smithery.ai/" target="_blank" rel="noopener">smithery.ai</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag db">DB</span>
+    <span class="ref-title"><span data-lang="zh">PulseMCP · MCP server 新聞與目錄。</span><span data-lang="en">PulseMCP · news and directory of MCP servers.</span></span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://www.pulsemcp.com/" target="_blank" rel="noopener">pulsemcp.com</a></span><span data-lang="en"><a href="https://www.pulsemcp.com/" target="_blank" rel="noopener">pulsemcp.com</a></span></span>
+  </li>
+  <li>
+    <span class="ref-tag doc">DOC</span>
+    <span class="ref-title"><span data-lang="zh">Claude Desktop / Cursor / Windsurf 等 MCP host 設定指南。</span><span data-lang="en">Setup guides for MCP hosts including Claude Desktop, Cursor, and Windsurf.</span></span>
+    <span class="ref-meta"><span data-lang="zh"><a href="https://docs.claude.com/en/docs/claude-code/mcp" target="_blank" rel="noopener">Claude Code MCP</a> · <a href="https://docs.cursor.com/context/model-context-protocol" target="_blank" rel="noopener">Cursor MCP</a></span><span data-lang="en"><a href="https://docs.claude.com/en/docs/claude-code/mcp" target="_blank" rel="noopener">Claude Code MCP</a> · <a href="https://docs.cursor.com/context/model-context-protocol" target="_blank" rel="noopener">Cursor MCP</a></span></span>
+  </li>
+</ul>
+</section>
+
+<!-- ===================== Errata ===================== -->
+<section class="section section-anchor" id="errata">
+<div class="section-label" data-zh="教學註記" data-en="TUTORIAL NOTES">教學註記</div>
+<h2 data-zh="📌 教學註記與細節" data-en="📌 Tutorial Notes & Details">📌 教學註記與細節</h2>
+<p data-lang="zh">下方為閱讀本教學 HTML 與原始 references 比對後，發現的可能不完整、易誤解或可加強之處。不修改原教學檔案，僅在此說明以利參照。</p>
+<p data-lang="en">Below: gaps, simplifications, or potential misreadings noticed while cross-checking the tutorial against primary sources. <strong>The tutorial pages are not modified; notes live here for transparency.</strong></p>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Step 1 · 「LLM Agent = LLM + Tools + Memory + Loop」是簡化定義" data-en="Step 1 · &quot;LLM Agent = LLM + Tools + Memory + Loop&quot; is a simplified working definition">Step 1 · 「LLM Agent = LLM + Tools + Memory + Loop」是簡化定義</h4>
+<p data-lang="zh">本教學工作定義便於入門，但學術社群還有更完整的拆分。Sumers et al. 2023 (CoALA) 提出 agent 包含「<strong>記憶 (4 種) + 行動空間 (內 / 外) + 決策過程</strong>」九個元件；Wang et al. 2023 survey 強調「<strong>profile / memory / planning / action</strong>」四模組。讀者深入時建議參照 CoALA。</p>
+<p data-lang="en">This tutorial's working definition is friendly for beginners, but the academic community uses a richer decomposition. Sumers et al. 2023 (CoALA) frames an agent as nine components: <strong>memory (4 types) + action space (internal / external) + decision-making procedure</strong>; the Wang et al. 2023 survey emphasizes the four modules <strong>profile / memory / planning / action</strong>. For deeper study, follow CoALA.</p>
+<p data-lang="zh">來源：<a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">CoALA, Sumers et al. 2023</a>；<a href="https://arxiv.org/abs/2308.11432" target="_blank" rel="noopener">Wang et al. 2023</a>。</p>
+<p data-lang="en">Sources: <a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">CoALA, Sumers et al. 2023</a>; <a href="https://arxiv.org/abs/2308.11432" target="_blank" rel="noopener">Wang et al. 2023</a>.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Step 2 · 模型 context 上限與「有效 context」需區分" data-en="Step 2 · Distinguish nominal context window from effective context">Step 2 · 模型 context 上限與「有效 context」需區分</h4>
+<p data-lang="zh">教學中標示 GPT-4.1 = 1M tokens、Gemini 2.5 = 2M tokens。實際使用時務必區分「<strong>標稱 context</strong>」與「<strong>有效 context</strong>」——多項 needle-in-a-haystack 與 Liu et al. 2024（Lost in the Middle）顯示，當 context 接近上限時中段召回率顯著下降；Anthropic 自家 needle 測試也顯示 200K context 在 ~100K 後可靠度降低。讀者規劃 agent 時請以「有效」而非「最大」作預算。</p>
+<p data-lang="en">The tutorial lists GPT-4.1 = 1M tokens and Gemini 2.5 = 2M tokens. In practice, distinguish <strong>nominal context</strong> from <strong>effective context</strong> — multiple needle-in-a-haystack experiments and Liu et al. 2024 (Lost in the Middle) show that mid-context recall degrades sharply as you approach the window limit; Anthropic's own needle tests show reliability dropping past ~100K within a 200K window. Budget agents against the "effective" window, not the maximum.</p>
+<p data-lang="zh">來源：<a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle, Liu et al. 2024</a>；廠商 needle 測試報告。</p>
+<p data-lang="en">Sources: <a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle, Liu et al. 2024</a>; vendor needle-in-a-haystack reports.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Step 2 · 模型版本字串會隨時間更新" data-en="Step 2 · Model version strings drift over time">Step 2 · 模型版本字串會隨時間更新</h4>
+<p data-lang="zh">教學中提到 <code>claude-sonnet-4-6</code>、<code>claude-haiku-4-5-20251001</code>、<code>gpt-4.1</code> 等模型字串為 2026-05 當下狀態。新版本陸續推出，使用前請以 <a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">Anthropic Models</a>、<a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">OpenAI Models</a> 官方文件為準。</p>
+<p data-lang="en">Model identifiers like <code>claude-sonnet-4-6</code>, <code>claude-haiku-4-5-20251001</code>, and <code>gpt-4.1</code> reflect the state as of 2026-05. New versions ship continuously — always verify against the official <a href="https://docs.claude.com/en/docs/about-claude/models" target="_blank" rel="noopener">Anthropic Models</a> and <a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">OpenAI Models</a> docs before use.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Step 3 · 「Thinking mode 已內建 CoT，不必再加 step by step」需測試確認" data-en="Step 3 · &quot;Thinking mode already does CoT, don't add step-by-step&quot; — verify on your own evals">Step 3 · 「Thinking mode 已內建 CoT，不必再加 step by step」需測試確認</h4>
+<p data-lang="zh">教學中提到 Claude / GPT-5 thinking mode 內建 CoT，手動加「step by step」可能干擾。此為 Anthropic / OpenAI 官方公開的<strong>一般性建議</strong>，但「干擾」的程度因任務而異，並未在所有 benchmark 上一致。建議讀者在自己的 eval set 上 A/B 測試後決定。</p>
+<p data-lang="en">The tutorial notes that Claude / GPT-5 thinking modes already perform CoT internally, so manually adding "step by step" can interfere. This is a <strong>general recommendation</strong> from Anthropic / OpenAI, but the degree of interference varies by task and is not uniformly observed across benchmarks. Run A/B tests on your own eval set before committing either way.</p>
+<p data-lang="zh">來源：<a href="https://docs.claude.com/en/docs/build-with-claude/extended-thinking" target="_blank" rel="noopener">Anthropic extended thinking docs</a>。</p>
+<p data-lang="en">Source: <a href="https://docs.claude.com/en/docs/build-with-claude/extended-thinking" target="_blank" rel="noopener">Anthropic extended thinking docs</a>.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Step 4 · 「工具數 &gt; 15 後選錯機率明顯上升」是經驗法則" data-en="Step 4 · &quot;Tool-selection error rises sharply past ~15 tools&quot; is a rule of thumb">Step 4 · 「工具數 &gt; 15 後選錯機率明顯上升」是經驗法則</h4>
+<p data-lang="zh">該數字非單一論文的精確結論，而是 Anthropic、OpenAI、LangChain 多份工程文章累積的<strong>經驗法則</strong>。實際門檻因模型、prompt 設計、工具描述品質而異。生產系統應以 trajectory metric 觀測工具選擇精準度，依資料調整。</p>
+<p data-lang="en">This figure is not a precise result from any single paper but an accumulated <strong>rule of thumb</strong> from engineering posts by Anthropic, OpenAI, and LangChain. The real threshold depends on the model, prompt design, and quality of tool descriptions. In production, monitor tool-selection accuracy with trajectory metrics and tune based on your own data.</p>
+<p data-lang="zh">來源：<a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Anthropic — Building effective agents</a>。</p>
+<p data-lang="en">Source: <a href="https://www.anthropic.com/engineering/building-effective-agents" target="_blank" rel="noopener">Anthropic — Building effective agents</a>.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span>
+  <h4 data-zh="Step 5 · Pinecone 列為「貴」是 2024–2025 印象" data-en="Step 5 · Labeling Pinecone as &quot;expensive&quot; reflects the 2024–2025 impression">Step 5 · Pinecone 列為「貴」是 2024–2025 印象</h4>
+<p data-lang="zh">教學中將 Pinecone 列為「managed、生產級、貴」。2025 年 Pinecone 推出 Serverless 後價格大幅下降；定價結構也變動頻繁。建議讀者選型時直接比對最新 pricing pages，不要依賴本教學標籤。</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Frameworks · LangChain / LangGraph API 變動頻繁" data-en="Frameworks · LangChain / LangGraph API churn">Frameworks · LangChain / LangGraph API 變動頻繁</h4>
+  <p data-lang="zh">教學中示範以 LangChain / LangGraph 建構 agent。需提醒讀者：LangChain 自 0.0.x → 0.1 → 0.2 → 0.3 一路有<strong>破壞性 API 變動</strong>（如 <code>LLMChain</code> → LCEL pipe；<code>AgentExecutor</code> → LangGraph <code>StateGraph</code>；2024 起 <code>langchain-core</code> / <code>langchain</code> / <code>langchain-community</code> / 各 partner 套件拆分）。網路上 2023 年的範例幾乎都需要改寫。實務建議：</p>
+  <p data-lang="zh">• <strong>固定版本</strong>：<code>pip install "langchain==0.3.*" "langgraph==0.2.*"</code> 並 pin 至 lockfile。<br>• <strong>以官方最新文件為準</strong>，而非 Stack Overflow / Medium 舊文。<br>• <strong>對長期專案考慮抽象層</strong>（自定 <code>llm.invoke()</code> wrapper）或直接用 LiteLLM / vendor SDK，以減少框架升級成本。<br>• <strong>關注 deprecation warnings</strong>：LangChain 通常會在移除前 1–2 個 minor 版警告。</p>
+  <p data-lang="en">The tutorial demonstrates building agents with LangChain / LangGraph. Reader caveat: LangChain has had repeated <strong>breaking API changes</strong> from 0.0.x → 0.1 → 0.2 → 0.3 (e.g., <code>LLMChain</code> → LCEL pipes; <code>AgentExecutor</code> → LangGraph <code>StateGraph</code>; the 2024 split into <code>langchain-core</code> / <code>langchain</code> / <code>langchain-community</code> / partner packages). Most 2023-era examples on the web no longer run as-is. Practical guidance:</p>
+  <p data-lang="en">• <strong>Pin versions</strong>: <code>pip install "langchain==0.3.*" "langgraph==0.2.*"</code> and commit to a lockfile.<br>• <strong>Trust official current docs</strong>, not stale Stack Overflow / Medium posts.<br>• <strong>For long-lived projects, add an abstraction layer</strong> (your own <code>llm.invoke()</code> wrapper) or use LiteLLM / vendor SDKs directly to reduce upgrade cost.<br>• <strong>Track deprecation warnings</strong>: LangChain typically warns 1–2 minor versions before removal.</p>
+  <p data-lang="zh">來源：<a href="https://python.langchain.com/docs/versions/v0_3/" target="_blank" rel="noopener">LangChain v0.3 migration guide</a>；<a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">LangGraph docs</a>。</p>
+  <p data-lang="en">Sources: <a href="https://python.langchain.com/docs/versions/v0_3/" target="_blank" rel="noopener">LangChain v0.3 migration guide</a>; <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">LangGraph docs</a>.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Step 6 · RAG 檢索 recall 天花板與「retrieval-bound」現象" data-en="Step 6 · RAG retrieval recall ceiling and the &quot;retrieval-bound&quot; ceiling">Step 6 · RAG 檢索 recall 天花板</h4>
+  <p data-lang="zh">教學介紹 RAG 流程通常聚焦於 chunk size、embedding model、reranker 選擇。需補充一個常被忽略的根本限制：<strong>RAG 系統最終答案品質的上限，由 retrieval recall@k 直接框定</strong>——若正確段落根本沒被檢索進來，無論 LLM 多強都無法生成正確答案。</p>
+  <p data-lang="zh">Gao et al. 2024 <em>「Retrieval-Augmented Generation for Large Language Models: A Survey」</em>系統綜整了三大「retrieval-bound」失敗模式：(1) <strong>查詢-文件分布偏移</strong>（query 用口語、文件用術語）；(2) <strong>chunk 切割切斷語意</strong>（答案橫跨兩個 chunk）；(3) <strong>多跳推理</strong>（單一查詢無法一次撈齊所需證據）。建議：</p>
+  <p data-lang="zh">• 評估 RAG 時<strong>同時測 retrieval metrics (recall@k, MRR) 與 generation metrics</strong>，不要只看最終 EM/F1。<br>• 對複雜查詢採 query decomposition / HyDE / multi-hop retrieval。<br>• 監控「答錯題」是檢索錯還是生成錯——這兩種錯需用不同藥方。</p>
+  <p data-lang="en">RAG tutorials typically focus on chunk size, embedding model, and reranker choice. An often-overlooked structural limit: <strong>the ceiling on RAG answer quality is set by retrieval recall@k</strong> — if the correct passage is never retrieved, no LLM can fix it downstream.</p>
+  <p data-lang="en">Gao et al. 2024 <em>"Retrieval-Augmented Generation for Large Language Models: A Survey"</em> catalogs three canonical "retrieval-bound" failure modes: (1) <strong>query-document distribution shift</strong> (colloquial query vs. technical corpus); (2) <strong>chunking severs semantics</strong> (answer spans two chunks); (3) <strong>multi-hop reasoning</strong> (single query can't fetch all needed evidence). Practical advice:</p>
+  <p data-lang="en">• Evaluate <strong>retrieval metrics (recall@k, MRR) alongside generation metrics</strong>; don't rely on end-to-end EM/F1 alone.<br>• For complex queries, use query decomposition / HyDE / multi-hop retrieval.<br>• Attribute failures: is the wrong answer a retrieval miss or a generation error? Each needs a different fix.</p>
+  <p data-lang="zh">來源：<a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">Gao et al. 2024 RAG Survey</a>。</p>
+  <p data-lang="en">Source: <a href="https://arxiv.org/abs/2312.10997" target="_blank" rel="noopener">Gao et al. 2024 RAG Survey</a>.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Observability · 可觀測性不只 LangSmith — OpenTelemetry GenAI semconv" data-en="Observability · Beyond LangSmith — OpenTelemetry GenAI semantic conventions">Observability · 不只 LangSmith</h4>
+  <p data-lang="zh">教學在「可觀測性」段落多以 LangSmith 為範例。需提醒：LangSmith 是<strong>專有 SaaS（且綁定 LangChain 生態）</strong>，並非業界標準。2024–2025 期間，<strong>OpenTelemetry (OTel) GenAI semantic conventions</strong> 已成為 vendor-neutral 的開放標準，主要 observability 廠商（Datadog、Honeycomb、Grafana、Arize Phoenix、Langfuse）都已實作。</p>
+  <p data-lang="zh">關鍵 spans / attributes（節錄）：<code>gen_ai.operation.name</code>（chat / embeddings / tool_call）、<code>gen_ai.system</code>（openai / anthropic / ...）、<code>gen_ai.request.model</code>、<code>gen_ai.usage.input_tokens</code> / <code>output_tokens</code>、<code>gen_ai.response.finish_reasons</code>。實務建議：</p>
+  <p data-lang="zh">• 用 OTel SDK 自動埋點，比鎖死特定 LangSmith trace 格式有更高 portability。<br>• 開源替代：<strong>Langfuse</strong>（自架 / SaaS）、<strong>Arize Phoenix</strong>（OSS, OTel-native）。<br>• 用 trace 才能除錯 multi-step agent — 看 step-by-step token cost、tool error、retry 模式。</p>
+  <p data-lang="en">The "Observability" section centers LangSmith as the exemplar. Caveat: LangSmith is <strong>proprietary SaaS (and LangChain-tied)</strong>, not an industry standard. Since 2024–2025, <strong>OpenTelemetry (OTel) GenAI semantic conventions</strong> have become the vendor-neutral open standard, implemented by all major observability vendors (Datadog, Honeycomb, Grafana, Arize Phoenix, Langfuse).</p>
+  <p data-lang="en">Key spans / attributes (excerpt): <code>gen_ai.operation.name</code> (chat / embeddings / tool_call), <code>gen_ai.system</code> (openai / anthropic / …), <code>gen_ai.request.model</code>, <code>gen_ai.usage.input_tokens</code> / <code>output_tokens</code>, <code>gen_ai.response.finish_reasons</code>. Practical advice:</p>
+  <p data-lang="en">• Instrument with the OTel SDK for portability; avoid locking into LangSmith-specific trace formats.<br>• OSS alternatives: <strong>Langfuse</strong> (self-hosted / SaaS), <strong>Arize Phoenix</strong> (OSS, OTel-native).<br>• Tracing is essential for debugging multi-step agents — inspect per-step token cost, tool errors, and retry patterns.</p>
+  <p data-lang="zh">來源：<a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">OpenTelemetry GenAI semantic conventions</a>；<a href="https://langfuse.com/" target="_blank" rel="noopener">Langfuse</a>；<a href="https://github.com/Arize-ai/phoenix" target="_blank" rel="noopener">Arize Phoenix</a>。</p>
+  <p data-lang="en">Sources: <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">OpenTelemetry GenAI semantic conventions</a>; <a href="https://langfuse.com/" target="_blank" rel="noopener">Langfuse</a>; <a href="https://github.com/Arize-ai/phoenix" target="_blank" rel="noopener">Arize Phoenix</a>.</p>
+</div>
+
+<div class="errata">
+
+  <span class="errata-label" data-zh="補充說明" data-en="Notes" style="display:inline-block;background:#e0e7ff;color:#3730a3;padding:2px 10px;border-radius:4px;font-size:.72rem;font-weight:700;letter-spacing:.5px;margin-bottom:8px">補充說明 · Notes</span><h4 data-zh="Reasoning patterns · CoT vs ReAct vs Reflexion 的差異" data-en="Reasoning patterns · CoT vs ReAct vs Reflexion distinctions">Reasoning patterns · CoT / ReAct / Reflexion 區別</h4>
+  <p data-lang="zh">教學介紹 agent 推理時常把 CoT、ReAct、Reflexion 混在一起。這三者是<strong>不同層次的策略</strong>，應分清：</p>
+  <p data-lang="zh">• <strong>CoT (Chain-of-Thought, Wei et al. 2022 NeurIPS)</strong>：<strong>純推理模式</strong>。要求 LLM「step-by-step」展開推理鏈再給最終答案；<u>沒有外部工具</u>、<u>沒有環境互動</u>。適用 GSM8K 等純文字推理題。<br>• <strong>ReAct (Yao et al. 2022 ICLR / arXiv)</strong>：<strong>推理 + 行動交錯</strong>。在 CoT 的「Thought」之間插入「Action」（呼叫 tool）與「Observation」（工具回傳）。這是<u>大多數 agent 框架</u>（LangGraph、AutoGen）的執行模板。<br>• <strong>Reflexion (Shinn et al. 2023 NeurIPS)</strong>：<strong>失敗後的自我修正</strong>。在 ReAct 之後加一層「verbal self-reflection」——任務失敗時，由 LLM 用自然語言寫下「下次應該如何改」存到 episodic memory，下次 trajectory 載入此反思。<u>不是替代 ReAct，而是疊加</u>。</p>
+  <p data-lang="zh">三者關係：CoT ⊂ ReAct（思考＋行動）⊂ Reflexion（思考＋行動＋學習）。設計 agent 時應明確選擇所需層次，而非全套套用。</p>
+  <p data-lang="en">Tutorials often blur CoT, ReAct, and Reflexion together. These are <strong>strategies at different levels</strong> and should be distinguished:</p>
+  <p data-lang="en">• <strong>CoT (Chain-of-Thought, Wei et al. 2022 NeurIPS)</strong>: <strong>pure reasoning</strong>. The model unrolls a "step-by-step" reasoning chain before the final answer; <u>no external tools</u>, <u>no environment interaction</u>. Suited to text-only reasoning tasks like GSM8K.<br>• <strong>ReAct (Yao et al. 2022 ICLR / arXiv)</strong>: <strong>reasoning interleaved with action</strong>. Inserts <em>Action</em> (tool call) and <em>Observation</em> (tool return) between CoT-style <em>Thoughts</em>. This is the execution template for <u>most modern agent frameworks</u> (LangGraph, AutoGen).<br>• <strong>Reflexion (Shinn et al. 2023 NeurIPS)</strong>: <strong>self-correction after failure</strong>. Layered <em>on top of</em> ReAct: when a task fails, the LLM writes a natural-language self-reflection ("next time, try X") to episodic memory, which is loaded on the next trajectory. <u>It augments ReAct rather than replacing it.</u></p>
+  <p data-lang="en">Relationship: CoT ⊂ ReAct (reason + act) ⊂ Reflexion (reason + act + learn). Design agents by deliberately choosing the level you need, not by stacking every pattern.</p>
+  <p data-lang="zh">來源：<a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">Wei et al. 2022 CoT</a>；<a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">Yao et al. 2022 ReAct</a>；<a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Shinn et al. 2023 Reflexion</a>。</p>
+  <p data-lang="en">Sources: <a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">Wei et al. 2022 CoT</a>; <a href="https://arxiv.org/abs/2210.03629" target="_blank" rel="noopener">Yao et al. 2022 ReAct</a>; <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Shinn et al. 2023 Reflexion</a>.</p>
+</div>
+</section>
+<nav class="page-nav">
+  <a href="../index.html"><span class="nav-dir" data-zh="← 教學首頁" data-en="← Tutorial home">← 教學首頁</span><span class="nav-title" data-zh="回到主教學頁" data-en="Back to tutorial hub">回到主教學頁</span></a>
+  <a href="../ai-agents-quiz/index.html" target="_blank" rel="noopener"><span class="nav-dir" data-zh="互動考題 →" data-en="Interactive quiz →">互動考題 →</span><span class="nav-title" data-zh="互動式考題" data-en="Interactive Quiz">互動式考題</span></a>
+</nav>
+
+</main>
+<script src="../i18n.js"></script>
+</body>
+</html>
