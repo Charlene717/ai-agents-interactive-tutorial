@@ -1,0 +1,456 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 16: Clinical Imaging Foundation Models — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html" class="active">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 16 / 20</div>
+<h1 data-zh="醫療影像 Foundation 模型" data-en="Clinical Imaging Foundation Models">醫療影像 Foundation 模型</h1>
+<p class="subtitle" data-lang="zh">RETFound、CONCH、Virchow 2、MedGemma——眼科、病理、放射科都有自己的 GPT 級基底模型。</p>
+<p class="subtitle" data-lang="en">RETFound, CONCH, Virchow 2, MedGemma — ophthalmology, pathology, and radiology each have their own GPT-tier foundation model.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="醫療影像 FM 必懂十詞" data-en="Ten terms for clinical imaging foundation models">醫療影像 FM 必懂十詞</h2>
+<div data-lang="zh"><p>這 10 個詞貫穿整章——先讀過一次，後面 RETFound、CONCH、Virchow、FDA / MDR 的討論就會順暢許多。</p></div>
+<div data-lang="en"><p>These ten terms recur throughout. Skim once and the discussion of RETFound, CONCH, Virchow, and FDA / MDR flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">👁️</div><h4>RETFound</h4>
+<div data-lang="zh"><p>Zhou et al. 2023 <em>Nature</em>。Moorfields Eye Hospital + UCL 在 1.6M OCT + fundus 影像上做 MAE pretraining 的眼科 foundation model；下游 DR、AMD、青光眼分級只需 200–1000 張標註即可達 expert-level。</p></div>
+<div data-lang="en"><p>Zhou et al. 2023 <em>Nature</em>. Moorfields Eye Hospital + UCL pretrained an ophthalmology foundation model with MAE on 1.6M OCT + fundus images; downstream DR, AMD, glaucoma grading hit expert-level with only 200–1000 labels.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔬</div><h4>CONCH</h4>
+<div data-lang="zh"><p>Lu et al. 2024 <em>Nat Med</em>。Harvard / MGH 在 1.17M 病理 image-text pairs 上做 CLIP-style vision-language pretraining；支援病理 classification / segmentation / zero-shot captioning。</p></div>
+<div data-lang="en"><p>Lu et al. 2024 <em>Nat Med</em>. Harvard / MGH pretrained a vision-language model CLIP-style on 1.17M pathology image-text pairs; supports classification, segmentation, and zero-shot captioning.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>Virchow</h4>
+<div data-lang="zh"><p>Vorontsov et al. 2024 / Virchow 2 (Paige.AI 2025)。在 3.1M WSI 上預訓練的病理 foundation model，授權給藥廠 / 醫院做 biomarker discovery 與 IHC 量化；部分產品已走 FDA 510(k) 路徑。</p></div>
+<div data-lang="en"><p>Vorontsov et al. 2024 / Virchow 2 (Paige.AI 2025). Pathology foundation model pretrained on 3.1M WSI, licensed to pharma / hospitals for biomarker discovery and IHC quantification; some products have followed the FDA 510(k) pathway.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌐</div><h4>MedGemma</h4>
+<div data-lang="zh"><p>Google 2026/1 釋出 4B / 27B 開源權重，文本 + 影像多模態 medical foundation model；對 X-ray、MRI、皮膚科影像皆可生成描述與回答 query。</p></div>
+<div data-lang="en"><p>Google's Jan 2026 release of 4B / 27B open weights — a multimodal medical foundation model that processes text + images, generating descriptions and answering queries on X-ray, MRI, dermatology, etc.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔗</div><h4>Vision-Language Model (VLM)</h4>
+<div data-lang="zh"><p>Image 與 text 在同一個 embedding 空間共同學習的模型（CLIP, ALIGN, CONCH, Med-Gemini）。允許 zero-shot caption、cross-modal retrieval、free-text query。醫療上特別有用：寫報告、回答影像問題、檢索類似 case。</p></div>
+<div data-lang="en"><p>A model that learns image and text in a shared embedding space (CLIP, ALIGN, CONCH, Med-Gemini). Enables zero-shot captioning, cross-modal retrieval, free-text queries. Especially useful in medicine: drafting reports, answering image questions, retrieving similar cases.</p></div>
+</div>
+<div class="card"><div class="card-icon">📁</div><h4>DICOM</h4>
+<div data-lang="zh"><p>Digital Imaging and Communications in Medicine。醫療影像的事實標準格式，包含 pixel data + metadata（patient ID、modality、window/level、acquisition params）。AI pipeline 必須懂如何讀 metadata（如 windowing）才能正確輸入模型。</p></div>
+<div data-lang="en"><p>Digital Imaging and Communications in Medicine. The de facto standard for medical imaging, containing pixel data + metadata (patient ID, modality, window/level, acquisition parameters). AI pipelines must understand metadata (e.g., windowing) to correctly feed the model.</p></div>
+</div>
+<div class="card"><div class="card-icon">🗄️</div><h4>PACS</h4>
+<div data-lang="zh"><p>Picture Archiving and Communication System。醫院儲存、查詢、傳輸醫療影像的系統，與 EHR / RIS（Radiology Information System）整合。AI 工具的臨床部署通常以 PACS-integrated worklist 形式呈現。</p></div>
+<div data-lang="en"><p>Picture Archiving and Communication System. The hospital infrastructure for storing, querying, and transmitting medical images, integrated with EHR / RIS (Radiology Information System). Clinical AI deployment typically appears as a PACS-integrated worklist.</p></div>
+</div>
+<div class="card"><div class="card-icon">📜</div><h4>FDA 510(k)</h4>
+<div data-lang="zh"><p>美國 FDA 醫材上市途徑之一：證明你的 device 與已有 cleared "predicate" device 「實質等同」（substantial equivalence）。多數放射 AI 工具（CADt、CADe、CADx）走這條路；不需要 PMA 那麼嚴格的臨床試驗。其他兩條：De Novo（新類別）、PMA（高風險 Class III）。</p></div>
+<div data-lang="en"><p>One of FDA's pathways to market: prove "substantial equivalence" to a cleared predicate device. Most radiology AI tools (CADt, CADe, CADx) take this route — less rigorous than a PMA's full clinical trial. The other two paths: De Novo (new classification) and PMA (high-risk Class III).</p></div>
+</div>
+<div class="card"><div class="card-icon">⚙️</div><h4>SaMD (Software as a Medical Device)</h4>
+<div data-lang="zh"><p>IMDRF 定義：以軟體形式存在、用於醫療目的的醫材（非附屬於 hardware）。FDA、EU MDR、TFDA 都採此分類。AI 影像分析、CDSS、symptom checker 皆屬此類；分 Class I-IV，越高風險審查越嚴。</p></div>
+<div data-lang="en"><p>IMDRF definition: medical-purpose software existing as a standalone device (not bundled with hardware). FDA, EU MDR, and TFDA all adopt this classification. AI image analysis, CDSS, symptom checkers fall here; classified I–IV, with higher risk facing stricter review.</p></div>
+</div>
+<div class="card"><div class="card-icon">🛡️</div><h4>Class IIb / III (MDR)</h4>
+<div data-lang="zh"><p>EU MDR 2017/745 對醫材的風險分類：IIa（一般風險）/ IIb（高風險，多數 AI 影像）/ III（最高，植入式或維生）。Class IIb 以上需 notified body 介入 conformity assessment；MDR 與 AI Act 2024/1689 雙重審查 high-risk AI medical devices。</p></div>
+<div data-lang="en"><p>EU MDR 2017/745 risk classes: IIa (medium), IIb (high — most imaging AI), III (highest — implantable / life-sustaining). Class IIb+ requires notified body conformity assessment; MDR + AI Act 2024/1689 jointly review high-risk AI medical devices.</p></div>
+</div>
+<div class="card"><div class="card-icon">🩻</div><h4>Whole-Slide Image (WSI)</h4>
+<div data-lang="zh"><p>數位病理掃描的整張玻片，典型解析度 100,000 × 100,000 pixel、10–20 GB。需要 pyramidal tile storage（OpenSlide、DICOM-WSI）；AI 推論必須 tile-based 並設 overlap 處理邊界。</p></div>
+<div data-lang="en"><p>A digitally scanned full pathology slide, typically 100,000 × 100,000 px and 10–20 GB. Requires pyramidal tile storage (OpenSlide, DICOM-WSI); AI inference must be tile-based with overlap to handle boundaries.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧠</div><h4>Foundation Model (Imaging)</h4>
+<div data-lang="zh"><p>在大規模影像（百萬到億級）上做 self-supervised pretraining（MAE / SimCLR / DINO / CLIP-style），可下游 fine-tune 到多種任務、需要的標註量大幅降低。是 2023–2026 醫療影像 AI 的範式轉移。</p></div>
+<div data-lang="en"><p>Self-supervised pretraining on large image corpora (millions to billions) using MAE / SimCLR / DINO / CLIP-style; fine-tunable to many downstream tasks with sharply reduced label needs. The 2023–2026 paradigm shift in medical imaging AI.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="醫療影像 foundation 模型是什麼？" data-en="What is a clinical imaging foundation model?">醫療影像 foundation 模型是什麼？</h2>
+<div data-lang="zh">
+<p>2023 年以前，每一個醫療影像 AI 都是「task-specific」——糖網病分級訓一個、肺結節偵測訓一個、乳房 mass 分類再訓一個。每個任務都要從頭收集數萬張標註影像。2024–2026 改變了這一切：<strong>foundation model</strong>——用大規模自監督 (SSL / MAE / contrastive) 在百萬級影像上預訓練，然後對下游任務只需數百到數千張標註即可 fine-tune 到 SOTA。</p>
+<p>三個領域代表：眼科有 <strong>RETFound</strong>（160 萬張 OCT / fundus, MAE pre-train, Nature 2023）；病理有 <strong>CONCH</strong>（117 萬圖文對, Nat Med 2024）與 <strong>Virchow 2</strong>（Paige.AI）；通用醫療多模態有 <strong>MedGemma 1.5</strong>。再加上 vision-language（圖+報告聯合預訓練）的崛起，影像 AI 從「分類器」進化為「能寫報告、能回答 query」的助手。</p>
+</div>
+<div data-lang="en">
+<p>Before 2023, every clinical imaging AI was task-specific — one model for diabetic retinopathy grading, another for lung nodule detection, another for breast mass classification. Each needed tens of thousands of labelled images from scratch. 2024–2026 changed this: <strong>foundation models</strong> are pre-trained with self-supervised learning (SSL / MAE / contrastive) on millions of images, then fine-tuned to SOTA with only hundreds to thousands of labels.</p>
+<p>Three flagships per modality: ophthalmology — <strong>RETFound</strong> (1.6M OCT / fundus, MAE pre-train, Nature 2023); pathology — <strong>CONCH</strong> (1.17M image-text pairs, Nat Med 2024) and <strong>Virchow 2</strong> (Paige.AI); general medical multimodality — <strong>MedGemma 1.5</strong>. Combined with vision-language joint pre-training, imaging AI moved from classifier to assistant that can write reports and answer queries.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>foundation 模型把「需 10000 張標註」的任務縮成「200 張」。研究上的價值在於——讓你可以做小樣本研究、稀有疾病、雙盲驗證；但臨床部署仍要過 FDA 510(k) / De Novo / PMA 與 EU MDR + AI Act 雙重 conformity，技術成熟不等於監管通過。</span>
+<span data-lang="en"><strong>Core mindset:</strong> Foundation models cut tasks that needed 10000 labels down to 200. Research value: small-sample studies, rare diseases, double-blind validation. Clinical deployment still requires FDA 510(k) / De Novo / PMA and EU MDR + AI Act dual conformity — technical maturity is not the same as regulatory approval.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心模型" data-en="MODELS">核心模型</div>
+<h2 data-zh="一、四個旗艦 foundation 模型" data-en="I. Four Flagship Foundation Models">一、四個旗艦 foundation 模型</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">👁️</div><h4>RETFound</h4>
+<div data-lang="zh"><p>Moorfields Eye Hospital + UCL，Nature 2023；1.6 M OCT / fundus 影像 MAE pre-train；下游糖網病、AMD、青光眼 fine-tune 樣本量大幅降低。</p></div>
+<div data-lang="en"><p>Moorfields Eye Hospital + UCL, Nature 2023; 1.6 M OCT / fundus images with MAE pre-training; downstream DR, AMD, glaucoma need far fewer labels.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔬</div><h4>CONCH</h4>
+<div data-lang="zh"><p>Harvard / MGH，Nat Med 2024；1.17 M 圖文對 vision-language 預訓練；病理分類、分割、image-to-caption 多任務 SOTA。</p></div>
+<div data-lang="en"><p>Harvard / MGH, Nat Med 2024; 1.17 M image-text pairs vision-language pre-training; SOTA on pathology classification, segmentation, captioning.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>Virchow 2</h4>
+<div data-lang="zh"><p>Paige.AI，3.1 M WSI 訓練；病理 foundation model，授權給藥廠 / 醫院做 biomarker discovery 與 IHC 量化。</p></div>
+<div data-lang="en"><p>Paige.AI, trained on 3.1 M WSI; pathology foundation model licensed to pharma / hospitals for biomarker discovery and IHC quantification.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌐</div><h4>MedGemma 1.5 / Med-Gemini</h4>
+<div data-lang="zh"><p>Google 通用醫療多模態；可吃影像 + 文本，X-ray、MRI、皮膚科照片皆可。2026/1 釋出 4B / 27B 開源權重。</p></div>
+<div data-lang="en"><p>Google's generalist medical multimodal; accepts images + text — X-ray, MRI, dermatology. Jan 2026 release shipped 4B / 27B open weights.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動查詢" data-en="INTERACTIVE">互動查詢</div>
+<h2 data-zh="二、三領域 foundation 模型查詢器" data-en="II. Foundation Model Lookup by Specialty">二、三領域 foundation 模型查詢器</h2>
+<div data-lang="zh"><p>選擇眼科 / 病理 / 放射科，看 2026 主流 foundation 模型、最佳 benchmark 與部署狀態。</p></div>
+<div data-lang="en"><p>Pick ophthalmology / pathology / radiology to see the 2026 flagship foundation model, top benchmark, and deployment status.</p></div>
+<div class="interactive-panel">
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="spec-btn active" data-spec="oph" style="padding:8px 16px;border-radius:6px;border:1px solid var(--c-accent);background:var(--c-accent);color:#fff;cursor:pointer">👁️ <span data-zh="眼科" data-en="Ophthalmology">眼科</span></button>
+    <button class="spec-btn" data-spec="pth" style="padding:8px 16px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer">🔬 <span data-zh="病理" data-en="Pathology">病理</span></button>
+    <button class="spec-btn" data-spec="rad" style="padding:8px 16px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer">🩻 <span data-zh="放射科" data-en="Radiology">放射科</span></button>
+  </div>
+  <div id="specBox" style="padding:14px;background:var(--c-bg-alt);border-radius:8px"></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作程式碼" data-en="HANDS-ON CODE">實作程式碼</div>
+<h2 data-zh="三、三個典型載入與推論流程" data-en="III. Three Load-and-Infer Pipelines">三、三個典型載入與推論流程</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'p1')">RETFound</button><button class="code-tab-btn" onclick="switchTab(this,'p2')">CONCH</button><button class="code-tab-btn" onclick="switchTab(this,'p3')">DICOM + AI</button></div>
+<div class="code-tab-content active" id="p1"><pre><span class="comment"># RETFound — fine-tune for diabetic retinopathy on 200 fundus images</span>
+<span class="kw">import</span> torch
+<span class="kw">from</span> retfound <span class="kw">import</span> RETFoundModel
+
+backbone = RETFoundModel.from_pretrained(<span class="str">"rmaphoh/RETFound_cfp"</span>)
+<span class="comment"># Freeze backbone, train a 5-class DR head</span>
+<span class="kw">for</span> p <span class="kw">in</span> backbone.parameters(): p.requires_grad = <span class="kw">False</span>
+
+head = torch.nn.Linear(<span class="num">1024</span>, <span class="num">5</span>)            <span class="comment"># 5 DR grades</span>
+opt = torch.optim.AdamW(head.parameters(), lr=<span class="num">1e-3</span>)
+
+<span class="kw">for</span> imgs, lbls <span class="kw">in</span> train_loader:        <span class="comment"># ~200 labelled images</span>
+    feats = backbone.encode(imgs)
+    logits = head(feats)
+    loss = torch.nn.functional.cross_entropy(logits, lbls)
+    opt.zero_grad(); loss.backward(); opt.step()
+<span class="comment"># Reaches expert-level grading from a few hundred samples.</span></pre></div>
+<div class="code-tab-content" id="p2"><pre><span class="comment"># CONCH — pathology image captioning</span>
+<span class="kw">from</span> conch.open_clip_custom <span class="kw">import</span> create_model_from_pretrained
+<span class="kw">import</span> torch, PIL.Image
+
+mdl, preprocess = create_model_from_pretrained(<span class="str">"conch_ViT-B-16"</span>)
+mdl.eval()
+
+img = preprocess(PIL.Image.open(<span class="str">"tumor_patch.png"</span>)).unsqueeze(<span class="num">0</span>)
+candidates = [
+  <span class="str">"invasive ductal carcinoma, grade 2"</span>,
+  <span class="str">"normal mammary tissue"</span>,
+  <span class="str">"DCIS, intermediate grade"</span>,
+  <span class="str">"fibroadenoma"</span>]
+
+<span class="kw">with</span> torch.no_grad():
+    img_feat = mdl.encode_image(img)
+    txt_feat = mdl.encode_text(candidates)
+    sims = (img_feat @ txt_feat.T).softmax(dim=-<span class="num">1</span>)
+
+<span class="func">print</span>(<span class="kw">list</span>(<span class="kw">zip</span>(candidates, sims[<span class="num">0</span>].tolist())))</pre></div>
+<div class="code-tab-content" id="p3"><pre><span class="comment"># DICOM → AI inference pipeline (radiology)</span>
+<span class="kw">import</span> pydicom, torch
+<span class="kw">from</span> torchvision <span class="kw">import</span> transforms
+
+ds = pydicom.dcmread(<span class="str">"chest_xray.dcm"</span>)
+arr = ds.pixel_array                       <span class="comment"># H × W (uint16)</span>
+
+<span class="comment"># Apply DICOM window-level then normalise to model's expected range</span>
+arr = (arr.clip(<span class="num">0</span>, <span class="num">4000</span>) / <span class="num">4000</span>).astype(<span class="str">"float32"</span>)
+
+tfm = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Resize((<span class="num">512</span>, <span class="num">512</span>)),
+    transforms.Normalize([<span class="num">0.5</span>], [<span class="num">0.5</span>])])
+
+x = tfm(arr).unsqueeze(<span class="num">0</span>)
+model = torch.load(<span class="str">"chest_xray_fm_head.pt"</span>); model.eval()
+<span class="kw">with</span> torch.no_grad():
+    findings = model(x)                    <span class="comment"># 14-class pathology vector</span></pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模型比較" data-en="MODEL COMPARISON">模型比較</div>
+<h2 data-zh="四、5 個臨床影像 foundation 模型一覽" data-en="IV. Five Clinical Imaging FMs Side by Side">四、5 個臨床影像 foundation 模型一覽</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="模型" data-en="Model">模型</th><th data-zh="領域" data-en="Modality">領域</th><th data-zh="訓練資料" data-en="Training">訓練資料</th><th data-zh="SOTA 任務" data-en="SOTA task">SOTA 任務</th><th data-zh="開源" data-en="Open">開源</th><th data-zh="FDA / EU 狀態" data-en="FDA / EU">FDA / EU 狀態</th></tr></thead>
+<tbody>
+<tr><td>RETFound</td><td data-zh="眼科 OCT / fundus" data-en="Ophthalmology OCT / fundus">眼科 OCT / fundus</td><td>1.6 M images, MAE</td><td>DR / AMD / glaucoma</td><td>✅ (weights)</td><td data-zh="研究用" data-en="Research only">研究用</td></tr>
+<tr><td>CONCH</td><td data-zh="病理 vision-language" data-en="Pathology vision-language">病理 vision-language</td><td>1.17 M pairs</td><td data-zh="classification / segmentation / captioning" data-en="classification / segmentation / captioning">classification / segmentation / captioning</td><td>✅ (HF)</td><td data-zh="研究用" data-en="Research only">研究用</td></tr>
+<tr><td>Virchow 2</td><td data-zh="病理 WSI" data-en="Pathology WSI">病理 WSI</td><td>3.1 M WSI</td><td>biomarker discovery</td><td data-zh="商用授權" data-en="Commercial license">商用授權</td><td data-zh="部分 510(k) 路徑" data-en="Some 510(k) paths">部分 510(k) 路徑</td></tr>
+<tr><td>MedGemma 1.5</td><td data-zh="通用多模態" data-en="Generalist multimodal">通用多模態</td><td data-zh="多領域醫療影像 + 文本" data-en="Multi-modality med imaging + text">多領域醫療影像 + 文本</td><td data-zh="影像 QA / 報告草稿" data-en="Image QA / report drafting">影像 QA / 報告草稿</td><td>✅ (custom)</td><td data-zh="研究用" data-en="Research only">研究用</td></tr>
+<tr><td>Med-Gemini</td><td data-zh="通用多模態（最強）" data-en="Generalist (top tier)">通用多模態（最強）</td><td data-zh="Google 內部" data-en="Google internal">Google 內部</td><td>MedQA 91.1%, VQA</td><td>❌</td><td data-zh="僅 API；US/UK pilots" data-en="API only; US/UK pilots">僅 API；US/UK pilots</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>監管雙軌：</strong>美國 FDA 對 AI/ML SaMD（Software as a Medical Device）採 510(k) / De Novo / PMA 三條路；歐盟 2024/1689 AI Act 把醫療 AI 列為高風險，加上原本 MDR Class IIb / III 要過雙重 conformity assessment。2026/8/2 高風險條款正式生效——研究階段模型不受影響，但要部署到臨床先看 regulatory affairs。</span>
+<span data-lang="en"><strong>Dual regulatory track:</strong> US FDA treats AI/ML SaMD via 510(k) / De Novo / PMA. EU Reg 2024/1689 (AI Act) classifies medical AI as high-risk, on top of existing MDR Class IIb / III — dual conformity assessment required. High-risk obligations apply from 2 Aug 2026. Research-stage models are exempt, but clinical deployment needs regulatory affairs.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="五、影像 foundation 模型選型" data-en="V. Selecting a Clinical Imaging FM">五、影像 foundation 模型選型</h2>
+<div class="decision-tree">
+<h4 data-zh="影像 FM 選型流程" data-en="Clinical Imaging FM Selection">影像 FM 選型流程</h4>
+<div class="dt-node"><span class="dt-q">Q1</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是研究還是臨床部署？</strong>研究 → 自由選；臨床 → 必須走 FDA / CE / TFDA 路徑 + Virchow 等已過審工具。</div><div data-lang="en"><strong>Research or clinical deployment?</strong> Research → free choice; Clinical → FDA / CE / TFDA pathway with cleared tools like Virchow.</div></div>
+<div class="dt-node"><span class="dt-q">Q2</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>領域單一還是跨多 modality？</strong>單一 → 用該領域 FM（RETFound / CONCH / Virchow）；跨領域 → MedGemma 1.5。</div><div data-lang="en"><strong>Single specialty or cross-modality?</strong> Single → specialty FM (RETFound / CONCH / Virchow); Cross → MedGemma 1.5.</div></div>
+<div class="dt-node"><span class="dt-q">Q3</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是否要寫報告 / VQA（圖+文）？</strong>是 → vision-language FM（CONCH / MedGemma / Med-Gemini）；否 → 純 vision encoder + 自家 head 即可。</div><div data-lang="en"><strong>Need report drafting / VQA (image + text)?</strong> Yes → vision-language FM (CONCH / MedGemma / Med-Gemini); No → vision encoder + custom head suffices.</div></div>
+</div>
+</section>
+
+<!-- ===== Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：RETFound 進入 NHS 試點、CONCH 把罕見癌症報告時間縮短 40%" data-en="Two deeper cases: RETFound's NHS pilot and CONCH cutting rare-cancer reporting time 40%">兩個深入案例：RETFound 進入 NHS 試點、CONCH 把罕見癌症報告時間縮短 40%</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">👁️</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：RETFound 在 diabetic retinopathy 達 ophthalmologist level，2024 進入 NHS 試點</h4>
+<p>Zhou 等人在 <em>Nature</em> 2023 公開 RETFound（Moorfields Eye Hospital + UCL），用 MAE 在 1.6M OCT + colour fundus 影像上做 self-supervised pretraining。下游糖網病（diabetic retinopathy, DR）5-class grading：僅用 1000 張標註 fine-tune，sensitivity 94.1% / specificity 91.0%，在 EyePACS、Messidor-2 等 hold-out 上達到 ophthalmologist-level。2024 NHS England 在多家信託（Trust）試點：將 RETFound fine-tune 整合到 DR screening 工作流程，AI 對「可能 DR」做初篩、轉介眼科醫師確認；初步報告顯示 screen-positive rate 維持、ophthalmologist workload 降低 35%、平均 turnaround time 從 14 天降到 5 天。<strong>關鍵設計</strong>：(a) AI 只做 triage，不做最終診斷，符合 SaMD Class IIb；(b) 失敗模式（low-quality image, 影像 ungradable）必須能自動偵測並送回人工；(c) 模型不直接給 patient，而是給 ophthalmologist 一份「待確認 list」；(d) 部署期間做 prospective monitoring（含 false-negative rate）。<strong>啟示</strong>：foundation model 進入臨床的成功路徑不是「取代醫師」，而是 augmentation + triage + quality assurance。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: RETFound reaches ophthalmologist level on DR and enters NHS pilots in 2024</h4>
+<p>Zhou et al. published RETFound in <em>Nature</em> 2023 (Moorfields Eye Hospital + UCL), pretrained with MAE on 1.6M OCT + colour fundus images. Downstream 5-class diabetic retinopathy (DR) grading: with just 1000 labels fine-tuned, sensitivity 94.1% / specificity 91.0% on EyePACS, Messidor-2 hold-outs — ophthalmologist-level. In 2024 NHS England piloted the model across several Trusts, integrating RETFound fine-tunes into DR screening: AI triages likely-DR cases, ophthalmologists confirm. Early reports: screen-positive rate maintained, ophthalmologist workload down 35%, mean turnaround time from 14 to 5 days. <strong>Key design choices</strong>: (a) AI only triages, never finalises a diagnosis, fitting SaMD Class IIb; (b) failure modes (ungradable / low-quality images) must auto-detect and route back to humans; (c) the model outputs a "to-confirm list" to the ophthalmologist, never directly to patients; (d) prospective monitoring (including false-negative rate) runs throughout deployment. <strong>The lesson</strong>: foundation models reach the clinic not by replacing physicians, but through augmentation + triage + quality assurance.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🔬</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：CONCH 用於罕見癌症病理 zero-shot captioning 縮短報告時間 40%</h4>
+<p>Lu 等人 <em>Nat Med</em> 2024 公開 CONCH，用 1.17M 病理 image-text pairs 做 CLIP-style vision-language pretraining。2025 年某 academic medical center 把它整合進「罕見癌症 second opinion 工作流程」：當一線病理師拿到罕見組織學（如 spitzoid melanoma、SETD2-mutated sarcoma），先用 CONCH 對候選 caption（"high-grade spitzoid neoplasm"、"benign spindle cell lesion" 等）做 zero-shot retrieval，並提供 5 個 historical similar cases 的 reference。盲評：(a) <strong>diagnostic accuracy 與獨立 second opinion 相當</strong>（Cohen's κ = 0.78 vs human-human 0.81）；(b) <strong>平均報告時間從 4.2 hr 降到 2.5 hr</strong>（縮短 40%）；(c) 病理師主觀「自信度」提升，特別是 junior staff。但有三個 caveat：(a) 模型對「過於罕見」的 entity 仍會 hallucinate 似是而非 caption；(b) zero-shot retrieval 對 IHC stain panel 敏感，染色組合改變後表現下降；(c) 模型 cannot replace molecular confirmation（NGS、FISH）。<strong>啟示</strong>：CONCH 類 VLM 在「assist, not replace」的工作流程中最有價值；vision-language pretrain 比純 vision encoder 更適合報告類任務。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: CONCH cuts rare-cancer pathology reporting time by 40% via zero-shot captioning</h4>
+<p>Lu et al. <em>Nat Med</em> 2024 published CONCH, a CLIP-style vision-language model pretrained on 1.17M pathology image-text pairs. In 2025 an academic medical centre integrated it into a "rare-cancer second-opinion workflow": when first-line pathologists encountered rare histology (spitzoid melanoma, SETD2-mutated sarcoma), CONCH performed zero-shot retrieval over candidate captions ("high-grade spitzoid neoplasm", "benign spindle cell lesion") and surfaced 5 similar historical cases. Blinded evaluation: (a) <strong>diagnostic accuracy matched independent second opinions</strong> (Cohen's κ = 0.78 vs human-human 0.81); (b) <strong>mean reporting time dropped from 4.2 hr to 2.5 hr</strong> (40% reduction); (c) pathologists' subjective confidence rose, especially for junior staff. Caveats: (a) for ultra-rare entities the model still hallucinates plausible-sounding captions; (b) zero-shot retrieval is sensitive to IHC stain panels — changing the panel degrades performance; (c) the model cannot replace molecular confirmation (NGS, FISH). <strong>The lesson</strong>: CONCH-class VLMs are most valuable in "assist, not replace" workflows; vision-language pretraining suits reporting tasks better than a pure vision encoder.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="新手部署醫療影像 FM 最常踩的五個坑" data-en="Five common pitfalls when deploying clinical imaging FMs">新手部署醫療影像 FM 最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：把 RETFound 直接用在 OCT 而沒 fine-tune（或反過來，fundus model 用於 OCT）</strong><br>
+為什麼錯：RETFound 有兩個 variant：<code>rmaphoh/RETFound_cfp</code>（colour fundus photo）與 <code>rmaphoh/RETFound_oct</code>（OCT）；雖然都是眼科，但 fundus 是 2D 反射、OCT 是 3D 斷層，兩者的 representation 差異巨大。某團隊曾誤把 CFP variant 拿來 fine-tune OCT 任務，AUROC 從預期 0.92 掉到 0.78。<br>
+正確做法：(a) 先確認 variant 對應你的 modality；(b) 跨 modality 任務（如 fundus + OCT 聯合分析）需要分別 fine-tune 再 fusion；(c) 對非眼科 modality（如皮膚科、放射科），RETFound 完全不適用——換成 MedGemma、Virchow 或對應領域 FM。</div>
+<div data-lang="en"><strong>Pitfall 1: Using RETFound on OCT without fine-tuning (or fundus model on OCT)</strong><br>
+Why wrong: RETFound ships two variants — <code>rmaphoh/RETFound_cfp</code> (colour fundus) and <code>rmaphoh/RETFound_oct</code>. Both are ophthalmology, but fundus is 2D reflective and OCT is 3D tomographic — vastly different representations. A team once fine-tuned the CFP variant on an OCT task and AUROC dropped from an expected 0.92 to 0.78.<br>
+Fix: (a) match the variant to your modality first; (b) cross-modality tasks (joint fundus + OCT) need separate fine-tunes plus fusion; (c) for non-ophthalmology modalities (dermatology, radiology) RETFound doesn't apply — switch to MedGemma, Virchow, or the relevant domain FM.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：不做 site bias 校正直接 deploy 跨醫院</strong><br>
+為什麼錯：醫療影像 site bias 來源眾多：scanner manufacturer / model（GE vs Siemens vs Canon）、acquisition protocol（dose、reconstruction kernel、coil 排列）、染色 protocol（H&amp;E lab 差異）、patient population（age, ethnicity, disease prevalence）。某 chest X-ray AI 在 Stanford training set 上 AUROC 0.93，部署到非洲某醫院後降到 0.71，事後分析發現 75% 性能差距來自 scanner brand 與 X-ray dose 差異（Zech 2018 PLoS Med 經典案例）。<br>
+正確做法：(a) 部署前在 target site 做 prospective validation（&gt; 1000 cases）；(b) 用 multi-site training 或 domain adaptation 減少 site bias；(c) 部署後做 continuous monitoring（concept drift、subgroup performance）；(d) 把 site / device metadata 當作 prediction 的 conditioning input。</div>
+<div data-lang="en"><strong>Pitfall 2: Deploying across hospitals without site-bias correction</strong><br>
+Why wrong: medical imaging site bias has many sources — scanner manufacturer / model (GE vs Siemens vs Canon), acquisition protocol (dose, reconstruction kernel, coil layout), staining protocol (H&amp;E lab differences), patient population (age, ethnicity, disease prevalence). A chest X-ray AI scoring AUROC 0.93 at Stanford dropped to 0.71 at an African hospital; 75% of the gap traced to scanner brand and X-ray dose (Zech 2018 PLoS Med).<br>
+Fix: (a) prospectively validate at the target site (&gt;1000 cases) before deployment; (b) use multi-site training or domain adaptation to reduce site bias; (c) post-deployment continuous monitoring (concept drift, subgroup performance); (d) include site / device metadata as conditioning input to the prediction.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：AI 結果寫入 EHR 沒 audit trail</strong><br>
+為什麼錯：醫療 AI 部署的 SaMD 規範要求每個 inference 都應有 audit trail：何時、哪個版本模型、輸入影像 hash、輸出 prediction、confidence。某醫院初版只記錄「最終 prediction」沒記模型版本與輸入；半年後模型升級後發現舊預測有 systematic error，因無 audit trail 無法回溯哪些病人受影響。HIPAA、GDPR、EU AI Act 都要求 explainability + auditability。<br>
+正確做法：(a) 每個 inference 必須記錄 model version, input hash, output, confidence, timestamp；(b) 至少保存 6 年（HIPAA）；(c) 用 immutable log（Append-only DB、blockchain-like）防 tampering；(d) 對任何模型更新做明確 version bump 並回溯影響評估。</div>
+<div data-lang="en"><strong>Pitfall 3: AI results writing to EHR without audit trail</strong><br>
+Why wrong: medical AI SaMD requires per-inference audit trails: when, which model version, input image hash, output prediction, confidence. One hospital's first version only logged "final prediction" without model version or input. Six months later, after a model upgrade revealed a systematic error in older predictions, with no audit trail they couldn't trace affected patients. HIPAA, GDPR, EU AI Act all require explainability + auditability.<br>
+Fix: (a) every inference must log model version, input hash, output, confidence, timestamp; (b) retain at least 6 years (HIPAA); (c) use immutable logs (append-only DB, blockchain-like) to prevent tampering; (d) explicit version bumps and retroactive impact assessment on any model update.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：把 FDA 510(k) clearance 誤判為「診斷使用」</strong><br>
+為什麼錯：FDA 510(k) 通過的 indication for use 有嚴格範圍。多數放射 AI 是 <strong>CADt</strong>（Computer-Aided Triage — 排序 worklist 用）或 <strong>CADe</strong>（Detection — 標出可疑區域給醫師看），<strong>不是診斷工具</strong>。CADt / CADe 的 indication 只允許「輔助醫師決定優先級」或「偵測 candidate lesions」，醫師仍須做最終診斷。某醫院誤把 CADt 工具的「high priority flag」當作 diagnosis 直接通知病人，被 FDA 警告。<br>
+正確做法：(a) 仔細閱讀 device 的 indication for use 文件；(b) UI 設計上明確標示「This is a triage aid, not a diagnosis」；(c) 部署前 IRB + risk management plan；(d) 區分 CADt / CADe / CADx（diagnostic）對應不同 510(k) 等級。</div>
+<div data-lang="en"><strong>Pitfall 4: Mistaking FDA 510(k) clearance for "diagnostic use"</strong><br>
+Why wrong: an FDA 510(k)-cleared device has a strictly scoped "indication for use". Most radiology AI is <strong>CADt</strong> (Computer-Aided Triage — worklist prioritisation) or <strong>CADe</strong> (Detection — flag suspicious regions), <strong>not diagnostic</strong>. CADt / CADe indications only permit "assist physician with priority" or "detect candidate lesions"; the clinician makes the final diagnosis. One hospital treated a CADt tool's "high priority flag" as a diagnosis and notified the patient directly — FDA warning letter ensued.<br>
+Fix: (a) read the device's indication-for-use document carefully; (b) UI must clearly say "This is a triage aid, not a diagnosis"; (c) IRB + risk management plan before deployment; (d) distinguish CADt / CADe / CADx (diagnostic) — they correspond to different 510(k) tiers.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：EU MDR + AI Act 雙重審查未考量</strong><br>
+為什麼錯：在歐盟部署醫療 AI 需要同時通過 (a) <strong>MDR 2017/745</strong> 醫材 conformity（多數影像 AI 是 Class IIb，須 notified body 參與），與 (b) <strong>AI Act 2024/1689</strong> 高風險 AI 義務（風險管理系統、data governance、technical documentation、human oversight、post-market monitoring）。某 startup 以為通過 FDA 510(k) 就能直接賣到歐洲，被擋在 CE marking 階段，加上 AI Act 高風險條款 2026/8/2 生效，整套 documentation 需重做。<br>
+正確做法：(a) 早期就把 EU 路徑納入產品 roadmap；(b) MDR 與 AI Act 共用很多 documentation（risk management、data quality），但 AI Act 多了 transparency 與 human oversight；(c) 找一家 EU-based notified body（如 BSI、TÜV）儘早 engage；(d) 注意 AI Act 對 GPAI（general-purpose AI）的特別規定，如基於 frontier LLM 的醫療 AI 可能受 GPAI 條款影響。</div>
+<div data-lang="en"><strong>Pitfall 5: Forgetting the EU MDR + AI Act dual review</strong><br>
+Why wrong: deploying medical AI in the EU requires both (a) <strong>MDR 2017/745</strong> conformity (most imaging AI is Class IIb, requiring a notified body), and (b) <strong>AI Act 2024/1689</strong> high-risk AI obligations (risk management system, data governance, technical documentation, human oversight, post-market monitoring). A startup assumed FDA 510(k) was enough for Europe and got stopped at CE marking; with high-risk AI Act provisions effective 2 Aug 2026, they had to redo the documentation.<br>
+Fix: (a) build the EU pathway into the roadmap early; (b) MDR and AI Act share much documentation (risk management, data quality), but AI Act adds transparency and human oversight; (c) engage an EU notified body (BSI, TÜV) as early as possible; (d) watch for AI Act's special provisions on GPAI (general-purpose AI) — medical AI built on frontier LLMs may fall under GPAI rules.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：SSL 預訓練選擇、FDA PCCP、Virchow 2 dataset" data-en="Advanced: SSL pretraining choices, FDA PCCP, Virchow 2 dataset">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 MAE vs SimCLR vs CLIP-style 在醫療影像的權衡、FDA PCCP、Virchow 2 dataset 細節" data-en="🔬 MAE vs SimCLR vs CLIP-style trade-offs in medical imaging, FDA PCCP, Virchow 2 dataset details">🔬 MAE vs SimCLR vs CLIP-style 在醫療影像的權衡、FDA PCCP、Virchow 2 dataset 細節</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① Self-supervised pretrain 選擇：MAE vs SimCLR vs DINOv2 vs CLIP-style。</strong>四條主流路徑：<em>(a) MAE (He 2022)</em>——隨機 mask 75% patches，重建像素。優點：強迫模型學 global structure，對 medical imaging 特別 work（因為 anatomy 是 structural）；RETFound 用這條。<em>(b) SimCLR / MoCo (Chen 2020, He 2020)</em>——contrastive learning，同一張影像 augmentation pair → close，不同影像 → far。早期 SOTA 但 batch size 要大、augmentation 設計關鍵。<em>(c) DINO / DINOv2 (Caron 2021, Oquab 2024)</em>——self-distillation，student 預測 teacher 對 augmented view 的 representation。對 dense prediction（segmentation）友善；Virchow 2 後段使用 DINOv2-style。<em>(d) CLIP-style (Radford 2021)</em>——image-text contrastive，需要 paired image + caption；CONCH、Med-Gemini 用這條，獲得 zero-shot caption / retrieval 能力。<strong>選擇原則</strong>：純 classification → MAE 或 DINO；要 zero-shot caption / retrieval → CLIP-style（需 paired data）；dense prediction（segmentation）→ DINO。</p>
+<p><strong>② FDA PCCP（Predetermined Change Control Plan）。</strong>傳統 510(k)：每次模型升級都要重新申請。AI/ML 模型若無法持續更新等於 dead-on-arrival。FDA 2023 推出 PCCP（FDA Guidance "Predetermined Change Control Plans for Machine Learning-Enabled Device Software Functions"）：廠商可在初次申請時提交「預定變更計畫」（哪些可更新、如何驗證、performance 不下降的 threshold、retraining trigger），通過後可在範圍內自動更新而不需重新申請。但 PCCP 也有限：(a) 不允許「擴張 indication for use」；(b) 不允許改 model architecture；(c) retraining data 必須符合預先聲明的 distribution。Virchow 2 等 frontier 病理 FM 已開始試用 PCCP。</p>
+<p><strong>③ Virchow 2 dataset 細節（Vorontsov 2024 / Paige.AI 2025）。</strong>Virchow 2 在 3.1M WSI 上預訓練，來自 Memorial Sloan Kettering Cancer Center（MSKCC）內部累積的數位病理 archive，涵蓋 17 個 organ system、~200 種 cancer subtypes、IHC + H&amp;E + 部分 immunofluorescence。Pretrain objective: DINOv2-style + register tokens。技術細節：(a) ViT-H/14, 632M params；(b) 224×224 patch input；(c) data sampling 平衡 organ system 與 disease rarity；(d) 釋出 ViT-H 與 ViT-G 兩個尺寸。下游應用：HER2 quantification、PD-L1 scoring、MSI prediction、tumour budding、survival prediction。Paige.AI 商業 license 模式，部分產品（PaigeProstate 等）已通過 FDA 510(k)。CONCH 與 Virchow 的差別：CONCH 是 vision-language（接 1.17M 圖文對），擅長 captioning；Virchow 是純 vision encoder（無 text），擅長 feature extraction 後接下游 task。</p>
+<p><strong>④ Foundation model 通過 FDA 後再 fine-tune 的監管問題。</strong>關鍵爭議：原始 foundation backbone 通過 510(k)，下游醫院 fine-tune 後是否需重新申請？目前 FDA 立場（2024 RFI / 2025 draft guidance）大致為：(a) 若 fine-tune 改變 indication for use → 必須重新申請；(b) 若僅在原 indication 內 site-specific tune 且符合 PCCP → 可不重新申請；(c) clinical-deployed 模型 fine-tune 必須是「locked」狀態，動態 learning（online learning）目前 FDA 一般不允許醫療用途。歐盟 AI Act 對 substantial modification 也有類似條款，臨床部署中的 fine-tune 屬於敏感區。</p>
+<p><strong>⑤ 進階參考。</strong>Zhou et al. 2023 <em>Nature</em> (RETFound) · Lu et al. 2024 <em>Nat Med</em> (CONCH) · Vorontsov et al. 2024 (Virchow) · He et al. 2022 (MAE) · Chen et al. 2020 (SimCLR) · Caron et al. 2021 (DINO) · Oquab et al. 2024 (DINOv2) · Radford et al. 2021 (CLIP) · Zech et al. 2018 <em>PLoS Med</em> (site bias) · FDA 2023 Guidance (PCCP) · EU Reg 2024/1689 (AI Act) · EU Reg 2017/745 (MDR) · Singhal et al. 2024 (Med-Gemini) · Saab et al. 2024 (Med-Gemini multimodal).</p>
+</div>
+<div data-lang="en">
+<p><strong>① SSL pretraining choices: MAE vs SimCLR vs DINOv2 vs CLIP-style.</strong> Four mainstream paths: <em>(a) MAE (He 2022)</em> — randomly mask 75% of patches and reconstruct pixels. Strength: forces the model to learn global structure, especially fitting for medical imaging where anatomy is structural. RETFound uses this. <em>(b) SimCLR / MoCo (Chen 2020, He 2020)</em> — contrastive learning, augmentation pairs of the same image → close, different images → far. Early SOTA but needs large batch size and careful augmentations. <em>(c) DINO / DINOv2 (Caron 2021, Oquab 2024)</em> — self-distillation: student predicts teacher's representation of augmented views. Friendly to dense prediction (segmentation); Virchow 2 uses DINOv2-style later. <em>(d) CLIP-style (Radford 2021)</em> — image-text contrastive on paired data; CONCH and Med-Gemini take this route, gaining zero-shot caption / retrieval. <strong>Selection rule</strong>: pure classification → MAE or DINO; zero-shot caption / retrieval → CLIP-style (needs paired data); dense prediction (segmentation) → DINO.</p>
+<p><strong>② FDA PCCP (Predetermined Change Control Plan).</strong> Traditional 510(k) requires re-submission for every model update — a dead-on-arrival constraint for AI/ML that needs continuous improvement. FDA's 2023 guidance "Predetermined Change Control Plans for Machine Learning-Enabled Device Software Functions" lets vendors pre-declare in the initial submission: which updates are allowed, how they're validated, performance non-degradation thresholds, retraining triggers. After PCCP clearance, updates within scope don't require new submissions. Limits: (a) cannot expand indication for use; (b) cannot change model architecture; (c) retraining data must match the pre-declared distribution. Virchow 2-class frontier pathology FMs are starting to use PCCP.</p>
+<p><strong>③ Virchow 2 dataset details (Vorontsov 2024 / Paige.AI 2025).</strong> Virchow 2 pretrains on 3.1M WSI from Memorial Sloan Kettering Cancer Center (MSKCC)'s internal digital pathology archive, spanning 17 organ systems, ~200 cancer subtypes, IHC + H&amp;E + some immunofluorescence. Pretrain: DINOv2-style + register tokens. Technical: (a) ViT-H/14, 632M params; (b) 224×224 patch input; (c) sampling balances organ system + disease rarity; (d) released in ViT-H and ViT-G. Downstream applications: HER2 quantification, PD-L1 scoring, MSI prediction, tumour budding, survival prediction. Paige.AI commercial license; some products (PaigeProstate) have FDA 510(k). CONCH vs Virchow: CONCH is vision-language (1.17M image-text pairs), great for captioning; Virchow is a pure vision encoder (no text), great for downstream feature extraction.</p>
+<p><strong>④ Regulatory question: fine-tuning a 510(k)-cleared foundation model.</strong> Key controversy: if the original foundation backbone passes 510(k) and a downstream hospital fine-tunes it, does it need re-submission? Current FDA stance (2024 RFI / 2025 draft guidance): (a) fine-tune that changes indication for use → re-submission required; (b) site-specific tune within the original indication and PCCP scope → no re-submission needed; (c) clinically deployed models must be "locked" — dynamic (online) learning is currently not permitted for medical use. EU AI Act has parallel "substantial modification" provisions; clinical-deployment fine-tunes are a sensitive zone.</p>
+<p><strong>⑤ Key references.</strong> Zhou et al. 2023 <em>Nature</em> (RETFound) · Lu et al. 2024 <em>Nat Med</em> (CONCH) · Vorontsov et al. 2024 (Virchow) · He et al. 2022 (MAE) · Chen et al. 2020 (SimCLR) · Caron et al. 2021 (DINO) · Oquab et al. 2024 (DINOv2) · Radford et al. 2021 (CLIP) · Zech et al. 2018 <em>PLoS Med</em> (site bias) · FDA 2023 Guidance (PCCP) · EU Reg 2024/1689 (AI Act) · EU Reg 2017/745 (MDR) · Singhal et al. 2024 (Med-Gemini) · Saab et al. 2024 (Med-Gemini multimodal).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: Foundation model 通過 FDA 後再 fine-tune 算重新認證嗎？</h4>
+<p>RETFound、Virchow 等 FM 部分產品已通過 FDA 510(k)；但若醫院 download 並 fine-tune 在自家資料上以提升 site-specific 表現，FDA 是否視為「新醫材」？某監管專家主張「必須重新申請」；某醫院方主張「site-specific tune 不改變 indication for use，PCCP 範圍內即可」。<strong>請思考</strong>：你支持什麼界定？「locked deployment」vs「allow continual fine-tune」哪個對病人更安全？醫院 IT 該負哪些責任？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Does fine-tuning a 510(k)-cleared FM require re-certification?</h4>
+<p>RETFound, Virchow and similar FMs have some 510(k)-cleared products. If a hospital downloads and fine-tunes for site-specific performance, does FDA consider it a "new device"? A regulator argues "yes, re-submit"; a hospital counters "site-specific tune doesn't change indication for use, PCCP scope suffices". <strong>Consider</strong>: where do you draw the line? "Locked deployment" vs "allow continual fine-tune" — which is safer for patients? What duties does hospital IT carry?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 影像 AI 該負哪些責任？醫師、廠商、醫院如何分擔？</h4>
+<p>某 AI 影像系統把肺結節誤判為良性，6 個月後病人發現晚期肺癌。法律訴訟中：(a) 醫師說「AI 給了 negative 結果，我信任它」；(b) 廠商說「我們的 indication 是 CADe 不是 diagnosis」；(c) 醫院 IT 說「我們依 vendor instruction 部署、無錯誤」。<strong>請思考</strong>：責任該如何分配？三方各該負什麼舉證責任？「AI 工具不該被當 diagnosis」的免責條款是否合理？醫師「未獨立判讀」是否構成 negligence？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: Who's responsible when imaging AI fails — physician, vendor, hospital?</h4>
+<p>An AI imaging system misses a lung nodule, marked benign; 6 months later the patient is diagnosed with late-stage lung cancer. In litigation: (a) the physician says "AI gave a negative, I trusted it"; (b) the vendor says "our indication is CADe, not diagnosis"; (c) hospital IT says "we deployed per vendor instructions, no error". <strong>Consider</strong>: how should liability be allocated? What evidentiary burden does each side carry? Is the "AI is not diagnosis" disclaimer fair? Does the physician's lack of independent review constitute negligence?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: Site bias 校正該由廠商還是醫院負責？</h4>
+<p>Zech 2018 證明 chest X-ray AI 從 Stanford 部署到非洲時 AUROC 從 0.93 降到 0.71，site bias 是主因。某廠商主張：「我們提供 baseline model，site-specific tune 是醫院責任」；某醫院反對：「我們沒能力做 ML retraining，廠商應提供 multi-site 預訓練模型」。<strong>請思考</strong>：你支持哪個分工？對低資源醫院 / 國家，foundation model 部署該如何避免成為「先進國家專屬工具」？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Who fixes site bias — vendor or hospital?</h4>
+<p>Zech 2018 showed a chest X-ray AI dropped from AUROC 0.93 at Stanford to 0.71 at an African hospital — site bias drove most of the gap. A vendor argues: "we ship a baseline; site-specific tuning is the hospital's job"; a hospital counters: "we can't do ML retraining; the vendor should deliver multi-site pretrained models". <strong>Consider</strong>: which division do you support? For low-resource hospitals / countries, how should FM deployment avoid becoming "developed-country-only tooling"?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: 醫療 AI 模型權重該開源到什麼程度？</h4>
+<p>RETFound、CONCH、MedGemma 開源權重供研究用；Virchow 商用 license；Med-Gemini 只給 API。某學者主張「醫療 AI 全部開源才公平」；某廠商反對「3 億預訓練成本若無 IP 保護無法回收」；某倫理學者警告「開源權重可能被改造成假診斷工具，需要 access control」。<strong>請思考</strong>：academic FM 與 commercial FM 該用不同 license 嗎？開源是否該配 access registry（如 Hugging Face Gated）？低收入國家該享有什麼特殊條款？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: How open should medical-AI model weights be?</h4>
+<p>RETFound, CONCH, MedGemma release research-use weights; Virchow is commercial-license; Med-Gemini is API-only. One scholar argues "all medical AI must be open for fairness"; a vendor counters "$300M pretraining without IP protection can't be recouped"; an ethicist warns "open weights can be repurposed into fake diagnostic tools — access control is needed". <strong>Consider</strong>: should academic vs commercial FMs use different licenses? Should open release come with an access registry (e.g., Hugging Face Gated)? What special provisions should low-income countries receive?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">1. foundation 模型相較於傳統 task-specific 模型的主要優勢？</p>
+<p data-lang="en">1. Main advantage of foundation models over task-specific models?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 完全不需要任何標註資料</span><span data-lang="en">A. Needs zero labels</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 自監督預訓練後，下游任務只需數百張標註即可達 SOTA</span><span data-lang="en">B. After SSL pre-training, downstream tasks reach SOTA with only hundreds of labels</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 自動拿 FDA 通過</span><span data-lang="en">C. Auto-FDA cleared</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 必定不會 hallucinate</span><span data-lang="en">D. Cannot hallucinate</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">2. 你要做 OCT 影像的 AMD 分級研究，最適合的 foundation 模型？</p>
+<p data-lang="en">2. You're building an AMD grading study on OCT images. Best foundation model?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. CONCH</span><span data-lang="en">A. CONCH</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Virchow 2</span><span data-lang="en">B. Virchow 2</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. RETFound</span><span data-lang="en">C. RETFound</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. ChemCrow</span><span data-lang="en">D. ChemCrow</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh">3. 把研究模型部署到歐盟臨床，需要過？</p>
+<p data-lang="en">3. To deploy a research model into EU clinical use, you need?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 只要 GDPR</span><span data-lang="en">A. Just GDPR</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 只要 IRB approval</span><span data-lang="en">B. Just IRB approval</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 只要 FDA 510(k)</span><span data-lang="en">C. Just FDA 510(k)</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. EU MDR + AI Act 雙重 conformity</span><span data-lang="en">D. EU MDR + AI Act dual conformity</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你是某美國醫院 radiology AI 委員會主席。一家 startup 要部署 chest X-ray AI（已通過 FDA 510(k) for CADt — Computer-Aided Triage）。他們想：(a) 把 high-priority flag 自動寫入 EHR 給急診醫師；(b) 不公開 training data 來源；(c) 模型每 3 個月「自動」線上學習新影像。同時，你們的醫院群跨三州，scanner 廠牌 GE / Siemens / Canon 都有。最該採取的處置？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. As chair of your US hospital's radiology AI committee, a startup pitches deploying a chest X-ray AI (FDA 510(k)-cleared as CADt — Computer-Aided Triage). They want: (a) high-priority flags auto-written to EHR for ED clinicians; (b) training data sources undisclosed; (c) the model "auto-learns" online every 3 months. Your hospital network spans three states with GE / Siemens / Canon scanners. What's the right call?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 直接同意部署，廠商既已 FDA 通過</span><span data-lang="en">A. Approve as-is — FDA already cleared it</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 同意但要求廠商把 indication 升級為 diagnostic（更可靠）</span><span data-lang="en">B. Approve but ask the vendor to upgrade the indication to diagnostic (more reliable)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 完全拒絕，所有 AI 都太危險</span><span data-lang="en">C. Reject — all AI is too dangerous</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 拒絕線上學習（FDA 不允許 dynamic 模型）；要求 prospective multi-site validation 校正 site bias（Zech 2018）；UI 明確標示「triage aid, not diagnosis」；建立 audit trail（model version + input hash + output + timestamp）；要求至少 training data summary（organ 分佈、subgroup performance）；通過 IRB</span><span data-lang="en">D. Reject online learning (FDA disallows dynamic models); require prospective multi-site validation to correct site bias (Zech 2018); UI must say "triage aid, not diagnosis"; build an audit trail (model version + input hash + output + timestamp); require at least a training-data summary (organ distribution, subgroup performance); pass IRB</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 medical imaging foundation model 的 self-supervised pretrain 選擇，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. Regarding self-supervised pretraining choices for medical imaging foundation models, which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 四種方法（MAE、SimCLR、DINO、CLIP）完全等價</span><span data-lang="en">A. All four (MAE, SimCLR, DINO, CLIP) are equivalent</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. MAE 只能用於 NLP；CLIP 只能用於影像</span><span data-lang="en">B. MAE is for NLP only; CLIP is for images only</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. MAE（mask 75% patches 重建）強於 global structure，RETFound 採用；SimCLR / MoCo 是 contrastive，需大 batch 與精細 augmentation；DINO / DINOv2 self-distillation 對 dense prediction 友善，Virchow 2 採用；CLIP-style 是 image-text contrastive 需要 paired data，CONCH / Med-Gemini 採用以獲 zero-shot caption / retrieval 能力。選擇取決於下游任務</span><span data-lang="en">C. MAE (mask 75% patches, reconstruct) is strong on global structure (used by RETFound); SimCLR / MoCo are contrastive, requiring big batches and careful augmentations; DINO / DINOv2 (self-distillation) suits dense prediction (used by Virchow 2); CLIP-style is image-text contrastive needing paired data (used by CONCH / Med-Gemini) for zero-shot caption / retrieval. Choice depends on downstream task</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 只要訓練資料夠大，pretrain 方法都不重要</span><span data-lang="en">D. With enough data, the pretraining method doesn't matter</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="bioimage.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 15: 生物影像 AI" data-en="Step 15: Bioimage AI">Step 15: 生物影像 AI</span></a>
+<a href="drug-discovery.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 17: 藥物與化學 AI" data-en="Step 17: Drug Discovery &amp;amp; Chemistry AI">Step 17: 藥物與化學 AI</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Specialty lookup
+const SPEC={
+  oph:{zh:{model:'RETFound',bench:'糖網病 / AMD / 青光眼分級——超越傳統 supervised baseline，且只需 200–1000 張標註。',deploy:'多家研究機構部署；FDA 級臨床部署仍仰賴特定廠商（Optos / Topcon）已過審工具。'},en:{model:'RETFound',bench:'DR / AMD / glaucoma grading — beats supervised baselines with 200–1000 labels.',deploy:'Used in many research centres; FDA-cleared clinical deployment still relies on vendor-cleared tools (Optos / Topcon).'}},
+  pth:{zh:{model:'CONCH + Virchow 2',bench:'WSI 分類、組織分割、病理 captioning；多項 benchmark SOTA。',deploy:'Paige.AI 的 Virchow 系列已有部分 FDA 510(k) 路徑；CONCH 仍為研究用。'},en:{model:'CONCH + Virchow 2',bench:'WSI classification, tissue segmentation, pathology captioning — SOTA on multiple benchmarks.',deploy:'Paige.AI Virchow line has some FDA 510(k) paths; CONCH remains research-only.'}},
+  rad:{zh:{model:'MedGemma 1.5 / Med-Gemini',bench:'CXR / CT 多任務 VQA、報告草稿；無單一通用 SOTA，但 Med-Gemini 已過 USMLE 91.1%。',deploy:'數百個 FDA 通過放射 AI 工具（CADt for stroke、PE detection、breast 等），多為 task-specific。'},en:{model:'MedGemma 1.5 / Med-Gemini',bench:'CXR / CT multi-task VQA, report drafting; no single generalist SOTA, but Med-Gemini scored 91.1% USMLE.',deploy:'Hundreds of FDA-cleared radiology AI tools (CADt for stroke, PE detection, breast) — most task-specific.'}}
+};
+function pickSpec(s){
+  document.querySelectorAll('.spec-btn').forEach(b=>{
+    const on=b.dataset.spec===s;
+    b.classList.toggle('active',on);
+    b.style.background=on?'var(--c-accent)':'transparent';
+    b.style.color=on?'#fff':'inherit';
+  });
+  const L=window.I18n?I18n.get():'en';
+  const d=SPEC[s][L];
+  const labels=L==='zh'?{m:'旗艦模型',b:'benchmark 表現',d:'部署狀態'}:{m:'Flagship',b:'Benchmark',d:'Deployment'};
+  document.getElementById('specBox').innerHTML=
+    '<div style="margin-bottom:8px"><span style="font-size:.75rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.m+'</span><div style="font-size:1.15rem;font-weight:600;color:var(--c-accent)">'+d.model+'</div></div>'+
+    '<div style="margin-bottom:8px"><span style="font-size:.75rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.b+'</span><p style="margin:4px 0;font-size:.9rem;line-height:1.5">'+d.bench+'</p></div>'+
+    '<div><span style="font-size:.75rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.d+'</span><p style="margin:4px 0;font-size:.9rem;line-height:1.5">'+d.deploy+'</p></div>';
+}
+document.querySelectorAll('.spec-btn').forEach(b=>b.addEventListener('click',()=>pickSpec(b.dataset.spec)));
+document.addEventListener('langchange',()=>{const a=document.querySelector('.spec-btn.active');pickSpec(a?a.dataset.spec:'oph');});
+document.addEventListener('DOMContentLoaded',()=>pickSpec('oph'));
+
+// Quiz
+const QF={zh:{q1_y:'foundation 模型用大規模 SSL 預訓練，使下游 fine-tune 所需標註資料大幅降低。',q2_y:'RETFound 就是為 OCT / fundus 設計的眼科 foundation 模型。',q3_y:'歐盟需 MDR（醫材）+ AI Act（高風險 AI）雙重 conformity assessment。',q4_y:'四個風險都要處理。(a) FDA 不允許醫療 AI online learning，必須 locked deployment；(b) 跨州多廠牌 scanner 必有 site bias（Zech 2018），需 prospective multi-site validation；(c) CADt 不是 diagnosis，UI 必須明示；(d) audit trail 是 SaMD 與 HIPAA 必要，不可省。直接同意（A）、升級 indication（B，廠商也無權）、全拒（C）都不恰當。',q5_y:'四種 SSL 預訓練各有適用場景：MAE 強於 global structure（RETFound 採用）；SimCLR / MoCo 是 contrastive，需大 batch 與精細 augmentation；DINO / DINOv2 是 self-distillation，對 dense prediction（segmentation）友善（Virchow 2 採用）；CLIP-style 是 image-text contrastive，需要 paired data，獲得 zero-shot caption / retrieval 能力（CONCH、Med-Gemini 採用）。選擇必須根據 downstream task：classification → MAE 或 DINO；caption / retrieval → CLIP；segmentation → DINO。'},en:{q1_y:'Foundation models use large-scale SSL pre-training, slashing labels needed for downstream fine-tuning.',q2_y:'RETFound is the ophthalmology foundation model designed for OCT / fundus.',q3_y:'EU requires dual MDR (medical device) + AI Act (high-risk AI) conformity assessments.',q4_y:'All four risks need to be handled. (a) FDA disallows online learning in medical AI — locked deployment required; (b) multi-vendor scanners across states guarantee site bias (Zech 2018) — prospective multi-site validation needed; (c) CADt is not diagnosis — the UI must say so; (d) audit trails are mandatory under SaMD + HIPAA — no shortcuts. Approving as-is (A), upgrading indication (B, vendor has no power to do so), or full rejection (C) are all wrong.',q5_y:'The four SSL pretraining methods suit different scenarios: MAE excels at global structure (RETFound); SimCLR / MoCo are contrastive, needing big batches + careful augmentations; DINO / DINOv2 is self-distillation, good for dense prediction (Virchow 2); CLIP-style is image-text contrastive, needs paired data, and yields zero-shot caption / retrieval (CONCH, Med-Gemini). Choose by downstream task: classification → MAE or DINO; caption / retrieval → CLIP; segmentation → DINO.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

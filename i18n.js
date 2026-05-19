@@ -1,5 +1,5 @@
 (function(){
-  const SK='aiagents_lang';
+  const SK='ai_literacy_lang';
   let lang=localStorage.getItem(SK)||'en';
 
   function apply(l){
@@ -32,59 +32,6 @@
       btn.onclick=toggle; nav.appendChild(btn);
     }
     apply(lang);
-
-    // Reading progress bar
-    const bar=document.getElementById('progressBar');
-    if(bar){
-      const upd=()=>{
-        const h=document.documentElement;
-        const total=h.scrollHeight-h.clientHeight;
-        bar.style.width=total>0?(h.scrollTop/total*100)+'%':'0%';
-      };
-      window.addEventListener('scroll',upd,{passive:true});
-      upd();
-    }
-
-    // Code tabs
-    document.querySelectorAll('.code-tabs').forEach(ct=>{
-      const btns=ct.querySelectorAll('.code-tab-btn');
-      const panes=ct.querySelectorAll('.code-tab-content');
-      btns.forEach((b,i)=>{
-        b.onclick=()=>{
-          btns.forEach(x=>x.classList.remove('active'));
-          panes.forEach(x=>x.classList.remove('active'));
-          b.classList.add('active');
-          panes[i].classList.add('active');
-        };
-      });
-    });
-
-    // Accordion
-    document.querySelectorAll('.accordion-btn').forEach(b=>{
-      b.onclick=()=>{
-        b.classList.toggle('open');
-        const body=b.nextElementSibling;
-        if(body) body.classList.toggle('open');
-      };
-    });
-
-    // Quiz
-    document.querySelectorAll('.quiz-q').forEach(q=>{
-      const opts=q.querySelectorAll('.quiz-opt');
-      const fb=q.querySelector('.quiz-feedback');
-      opts.forEach(o=>{
-        o.onclick=()=>{
-          opts.forEach(x=>x.classList.remove('correct','wrong'));
-          const isOk=o.dataset.correct==='1';
-          o.classList.add(isOk?'correct':'wrong');
-          if(fb){
-            fb.classList.add('show');
-            fb.classList.remove('correct-fb','wrong-fb');
-            fb.classList.add(isOk?'correct-fb':'wrong-fb');
-          }
-        };
-      });
-    });
   });
 
   window.I18n={apply,toggle,get};

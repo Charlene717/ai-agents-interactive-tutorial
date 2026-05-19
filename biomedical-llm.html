@@ -1,0 +1,458 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 14: Biomedical Text LLMs — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html" class="active">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 14 / 20</div>
+<h1 data-zh="生醫文本 LLM" data-en="Biomedical Text LLMs">生醫文本 LLM</h1>
+<p class="subtitle" data-lang="zh">Med-Gemini、MedGemma、BioMistral、ChemCrow——什麼時候該換掉通用 LLM？多半，你不該。</p>
+<p class="subtitle" data-lang="en">Med-Gemini, MedGemma, BioMistral, ChemCrow — when should you swap out a general LLM? Usually, you shouldn't.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="生醫 LLM 必懂十詞" data-en="Ten terms for biomedical LLMs">生醫 LLM 必懂十詞</h2>
+<div data-lang="zh"><p>這 10 個詞貫穿本章——先讀過一次，後面 domain fine-tune、RAG、MedQA、ChemCrow 的討論就會順暢許多。</p></div>
+<div data-lang="en"><p>These ten terms recur throughout. Skim once and the discussion of domain fine-tune, RAG, MedQA, and ChemCrow flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🌐</div><h4>Med-Gemini</h4>
+<div data-lang="zh"><p>Google 2024 在 Gemini Pro 上做醫療 SFT 與 RLHF 的閉源模型，MedQA-USMLE 91.1%（Singhal 2024 預印本）。僅雲端 API，US/UK pilot；無法本地部署。</p></div>
+<div data-lang="en"><p>Google's 2024 closed-source medical SFT + RLHF on Gemini Pro, hitting 91.1% on MedQA-USMLE (Singhal 2024 preprint). Cloud API only; US/UK pilots; not self-hostable.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏥</div><h4>MedGemma</h4>
+<div data-lang="zh"><p>Google 2026/1 釋出 4B / 27B 開源權重，醫療文本 + 影像多模態，MedQA ~91%。Custom license（非完全 free use），可在 hospital firewall 內自架，是 PHI 受限情境的首選。</p></div>
+<div data-lang="en"><p>Google's Jan 2026 release of 4B / 27B open weights, multimodal med text + image, MedQA ~91%. Custom license (not fully free), self-hostable inside a hospital firewall — top pick when PHI must stay on-prem.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>Med-PaLM 2</h4>
+<div data-lang="zh"><p>Singhal et al. 2023 <em>Nat Med</em>。第一個過 USMLE 通過線（86.5%）的醫療 LLM，奠定「domain fine-tune 可行」基礎。2025 後逐步被 Med-Gemini / MedGemma 取代。</p></div>
+<div data-lang="en"><p>Singhal et al. 2023 <em>Nat Med</em>. The first medical LLM to clear the USMLE passing bar (86.5%), establishing "domain fine-tune is viable". Largely superseded by Med-Gemini / MedGemma since 2025.</p></div>
+</div>
+<div class="card"><div class="card-icon">📚</div><h4>BioMistral</h4>
+<div data-lang="zh"><p>Labrak et al. 2024 (EACL)。以 Mistral-7B 為基底繼續預訓練於 PubMed Central（3M+ 全文）。Apache 2.0 完全 free use，單張 24GB GPU 可跑推論，是 lab 內部部署的高 CP 值選擇。</p></div>
+<div data-lang="en"><p>Labrak et al. 2024 (EACL). Continued pre-training of Mistral-7B on PubMed Central (3M+ full-texts). Apache 2.0, no use restrictions; runs inference on a single 24GB GPU — a strong cost-effective lab-internal option.</p></div>
+</div>
+<div class="card"><div class="card-icon">📜</div><h4>BioGPT</h4>
+<div data-lang="zh"><p>Luo et al. 2022 <em>Brief Bioinform</em>。Microsoft 在 GPT-2 上做 PubMed abstracts 預訓練。對「2022 年前」資料不錯，但 cutoff 早，已不適合處理當代醫療指引。</p></div>
+<div data-lang="en"><p>Luo et al. 2022 <em>Brief Bioinform</em>. Microsoft's GPT-2 continued on PubMed abstracts. Decent on pre-2022 content but with an early cutoff — unsuitable for current medical guidelines.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔍</div><h4>PubMedBERT</h4>
+<div data-lang="zh"><p>Gu et al. 2021 <em>ACM HEALTH</em>。Microsoft 從零訓 BERT（不繼承通用 BERT），純粹 PubMed 語料。在 BioASQ、BC5CDR、ChemProt 等 NER / RE benchmark 上長期領先；不擅長 generation。</p></div>
+<div data-lang="en"><p>Gu et al. 2021 <em>ACM HEALTH</em>. Microsoft's BERT trained from scratch (not continued from general BERT) on pure PubMed. Long-time leader on BioASQ, BC5CDR, ChemProt NER / RE benchmarks; weak at generation.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚗️</div><h4>ChemCrow</h4>
+<div data-lang="zh"><p>Bran et al. 2024 <em>Nat Mach Intell</em>。把 GPT-4 包成 agent，接 18 個化學工具（RDKit、retrosynthesis、reaction prediction），自主規劃合成路徑。代表「LLM + tool use」對 domain fine-tune 的另一條路徑。</p></div>
+<div data-lang="en"><p>Bran et al. 2024 <em>Nat Mach Intell</em>. Wraps GPT-4 as an agent calling 18 chemistry tools (RDKit, retrosynthesis, reaction prediction) to autonomously plan syntheses. Represents the "LLM + tool use" alternative to domain fine-tuning.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎓</div><h4>Domain Fine-tune</h4>
+<div data-lang="zh"><p>在通用基底模型上以醫療 / 生物文本繼續訓練（continued pre-training 或 instruction tuning）。2023 是必經之路，2026 後因 frontier general LLM 太強，多數情境的 ROI 已不顯著。</p></div>
+<div data-lang="en"><p>Continued training of a general base model on medical / biological text (continued pre-training or instruction tuning). A must in 2023; by 2026, ROI is marginal in most settings as frontier general LLMs have caught up.</p></div>
+</div>
+<div class="card"><div class="card-icon">🪞</div><h4>RLAIF</h4>
+<div data-lang="zh"><p>Reinforcement Learning from AI Feedback (Lee et al. 2023, Bai et al. 2022 Constitutional AI)。用大模型代替昂貴的人類 rater 給偏好訊號，是 Med-PaLM 2 → Med-Gemini 對齊流程的關鍵組件。</p></div>
+<div data-lang="en"><p>Reinforcement Learning from AI Feedback (Lee et al. 2023, Bai et al. 2022 Constitutional AI). Substitutes expensive human raters with a larger model for preference signals — a key component in the Med-PaLM 2 → Med-Gemini alignment pipeline.</p></div>
+</div>
+<div class="card"><div class="card-icon">📝</div><h4>MedQA</h4>
+<div data-lang="zh"><p>Jin et al. 2021。USMLE 風格選擇題 benchmark，是醫療 LLM 的事實標準。問題是它是「考試題」非「臨床決策」，高分 ≠ 臨床安全。MedQA-USMLE 91% 已被 frontier 通用 LLM 達成。</p></div>
+<div data-lang="en"><p>Jin et al. 2021. A USMLE-style MCQ benchmark, the de facto standard for medical LLMs. But it's "exam questions" not "clinical decisions" — high score ≠ clinical safety. Frontier general LLMs now hit ~91%.</p></div>
+</div>
+<div class="card"><div class="card-icon">🩺</div><h4>USMLE</h4>
+<div data-lang="zh"><p>美國醫師執照考試（United States Medical Licensing Examination）。Step 1/2/3 涵蓋基礎、臨床、實務。MedQA 取材自 USMLE 真題；通過線約 60%（依屆別），ICU/急診 decision 不會直接出題。</p></div>
+<div data-lang="en"><p>United States Medical Licensing Examination. Steps 1/2/3 cover basic, clinical, practice. MedQA samples real USMLE items; passing bar ~60% (year-dependent). ICU / ED decisions are not directly asked.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏷️</div><h4>Clinical NER</h4>
+<div data-lang="zh"><p>Named Entity Recognition：從病歷 / discharge summary 抽出疾病、藥物、症狀、生化值。代表 dataset：i2b2、MIMIC-III/IV、n2c2。PubMedBERT / ClinicalBERT 至今在這類 token-level 任務仍勝過 generation LLM。</p></div>
+<div data-lang="en"><p>Named Entity Recognition: extracting diseases, drugs, symptoms, labs from clinical notes / discharge summaries. Key datasets: i2b2, MIMIC-III/IV, n2c2. PubMedBERT / ClinicalBERT still outperform generation LLMs on these token-level tasks.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="生醫專用 LLM 是必要的嗎？" data-en="Are domain-specific biomedical LLMs necessary?">生醫專用 LLM 是必要的嗎？</h2>
+<div data-lang="zh">
+<p>2023 年 Med-PaLM 2 在 MedQA-USMLE 上拿到 86.5% 的成績，曾被認為是「醫療 LLM 必須 fine-tune」的證據。但到了 2026 年，故事反轉了：通用 Claude Opus 4.6 / GPT-5.5 Pro / Gemini 2.5 Pro 在 MedQA 上已可達 91–93%，搭配 RAG（檢索 UpToDate / PubMed）後，臨床準確度甚至超越多數領域 fine-tune 模型。</p>
+<p>那麼領域 LLM 還有什麼價值？答案是：<strong>本地部署、隱私、可預測成本、ChemCrow 式工具使用</strong>。MedGemma 1.5（Google 2026/1 釋出）權重開源，可在醫院內網跑；BioMistral 用 Apache 2.0 沒有 use restriction；ChemCrow 把 GPT-4 包成自主合成規劃 agent。這一章把選型邏輯講清楚。</p>
+</div>
+<div data-lang="en">
+<p>In 2023, Med-PaLM 2 hitting 86.5% on MedQA-USMLE was the canonical proof that "medical LLMs must be fine-tuned." By 2026, the story flipped: general Claude Opus 4.6 / GPT-5.5 Pro / Gemini 2.5 Pro hit 91–93% on MedQA, and paired with RAG (UpToDate, PubMed) they often beat domain fine-tunes on real clinical accuracy.</p>
+<p>So what's still worth a domain LLM? <strong>On-prem deployment, privacy, predictable cost, ChemCrow-style tool use.</strong> MedGemma 1.5 (Google, Jan 2026) ships open weights you can run inside a hospital firewall. BioMistral is Apache 2.0 with no use restrictions. ChemCrow turns GPT-4 into an autonomous synthesis-planning agent. This chapter makes the selection logic explicit.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>「通用 LLM + 高品質 RAG + 嚴格 prompt」是 80% 生醫情境的最佳解。只有當 (a) 必須完全 on-prem、(b) 需要特殊工具呼叫（化學 / 蛋白）、(c) 預算極受限三者之一成立時，才考慮領域模型。</span>
+<span data-lang="en"><strong>Core mindset:</strong> "General LLM + high-quality RAG + strict prompt" is the best answer in 80% of biomed scenarios. Reach for a domain model only when (a) on-prem is mandatory, (b) you need specialised tool calls (chemistry / protein), or (c) budget is very tight.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、四種生醫 LLM 的譜系" data-en="I. Four Lineages of Biomedical LLMs">一、四種生醫 LLM 的譜系</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">🏥</div><h4>Med-PaLM 2 → Med-Gemini → MedGemma</h4>
+<div data-lang="zh"><p>Google 系。Med-PaLM 2（<a href="https://doi.org/10.1038/s41591-024-03423-7" target="_blank">Nat Med 2024</a>，MedQA 86.5%）已退役；Med-Gemini 91.1%；MedGemma 1.5（2026/1）開源權重、MedQA ~91%，可下載自架。</p></div>
+<div data-lang="en"><p>Google line. Med-PaLM 2 (<a href="https://doi.org/10.1038/s41591-024-03423-7" target="_blank">Nat Med 2024</a>, 86.5%) is retired; Med-Gemini hits 91.1%; <a href="https://developers.google.com/health-ai-developer-foundations/medgemma/model-card" target="_blank">MedGemma 1.5</a> (Jan 2026) ships open weights, ~91% on MedQA, self-hostable.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧬</div><h4>BioMistral / BioGPT / PubMedBERT</h4>
+<div data-lang="zh"><p>學術系。BioMistral 以 Mistral-7B 為基底、繼續在 PubMed Central 訓練，Apache 2.0；BioGPT / PubMedBERT 是更早期的 encoder，常見於 NER 與 classification。</p></div>
+<div data-lang="en"><p>Academic line. BioMistral continues Mistral-7B on PubMed Central, Apache 2.0; BioGPT / PubMedBERT are earlier encoders still common for NER and classification.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚗️</div><h4>ChemCrow / Coscientist</h4>
+<div data-lang="zh"><p>工具型 agent。<a href="https://doi.org/10.1038/s42256-024-00832-8" target="_blank">ChemCrow (Bran et al., Nat Mach Intell 2024)</a> 把 GPT-4 接上 18 個化學工具（RDKit、reaction prediction、retrosynthesis），自主規劃合成路徑。</p></div>
+<div data-lang="en"><p>Tool-using agents. <a href="https://doi.org/10.1038/s42256-024-00832-8" target="_blank">ChemCrow (Bran et al., Nat Mach Intell 2024)</a> wraps GPT-4 with 18 chemistry tools (RDKit, reaction prediction, retrosynthesis) to autonomously plan syntheses.</p></div>
+</div>
+<div class="card"><div class="card-icon">🤖</div><h4>通用 LLM + RAG</h4>
+<div data-lang="zh"><p>Claude / GPT / Gemini 接 PubMed / UpToDate / 自家 EHR 文件向量庫。在 2026 多項 head-to-head 評比中，這條路在「真實臨床查詢」上經常勝過 fine-tune model。</p></div>
+<div data-lang="en"><p>Claude / GPT / Gemini hooked to PubMed / UpToDate / your EHR document vector store. In 2026 head-to-heads, this path often beats fine-tuned models on real clinical queries.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="二、MedQA 題目 × 四模型答案比較" data-en="II. MedQA Question × Four-Model Answer Comparison">二、MedQA 題目 × 四模型答案比較</h2>
+<div data-lang="zh"><p>選一道 MedQA 風格題目，比較四個模型的可能回答風格。注意「通用 + RAG」往往比 fine-tune 模型更謹慎標註不確定性。</p></div>
+<div data-lang="en"><p>Pick a MedQA-style question and compare four models' likely answer styles. Note that "general + RAG" tends to flag uncertainty more carefully than fine-tunes.</p></div>
+<div class="interactive-panel">
+  <div style="margin-bottom:14px"><label data-zh="選擇題目：" data-en="Pick a question:" style="font-weight:600">選擇題目：</label>
+    <select id="qPick" style="margin-left:10px;padding:6px 10px;border-radius:6px;border:1px solid var(--c-border,#ccc)">
+      <option value="0">Q1 — Diabetic ketoacidosis fluid</option>
+      <option value="1">Q2 — Warfarin INR target</option>
+      <option value="2">Q3 — Sepsis bundle timing</option>
+    </select>
+  </div>
+  <div id="qStem" style="padding:14px;background:var(--c-bg-alt);border-radius:8px;margin-bottom:14px;font-family:var(--font-mono);font-size:.88rem"></div>
+  <div id="modelAns" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作程式碼" data-en="HANDS-ON CODE">實作程式碼</div>
+<h2 data-zh="三、三種典型呼叫方式" data-en="III. Three Typical Invocation Patterns">三、三種典型呼叫方式</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'cb1')">BioMistral</button><button class="code-tab-btn" onclick="switchTab(this,'cb2')">MedGemma local</button><button class="code-tab-btn" onclick="switchTab(this,'cb3')">ChemCrow agent</button></div>
+<div class="code-tab-content active" id="cb1"><pre><span class="comment"># BioMistral 7B — Hugging Face transformers</span>
+<span class="kw">from</span> transformers <span class="kw">import</span> AutoTokenizer, AutoModelForCausalLM
+<span class="kw">import</span> torch
+
+tok = AutoTokenizer.from_pretrained(<span class="str">"BioMistral/BioMistral-7B"</span>)
+mdl = AutoModelForCausalLM.from_pretrained(
+    <span class="str">"BioMistral/BioMistral-7B"</span>,
+    torch_dtype=torch.bfloat16, device_map=<span class="str">"auto"</span>)
+
+prompt = <span class="str">"Question: What is the first-line antibiotic for community-acquired pneumonia in a healthy adult? Answer:"</span>
+inputs = tok(prompt, return_tensors=<span class="str">"pt"</span>).to(<span class="str">"cuda"</span>)
+out = mdl.generate(**inputs, max_new_tokens=<span class="num">200</span>, temperature=<span class="num">0.2</span>)
+<span class="func">print</span>(tok.decode(out[<span class="num">0</span>], skip_special_tokens=<span class="kw">True</span>))</pre></div>
+<div class="code-tab-content" id="cb2"><pre><span class="comment"># MedGemma 1.5 (4B / 27B) — on-prem inference via vLLM</span>
+<span class="comment"># pip install vllm</span>
+<span class="kw">from</span> vllm <span class="kw">import</span> LLM, SamplingParams
+
+llm = LLM(model=<span class="str">"google/medgemma-1.5-27b-it"</span>,
+          dtype=<span class="str">"bfloat16"</span>, tensor_parallel_size=<span class="num">2</span>)
+
+sp = SamplingParams(temperature=<span class="num">0.1</span>, max_tokens=<span class="num">512</span>)
+prompt = <span class="str">"""You are a clinical reasoning assistant.
+Patient: 58yo M, T2DM, presents with chest pain radiating to left arm.
+Q: What is the immediate workup priority?"""</span>
+
+resp = llm.generate([prompt], sp)
+<span class="func">print</span>(resp[<span class="num">0</span>].outputs[<span class="num">0</span>].text)
+<span class="comment"># Runs entirely inside hospital firewall — no PHI leaves the building.</span></pre></div>
+<div class="code-tab-content" id="cb3"><pre><span class="comment"># ChemCrow — GPT-4 + chemistry tools for synthesis planning</span>
+<span class="comment"># pip install chemcrow</span>
+<span class="kw">from</span> chemcrow.agents <span class="kw">import</span> ChemCrow
+
+agent = ChemCrow(model=<span class="str">"gpt-4-1106-preview"</span>, temp=<span class="num">0.1</span>)
+
+task = <span class="str">"""Propose a 3-step synthetic route from commercially
+available starting materials to atorvastatin's lactone form.
+For each step, give reagents, conditions, expected yield,
+and cite a literature precedent (DOI or patent)."""</span>
+
+result = agent.run(task)
+<span class="func">print</span>(result)
+<span class="comment"># ChemCrow autonomously calls: retrosynthesis, RDKit, SciFinder-like</span>
+<span class="comment"># tools, reaction-prediction model — outputs a planned route + sources.</span></pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模型比較" data-en="MODEL LANDSCAPE">模型比較</div>
+<h2 data-zh="四、5 種生醫 LLM 一覽表" data-en="IV. Five Biomedical LLMs Compared">四、5 種生醫 LLM 一覽表</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="模型" data-en="Model">模型</th><th data-zh="基底" data-en="Base">基底</th><th data-zh="訓練資料" data-en="Training data">訓練資料</th><th>MedQA</th><th data-zh="授權" data-en="License">授權</th><th data-zh="部署難度" data-en="Deploy effort">部署難度</th></tr></thead>
+<tbody>
+<tr><td>Med-Gemini</td><td>Gemini Pro</td><td data-zh="醫療文獻 + 臨床對話" data-en="Med lit + clinical dialog">醫療文獻 + 臨床對話</td><td>91.1%</td><td data-zh="Google API 限定" data-en="Google API only">Google API 限定</td><td data-zh="低（雲端）" data-en="Low (cloud)">低（雲端）</td></tr>
+<tr><td>MedGemma 1.5</td><td>Gemma 2</td><td data-zh="醫療影像 + 文本" data-en="Medical image + text">醫療影像 + 文本</td><td>~91%</td><td data-zh="開源權重（custom）" data-en="Open weights (custom)">開源權重（custom）</td><td data-zh="中（自架）" data-en="Med (self-host)">中（自架）</td></tr>
+<tr><td>BioMistral 7B</td><td>Mistral 7B</td><td>PubMed Central</td><td>~57%</td><td>Apache 2.0</td><td data-zh="低（單 GPU 跑得動）" data-en="Low (single GPU)">低（單 GPU 跑得動）</td></tr>
+<tr><td>BioGPT / PubMedBERT</td><td>GPT-2 / BERT</td><td>PubMed abstracts</td><td>~40–50%</td><td>MIT</td><td data-zh="極低（NER / classification 用）" data-en="Very low (NER / classification)">極低（NER / classification 用）</td></tr>
+<tr><td>ChemCrow</td><td>GPT-4 + tools</td><td data-zh="N/A（agent 架構）" data-en="N/A (agent framework)">N/A（agent 架構）</td><td>N/A</td><td>MIT (code)</td><td data-zh="中（需 GPT-4 API）" data-en="Med (needs GPT-4 API)">中（需 GPT-4 API）</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>2026 現實：</strong>多數真實生醫情境，「Claude Opus 4.6 + RAG（PubMed / UpToDate）」效能勝過任何單一 fine-tune 醫療 LLM，且引用可追溯。除非你 (a) 必須完全離線、(b) 要做特化工具呼叫，否則先考慮通用模型 + grounding。</span>
+<span data-lang="en"><strong>2026 reality:</strong> In most real biomed scenarios, "Claude Opus 4.6 + RAG (PubMed / UpToDate)" beats any single fine-tuned medical LLM and gives traceable citations. Unless you (a) must run fully offline or (b) need specialised tool calls, prefer general model + grounding.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="五、什麼時候該換掉通用 LLM？" data-en="V. When Should You Swap Out the General LLM?">五、什麼時候該換掉通用 LLM？</h2>
+<div class="decision-tree">
+<h4 data-zh="生醫 LLM 選型決策" data-en="Biomedical LLM Selection Flow">生醫 LLM 選型決策</h4>
+<div class="dt-node"><span class="dt-q">Q1</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>輸入是否含 PHI 且必須 on-prem？</strong>是 → MedGemma 1.5 / BioMistral 自架；否 → 進 Q2。</div><div data-lang="en"><strong>Does input contain PHI and require on-prem?</strong> Yes → self-host MedGemma 1.5 / BioMistral; No → go to Q2.</div></div>
+<div class="dt-node"><span class="dt-q">Q2</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>任務是否需要化學 / 蛋白特化工具？</strong>是 → ChemCrow 或自建 agent；否 → 進 Q3。</div><div data-lang="en"><strong>Need chemistry / protein specialised tools?</strong> Yes → ChemCrow or build your own agent; No → go to Q3.</div></div>
+<div class="dt-node"><span class="dt-q">Q3</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是否只是 NER / classification（不需要 generation）？</strong>是 → PubMedBERT / BioGPT 已足夠；否 → <strong>用通用 LLM + RAG（PubMed / UpToDate / 自家文件）</strong>。</div><div data-lang="en"><strong>Just NER / classification (no generation)?</strong> Yes → PubMedBERT / BioGPT suffices; No → <strong>use general LLM + RAG (PubMed / UpToDate / your docs)</strong>.</div></div>
+</div>
+</section>
+
+<!-- ===== Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：MedQA 高分卻無法部署、本地 BioMistral 規避雲端 BAA" data-en="Two deeper cases: high MedQA score but undeployable, and BioMistral self-hosted to dodge cloud BAA limits">兩個深入案例：MedQA 高分卻無法部署、本地 BioMistral 規避雲端 BAA</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🌐</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：Med-Gemini 91.1% MedQA，臨床部署卻被 latency 與 cost 擊敗</h4>
+<p>2024 年 Singhal 等人在 Med-Gemini 預印本上報告 MedQA-USMLE 91.1%，是當時的 SOTA。某美國醫療系統試圖把它整合到 ED triage 工作流程——預期一名急診醫師在病人 intake 時可即時得到 differential diagnosis 與建議檢查。實際部署 4 個月後，他們把 Med-Gemini 拔掉、改用「Claude 3.5 Sonnet + RAG（UpToDate、機構自家 clinical pathway 文件）」。原因有三：(1) <strong>latency 過大</strong>：Med-Gemini 在峰值時段平均回應 8–14 秒，醫師等不下去；GPT-5 / Claude 4.6 frontier 模型同樣的 prompt 約 2–4 秒。(2) <strong>cost 失控</strong>：medical fine-tune 的雲端 inference 單價是通用模型的 2.5–3 倍，每月帳單超出預算 60%。(3) <strong>引用無法追溯</strong>：Med-Gemini 的回答無法指向具體 source，而 RAG 路徑可直接附上 UpToDate 段落引用，後者更符合 documentation 需求。<strong>啟示</strong>：MedQA benchmark 高分不等於可部署。臨床落地考慮的是 latency、cost、traceability，frontier general + RAG 在 2026 多數情境下勝出。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: Med-Gemini hits 91.1% MedQA but loses clinical deployment on latency and cost</h4>
+<p>In 2024 Singhal et al. reported MedQA-USMLE 91.1% for Med-Gemini, then SOTA. A US health system attempted to integrate it into ED triage — an ED clinician would get differential diagnoses and recommended workups at patient intake. Four months in, they ripped Med-Gemini out and switched to "Claude 3.5 Sonnet + RAG (UpToDate, institutional clinical pathways)". Three reasons: (1) <strong>Latency was too high</strong>: Med-Gemini averaged 8–14 seconds at peak, intolerable for clinicians; frontier GPT-5 / Claude 4.6 served the same prompt in 2–4 seconds. (2) <strong>Cost spiralled</strong>: cloud inference on medical fine-tunes ran 2.5–3× the cost of general models, blowing the monthly budget by 60%. (3) <strong>Citations weren't traceable</strong>: Med-Gemini answers didn't point to specific sources, while the RAG pipeline attached exact UpToDate paragraphs — much better for documentation. <strong>The lesson</strong>: high MedQA scores ≠ deployable. Clinical reality is latency, cost, traceability; frontier general + RAG wins in most 2026 settings.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🔒</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：某 lab 自架 BioMistral 規避雲端 BAA 限制處理 patient genomic data</h4>
+<p>2025 年某美國醫學中心的轉譯醫學 lab 想用 LLM 自動把 patient genomic report（VCF + clinical notes 摘要）轉成可讀的家屬解釋稿。他們最初找 OpenAI Azure / Anthropic Bedrock 走 HIPAA BAA（Business Associate Agreement），但發現：(a) BAA 簽署流程要 8–12 週、(b) 每次 prompt 必須走 audit log、(c) 機構政策禁止任何 raw germline variant 上雲端，即便加密。最後他們在自家 GPU server 部署 <strong>BioMistral-7B + Apache 2.0 license</strong>，配合 LoRA fine-tune 5 萬筆內部報告（去識別化後），達成單張 A100 24GB 即可推論。在 100 份報告 blinded 評測中，遺傳諮詢師認為 BioMistral 草稿可用率 73%（vs Claude API + RAG 的 89%），但<strong>整體流程</strong>（從上線到產出第一份報告）BioMistral 路徑只花 6 週，而 Claude BAA 路徑 14 週仍未完成。<strong>啟示</strong>：在 PHI 受嚴格管制的環境下，開源領域 LLM 的價值不在於「比通用模型強」，而在於「能合法地跑」。BioMistral / MedGemma 等開源權重 + 自架是這類情境的剛需。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: A lab self-hosts BioMistral to bypass cloud BAA hurdles on patient genomic data</h4>
+<p>In 2025 a US academic medical centre's translational medicine lab wanted an LLM to auto-draft family-readable explanations from patient genomic reports (VCF + clinical note summaries). They first explored OpenAI Azure / Anthropic Bedrock with HIPAA BAA (Business Associate Agreement) but hit roadblocks: (a) BAA execution took 8–12 weeks; (b) every prompt had to pass an audit log; (c) institutional policy banned any raw germline variants from going to the cloud, even encrypted. They deployed <strong>BioMistral-7B (Apache 2.0)</strong> on their own GPU server with LoRA fine-tuning on 50k de-identified internal reports — single-A100-24GB inference. In 100 blinded reports, genetic counsellors rated BioMistral drafts usable 73% of the time (vs. 89% for Claude API + RAG), but <strong>end-to-end</strong> (zero to first report), BioMistral took 6 weeks while the Claude BAA path was still incomplete at 14 weeks. <strong>The lesson</strong>: under strict PHI rules, the value of open-source domain LLMs isn't "stronger than general" — it's "legally deployable". BioMistral / MedGemma + self-hosting is essential when the policy demands it.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="新手用生醫 LLM 最常踩的五個坑" data-en="Five common pitfalls when using biomedical LLMs">新手用生醫 LLM 最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：把 MedQA 高分當「臨床安全」</strong><br>
+為什麼錯：MedQA 是 multiple-choice 風格的考試題，跟「真實臨床決策」差距巨大。Singhal 2024 在 Med-PaLM 2 自己的後續評測中也承認，MedQA 分數與 holistic clinical evaluation 的相關性僅 r = 0.4–0.6。換言之，91% MedQA 不等於 91% 的臨床安全率。<br>
+正確做法：除了 MedQA，要看 holistic clinical evaluation（HumanRater 評分含 helpfulness、harm 風險、引用準確）、specialty-specific benchmark（如 NEJM AI 的 case challenges）、以及 simulated clinical scenarios。任何 deployment 都要 IRB + clinical validation。</div>
+<div data-lang="en"><strong>Pitfall 1: Treating high MedQA as "clinical safety"</strong><br>
+Why wrong: MedQA is multiple-choice exam material, far from real clinical decisions. Singhal 2024's own Med-PaLM 2 follow-up admits that MedQA scores correlate only r = 0.4–0.6 with holistic clinical evaluation. 91% MedQA ≠ 91% clinical safety.<br>
+Fix: beyond MedQA, look at holistic clinical evaluation (HumanRater on helpfulness, harm risk, citation accuracy), specialty-specific benchmarks (NEJM AI case challenges), and simulated clinical scenarios. Any deployment requires IRB + clinical validation.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：以為 domain fine-tune 一定贏通用 LLM + RAG</strong><br>
+為什麼錯：2023 年 Med-PaLM 2 的 76→86% 跳躍曾被視為 fine-tune 的勝利；但到了 2026 年，GPT-5、Claude 4.6 等 frontier 通用模型在 MedQA 已達 91–93%，加 RAG（PubMed、UpToDate）後在 holistic evaluation 上常常超過 Med-Gemini。原因是 frontier 模型推理能力 + RAG 提供即時證據 + 引用可追溯，比靜態 fine-tune 更靈活。<br>
+正確做法：選型時跑你的<strong>真實任務</strong>（不是 MedQA）做 head-to-head：通用 + RAG vs 領域 fine-tune。若差異 &lt; 5% 且 RAG 路徑 latency / cost / traceability 更好，選 RAG。</div>
+<div data-lang="en"><strong>Pitfall 2: Assuming domain fine-tune always beats general LLM + RAG</strong><br>
+Why wrong: Med-PaLM 2's 76→86% jump in 2023 looked like a fine-tune victory; but by 2026 GPT-5 / Claude 4.6 hit 91–93% MedQA, and with RAG (PubMed, UpToDate) they often beat Med-Gemini on holistic evaluation. Frontier reasoning + RAG fresh evidence + traceable citations outpaces static fine-tune.<br>
+Fix: when selecting, run your <strong>real task</strong> (not MedQA) head-to-head: general + RAG vs domain fine-tune. If the gap is &lt;5% and RAG wins on latency / cost / traceability, pick RAG.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：用 BioGPT 處理當代醫療指引</strong><br>
+為什麼錯：BioGPT 的 training cutoff 在 2021–2022。對於 2024 後的 ADA 糖尿病指引、ACC 心血管指引、NCCN 腫瘤指引、SSC sepsis bundle 2024 update 等，模型完全不知道。它仍會「自信地」生成過時的劑量、cutoff、treatment line。<br>
+正確做法：時效性敏感任務（臨床指引、新藥、新試驗）必用通用 frontier LLM + RAG（指向最新版指引文件），絕不用 BioGPT。BioGPT 適合的場景是「歷史文獻探勘、老 PubMed corpus 上的 NER / RE 預訓練起點」。</div>
+<div data-lang="en"><strong>Pitfall 3: Using BioGPT on current medical guidelines</strong><br>
+Why wrong: BioGPT's cutoff is 2021–2022. The 2024 ADA diabetes guideline, ACC cardiovascular guideline, NCCN oncology guideline, SSC sepsis bundle 2024 update — it knows none of these. It still "confidently" outputs stale doses, cutoffs, treatment lines.<br>
+Fix: time-sensitive tasks (clinical guidelines, new drugs, new trials) require frontier general LLM + RAG (pointed at the latest guideline docs). Never use BioGPT for these. BioGPT is fine for historical literature mining and as a starting point for NER / RE on older PubMed corpora.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：在弱 base model 上做 domain fine-tune</strong><br>
+為什麼錯：fine-tune 不會「無中生有」新的推理能力——若 base 模型本身 reasoning 弱，繼續訓練醫療文本只會放大 base 的限制。某團隊 2024 嘗試在 Llama 2 7B 上做醫療 SFT，MedQA 提升 6%，但 USMLE simulated clinical reasoning 反而下降——因為模型開始 overfit medical jargon，丟失 base 的 chain-of-thought 能力。<br>
+正確做法：選 fine-tune base 時，先看 base 在通用 reasoning benchmark（MMLU、GPQA、BBH）的表現；base 不行就不要 fine-tune。BioMistral 之所以可用，正是因為 Mistral-7B 本身就是當時開源中最強的 base。</div>
+<div data-lang="en"><strong>Pitfall 4: Domain fine-tuning a weak base model</strong><br>
+Why wrong: fine-tuning doesn't conjure new reasoning — if the base's reasoning is weak, continued medical training just amplifies the limits. A 2024 team tried medical SFT on Llama 2 7B; MedQA rose 6%, but USMLE simulated clinical reasoning <em>fell</em> — the model over-fit medical jargon and lost the base's chain-of-thought ability.<br>
+Fix: when picking a base for fine-tuning, check its general reasoning benchmarks (MMLU, GPQA, BBH) first; if the base is weak, don't fine-tune at all. BioMistral works because Mistral-7B was the strongest open base at the time.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：ChemCrow 沒接 lab safety database 就跑合成規劃</strong><br>
+為什麼錯：ChemCrow agent 能自主規劃合成路徑，但<strong>原版 18 工具不含 lab safety check</strong>（如 PubChem hazard、SDS、危險組合警告）。Bran et al. 2024 自己也承認，未經安全過濾的 plan 偶爾會建議「危險中間體」或「不應同 pot 反應的試劑組」。已有討論在 social media 對此提出倫理警示。<br>
+正確做法：部署 ChemCrow 或自家 chemistry agent 時，必加：(a) PubChem GHS hazard lookup、(b) DEA controlled substance check、(c) 機構 EHS rule 的 retrieval layer、(d) human-in-the-loop 在執行任何 wet-lab 前審核 plan。沒有 safety layer 不要讓 agent 自動下單試劑。</div>
+<div data-lang="en"><strong>Pitfall 5: Running ChemCrow synthesis planning without lab safety hooks</strong><br>
+Why wrong: ChemCrow autonomously plans syntheses, but the <strong>original 18-tool suite has no lab safety check</strong> (no PubChem hazard / SDS / dangerous-combo warnings). Bran et al. 2024 acknowledge unfiltered plans occasionally propose hazardous intermediates or incompatible co-reactants. Social-media ethics threads have flagged this.<br>
+Fix: when deploying ChemCrow or your own chemistry agent, you must add: (a) PubChem GHS hazard lookup, (b) DEA controlled-substance check, (c) institutional EHS retrieval layer, (d) human-in-the-loop review before any wet-lab execution. Don't let an agent auto-order reagents without a safety layer.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：domain fine-tune ROI、Med-PaLM 2 評測限制、ChemCrow 架構、PubMedBERT NER 差異" data-en="Advanced: domain fine-tune ROI, Med-PaLM 2 evaluation limits, ChemCrow architecture, PubMedBERT NER differences">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 Domain fine-tune ROI、Singhal 2024、ChemCrow 18 工具架構、PubMedBERT vs BERT for NER" data-en="🔬 Domain fine-tune ROI, Singhal 2024 limits, ChemCrow 18-tool architecture, PubMedBERT vs BERT for NER">🔬 Domain fine-tune ROI、Singhal 2024、ChemCrow 18 工具架構、PubMedBERT vs BERT for NER</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① Domain fine-tune ROI 計算框架。</strong>什麼時候 fine-tune 值得？簡單公式：<code>ROI = (Δaccuracy × use_count × value_per_correct) − (training_cost + maintenance_cost)</code>。在 2023 年 Med-PaLM 2 時代，Δaccuracy ≈ 10pp、use_count 大（USMLE benchmark）、value_per_correct 高（醫療 stakes）、frontier base 還不夠強，所以 fine-tune ROI 為正。2026 年三個變數都變了：frontier 通用 LLM 已達 91%+，Δaccuracy 縮到 1–3pp；medical RAG corpus 公開可得，等同 free maintenance；雲端 inference 比 fine-tune 自架便宜。除非有 PHI / on-prem / 特殊工具呼叫的剛需，domain fine-tune ROI 通常為負。</p>
+<p><strong>② Singhal 2024 Med-PaLM 2 評測限制。</strong>該論文（<em>Nat Med</em>）開創性地引入 human rater 評估 helpfulness、harm、bias、reasoning depth 等多維 quality。但同篇也承認三大限制：(a) <strong>rater agreement 不高</strong>，physician raters 之間的 inter-rater Cohen's κ 約 0.4–0.6（中度一致），意味著「人類專家自己都不太同意答案好不好」；(b) <strong>case 多為簡單病例</strong>，缺乏 ICU multi-organ failure、罕病、文化敏感等情境；(c) <strong>沒測 longitudinal patient interaction</strong>，只是 single-turn QA。這三個限制在 2024–2026 多項後續評測（Med-Gemini、MedGemma）也未充分解決。</p>
+<p><strong>③ ChemCrow 18 工具 architecture（Bran 2024）。</strong>ChemCrow 是 LangChain ReAct agent，GPT-4 為 reasoning engine，18 個工具大致分四類：(1) <strong>分子處理</strong> — RDKit canonicalisation、SMILES validation、molecular descriptor calculator；(2) <strong>反應預測</strong> — IBM RXN reaction prediction、Molecular Transformer for forward synthesis；(3) <strong>逆合成 retrosynthesis</strong> — AiZynthFinder、ASKCOS；(4) <strong>文獻 / 專利檢索</strong> — Web of Science wrapper、PatBase。Agent 流程：given task → reason about which tool to call → call → observe result → continue reasoning → next tool → … → final plan。已知 limitation：缺 safety layer、缺 cost-aware optimisation、缺 stereochemistry-aware retrosynthesis。後續 Coscientist（Boiko 2023 <em>Nature</em>）擴充到自動執行 wet-lab，引爆 dual-use 倫理討論。</p>
+<p><strong>④ PubMedBERT vs general BERT 對 NER 的差異。</strong>Gu et al. 2021 的核心發現：在 domain-specific token 上，<strong>從零訓的 in-domain BERT</strong>（PubMedBERT）勝過<strong>從通用 BERT continued 訓練</strong>（BioBERT）。原因：vocabulary 不同——通用 BERT 用 WordPiece 把醫療術語切得很碎（"acetaminophen" → "ace ##tam ##ino ##phen"），即便繼續訓練，token boundary 已固定；PubMedBERT 重新建 vocab，"acetaminophen" 可能成為單一 token。在 BC5CDR、ChemProt、JNLPBA 等 entity-level F1 上，PubMedBERT 比 BioBERT 高 1–4pp，比 general BERT 高 5–8pp。這對 NER / RE 是關鍵差異；但對 generation 任務，由於需要對齊 general world knowledge，純 in-domain BERT 反而不利，這也是 BioGPT（從通用 GPT-2 繼續）的設計理由。</p>
+<p><strong>⑤ 進階參考。</strong>Singhal 2023 / 2024 (Med-PaLM 2, Med-Gemini, <em>Nat Med</em>) · Bran et al. 2024 <em>Nat Mach Intell</em> (ChemCrow) · Boiko et al. 2023 <em>Nature</em> (Coscientist) · Labrak et al. 2024 EACL (BioMistral) · Gu et al. 2021 <em>ACM HEALTH</em> (PubMedBERT) · Lee et al. 2020 <em>Bioinformatics</em> (BioBERT) · Luo et al. 2022 <em>Brief Bioinform</em> (BioGPT) · Jin et al. 2021 (MedQA) · Bai et al. 2022 (Constitutional AI / RLAIF) · Lee et al. 2023 (RLAIF).</p>
+</div>
+<div data-lang="en">
+<p><strong>① An ROI framework for domain fine-tuning.</strong> When is fine-tuning worth it? Rough formula: <code>ROI = (Δaccuracy × use_count × value_per_correct) − (training_cost + maintenance_cost)</code>. In 2023 Med-PaLM 2 era, Δaccuracy ≈ 10pp, use_count high (USMLE benchmark), value_per_correct high (clinical stakes), and frontier bases weren't strong enough — so fine-tune ROI was positive. By 2026 all three change: frontier general LLMs hit 91%+, Δaccuracy shrinks to 1–3pp; medical RAG corpora are openly available = free maintenance; cloud inference is cheaper than self-hosted fine-tunes. Unless PHI / on-prem / specialised tool-use is a hard requirement, fine-tune ROI is usually negative.</p>
+<p><strong>② Singhal 2024 Med-PaLM 2 evaluation limits.</strong> The <em>Nat Med</em> paper pioneered human-rater scoring on helpfulness, harm, bias, reasoning depth — but also openly admits three limits: (a) <strong>rater agreement is modest</strong>: physician inter-rater Cohen's κ ≈ 0.4–0.6 (moderate), i.e., human experts don't fully agree on what counts as a good answer; (b) <strong>cases skew easy</strong>, lacking ICU multi-organ failure, rare disease, cultural sensitivity scenarios; (c) <strong>no longitudinal patient interaction</strong> — single-turn QA only. These limits remained largely unaddressed in 2024–2026 follow-up evaluations of Med-Gemini and MedGemma.</p>
+<p><strong>③ ChemCrow 18-tool architecture (Bran 2024).</strong> ChemCrow is a LangChain ReAct agent with GPT-4 as the reasoning engine and 18 tools in roughly four categories: (1) <strong>molecule handling</strong> — RDKit canonicalisation, SMILES validation, molecular descriptor calculator; (2) <strong>reaction prediction</strong> — IBM RXN, Molecular Transformer for forward synthesis; (3) <strong>retrosynthesis</strong> — AiZynthFinder, ASKCOS; (4) <strong>literature / patent search</strong> — Web of Science wrapper, PatBase. Loop: task → reason which tool → call → observe → reason → next tool → ... → final plan. Known limits: no safety layer, no cost-aware optimisation, no stereochemistry-aware retrosynthesis. The follow-up Coscientist (Boiko 2023 <em>Nature</em>) added wet-lab execution and ignited dual-use ethics debates.</p>
+<p><strong>④ PubMedBERT vs general BERT for NER.</strong> Gu et al. 2021's core finding: on domain-specific tokens, <strong>from-scratch in-domain BERT</strong> (PubMedBERT) beats <strong>continued-from-general BERT</strong> (BioBERT). Why: vocabulary — general BERT's WordPiece shreds medical terms ("acetaminophen" → "ace ##tam ##ino ##phen") and continued training can't fix the fixed boundary; PubMedBERT rebuilds vocab, possibly keeping "acetaminophen" as one token. On BC5CDR, ChemProt, JNLPBA entity-level F1, PubMedBERT beats BioBERT by 1–4pp and general BERT by 5–8pp. This matters for NER / RE; for generation, however, pure in-domain BERT hurts because you need general world knowledge — hence BioGPT continued from general GPT-2.</p>
+<p><strong>⑤ Key references.</strong> Singhal 2023 / 2024 (Med-PaLM 2, Med-Gemini, <em>Nat Med</em>) · Bran et al. 2024 <em>Nat Mach Intell</em> (ChemCrow) · Boiko et al. 2023 <em>Nature</em> (Coscientist) · Labrak et al. 2024 EACL (BioMistral) · Gu et al. 2021 <em>ACM HEALTH</em> (PubMedBERT) · Lee et al. 2020 <em>Bioinformatics</em> (BioBERT) · Luo et al. 2022 <em>Brief Bioinform</em> (BioGPT) · Jin et al. 2021 (MedQA) · Bai et al. 2022 (Constitutional AI / RLAIF) · Lee et al. 2023 (RLAIF).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: domain fine-tune 在 GPT-5 / Claude 4.6 時代還必要嗎？</h4>
+<p>2023 年 Med-PaLM 2 證明 fine-tune 可行；但 2026 frontier 通用模型已逼近其 MedQA 分數，且 RAG 路徑提供 traceable citations。某 PI 主張：「未來 5 年所有醫療任務都該走通用 + RAG，fine-tune 是浪費」；另一 PI 反對：「PHI / 邊緣裝置 / 客製化評估需求永遠存在」。<strong>請思考</strong>：你會在什麼條件下還選 fine-tune？「便宜的 fine-tune（LoRA + 7B）」與「貴的通用 API」的決策邊界在哪？學術 vs 工業界的答案會一樣嗎？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Is domain fine-tune still necessary in the GPT-5 / Claude 4.6 era?</h4>
+<p>2023 Med-PaLM 2 proved fine-tuning works; by 2026 frontier general LLMs match its MedQA and RAG offers traceable citations. One PI argues "all medical tasks should go general + RAG, fine-tune is wasted effort"; another counters: "PHI / edge devices / custom evaluation needs will always exist". <strong>Consider</strong>: under what conditions would you still pick fine-tune? Where's the boundary between "cheap fine-tune (LoRA + 7B)" and "expensive general API"? Will academia and industry answer the same?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 醫療 LLM 該對誰開放權重？</h4>
+<p>MedGemma 1.5 以 custom license 釋出（不完全 free，禁止某些 commercial use）；BioMistral 是 Apache 2.0 完全自由；Med-Gemini 只給 API。某團體主張「醫療 LLM 應 100% 開源，因為這關乎健康公平」；另一團體反對：「開源 medical LLM 可能被用於詐騙、假處方、misinformation，需要 license 與 access control」。<strong>請思考</strong>：你支持什麼 license 模式？「研究用免費、商用要 license」是合理折衷嗎？非英語 / 低資源國家在這場辯論中該如何安排？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: To whom should medical LLM weights be released?</h4>
+<p>MedGemma 1.5 ships under a custom license (not fully free, restricts some commercial use); BioMistral is Apache 2.0; Med-Gemini is API-only. One group argues "medical LLMs should be 100% open because health equity is at stake"; another says "open weights can fuel scams, fake prescriptions, and misinformation, so license and access control are needed". <strong>Consider</strong>: which license model do you support? Is "research free, commercial licensed" a reasonable middle ground? How should non-English / low-resource countries figure in this debate?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: ChemCrow 自主合成規劃該不該強制安全層？</h4>
+<p>ChemCrow 原版 18 工具沒有 lab safety check；Coscientist（Boiko 2023）甚至能自動下單試劑、控制 wet-lab 機械手臂。某社群提案「所有 chemistry agent 強制接 PubChem GHS / DEA / EHS 過濾層，否則不應發表」；某 author 反對：「研究論文若要求 production-grade safety，會阻礙開放科學」。<strong>請思考</strong>：學術 paper 中的 agent 該負哪些安全責任？dual-use（如毒物、化武前驅物）資訊該被 hard-coded 過濾嗎？誰來監督？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Should ChemCrow-style synthesis agents be required to ship a safety layer?</h4>
+<p>ChemCrow's 18 tools lack a lab safety check; Coscientist (Boiko 2023) even auto-orders reagents and drives wet-lab robotics. A community proposal: "every chemistry agent must integrate PubChem GHS / DEA / EHS filters, or it shouldn't be published"; authors push back: "requiring production-grade safety in research papers chills open science". <strong>Consider</strong>: what safety duties do paper-stage agents carry? Should dual-use info (toxins, CW precursors) be hard-coded out? Who oversees this?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: 病人能否要求「我的資料不要被 medical LLM 用」？</h4>
+<p>某醫院打算把去識別化 EHR 用於 fine-tune 內部 LLM。病人組織抗議：「即便去識別化，學習出來的模型仍由我的資料形塑，我有 opt-out 權」；機構回應：「IRB 已通過、HIPAA 已合規，opt-out 會嚴重削弱模型品質」。<strong>請思考</strong>：你支持哪邊？病人對自身資料的「informational autonomy」邊界在哪？對非營利 vs 商業 fine-tune 該用不同標準嗎？這跟 GDPR right to be forgotten 又該如何接軌？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Should patients be able to opt-out of medical-LLM training?</h4>
+<p>A hospital plans to fine-tune an internal LLM on de-identified EHR. A patient advocacy group protests: "even de-identified, the resulting model is shaped by my data — I want opt-out rights"; the institution counters: "IRB approved, HIPAA compliant, and opt-out severely weakens model quality". <strong>Consider</strong>: which side do you support? Where are the limits of "informational autonomy" over one's own data? Should non-profit vs commercial fine-tunes face different standards? How does this interact with GDPR's right to be forgotten?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">1. 2026 年，為什麼「通用 LLM + RAG」常常勝過 fine-tune 醫療 LLM？</p>
+<p data-lang="en">1. In 2026, why does "general LLM + RAG" often beat fine-tuned medical LLMs?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 通用 LLM 沒有醫療知識，較少 bias</span><span data-lang="en">A. General LLMs have no medical knowledge, so less bias</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. fine-tune 模型本來就不擅長 MedQA</span><span data-lang="en">B. Fine-tunes are inherently weak on MedQA</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 通用 LLM 推理能力強 + RAG 提供新證據 + 可引用來源</span><span data-lang="en">C. General LLMs have stronger reasoning + RAG supplies fresh evidence + citations are traceable</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. fine-tune 模型不能呼叫工具</span><span data-lang="en">D. Fine-tuned models cannot call tools</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">2. 你的醫院禁止任何病人資料離開內網。最適合的生醫 LLM 部署？</p>
+<p data-lang="en">2. Your hospital bans any patient data from leaving the network. Best biomed LLM deployment?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Med-Gemini via Google API</span><span data-lang="en">A. Med-Gemini via Google API</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. MedGemma 1.5 開源權重自架在內網 GPU</span><span data-lang="en">B. MedGemma 1.5 open weights self-hosted on internal GPUs</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 通用 ChatGPT.com</span><span data-lang="en">C. Public chatgpt.com</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. ChemCrow（需 GPT-4 API）</span><span data-lang="en">D. ChemCrow (needs GPT-4 API)</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">3. ChemCrow 的核心創新是什麼？</p>
+<p data-lang="en">3. What is ChemCrow's core innovation?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 在 100B 化學論文上 pre-train 的新模型</span><span data-lang="en">A. A new model pre-trained on 100B chemistry papers</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 第一個過 MedQA 90% 的醫療 LLM</span><span data-lang="en">B. First medical LLM to pass MedQA 90%</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 把 GPT-4 接上 18 個化學工具，能自主規劃合成路徑</span><span data-lang="en">C. Wraps GPT-4 with 18 chemistry tools to autonomously plan synthesis routes</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 開源 Apache 2.0 的醫療 LLM 權重</span><span data-lang="en">D. Open-source Apache 2.0 medical LLM weights</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你是某醫院 IT 部主管，臨床部門希望部署 LLM 協助病歷摘要。需求：(a) 病歷含 PHI，依機構政策不得上公有雲；(b) 預算每月 USD 5000；(c) 醫師希望回應 latency &lt; 3 秒；(d) 摘要必須附 reference / 可追溯。某顧問建議用 Med-Gemini cloud API；某內部 ML 工程師主張用 BioMistral 自架；某 IT 副主管想用 ChatGPT Plus 個人帳號。根據 2026 best practice，最該採取的方案？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. As hospital IT director, your clinical department wants an LLM to summarise charts. Requirements: (a) charts contain PHI and policy forbids public cloud; (b) budget USD 5000/month; (c) clinicians want latency &lt;3s; (d) summaries must carry references / be traceable. A consultant suggests Med-Gemini cloud API; an internal ML engineer pushes BioMistral self-hosting; an IT deputy suggests staff use personal ChatGPT Plus accounts. Per 2026 best practice, what's the right call?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Med-Gemini cloud API（最高 MedQA 分數）</span><span data-lang="en">A. Med-Gemini cloud API (top MedQA score)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 員工用個人 ChatGPT Plus（最便宜）</span><span data-lang="en">B. Personal ChatGPT Plus for staff (cheapest)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 直接用通用 GPT-5 API、加密 prompt 但不簽 BAA</span><span data-lang="en">C. Plain GPT-5 API with encrypted prompts but no BAA</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. MedGemma 1.5 或 BioMistral 自架在內網 GPU server，加 RAG（機構自家 clinical pathway 與 UpToDate offline），輸出附 source citation——PHI 不離院、可控 latency、預算可負擔</span><span data-lang="en">D. Self-host MedGemma 1.5 or BioMistral on internal GPU servers, add RAG (institutional clinical pathways + offline UpToDate), surface source citations — PHI stays in-house, latency controlled, budget feasible</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 PubMedBERT 與 BioBERT 在 NER 任務上的差異，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. Regarding PubMedBERT vs BioBERT on NER, which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 兩者完全相同</span><span data-lang="en">A. They are identical</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. BioBERT 比 PubMedBERT 強，因為從通用 BERT 繼續訓練保留更多 world knowledge</span><span data-lang="en">B. BioBERT beats PubMedBERT because continuing from general BERT retains more world knowledge</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. PubMedBERT 在 entity-level F1 上勝過 BioBERT 1–4pp（Gu 2021）。關鍵原因是 vocabulary：PubMedBERT 從零建立 in-domain vocab，可把「acetaminophen」當單一 token；BioBERT 繼承 general BERT 的 WordPiece 把它切成多個 sub-word，繼續訓練無法修正</span><span data-lang="en">C. PubMedBERT beats BioBERT by 1–4pp entity-level F1 (Gu 2021). The key reason is vocabulary: PubMedBERT builds an in-domain vocab from scratch so "acetaminophen" can be a single token; BioBERT inherits general BERT's WordPiece that shreds it into sub-words, and continued training can't fix the boundary</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. PubMedBERT 只用於 generation；BioBERT 只用於 NER</span><span data-lang="en">D. PubMedBERT is for generation only; BioBERT is for NER only</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="scfm.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 13: 單細胞 Foundation 模型" data-en="Step 13: Single-Cell Foundation Models">Step 13: 單細胞 Foundation 模型</span></a>
+<a href="bioimage.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 15: 生物影像 AI" data-en="Step 15: Bioimage AI">Step 15: 生物影像 AI</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// MedQA mock answers
+const QS={
+  zh:[
+    {stem:'58 歲男性，DKA 入院。pH 7.18，血糖 580，K+ 5.4。第一個小時最重要處置？',
+      a:{'Med-Gemini':'生理食鹽水 15–20 mL/kg/hr IV bolus；同時監測 K+，若 K+<5.3 加 KCl。胰島素 0.1 U/kg/hr 在補液開始後啟動。','MedGemma 1.5':'IV NS 1L over 1h；K+ 監測；regular insulin 0.1 U/kg/hr。標註：建議查證機構 DKA protocol。','BioMistral 7B':'Normal saline + insulin. (回答過短、缺劑量)','Claude Opus + RAG':'依 ADA 2024 DKA guideline (PMID: 36287829)：(1) 0.9% NS 15–20 mL/kg/hr；(2) K+ 評估；(3) insulin 待 K+>3.3 後再給。提供 3 條引用。'}},
+    {stem:'72 歲房顫病人，CHA2DS2-VASc=4，剛開始 warfarin。INR 目標？',
+      a:{'Med-Gemini':'INR 2.0–3.0（房顫無瓣膜病變標準）。','MedGemma 1.5':'INR 2–3。','BioMistral 7B':'INR 2 to 3.','Claude Opus + RAG':'根據 2023 ACC/AHA/ACCP/HRS guideline (DOI: 10.1016/j.jacc.2023.08.017)：非瓣膜性 AF，INR target 2.0–3.0。若瓣膜性，2.5–3.5。'}},
+    {stem:'懷疑 septic shock。Surviving Sepsis 1-hour bundle 應在多久內完成？',
+      a:{'Med-Gemini':'1 小時內：lactate、血培、廣效抗生素、30 mL/kg crystalloid (若 hypotension/lactate≥4)。','MedGemma 1.5':'Within 1 hour: cultures, antibiotics, lactate, fluids, vasopressor if needed.','BioMistral 7B':'Sepsis bundle in 1 hour.','Claude Opus + RAG':'SSC 2021 guideline 1-hour bundle (PMID: 34599691)：① measure lactate ② blood cultures pre-abx ③ broad-spectrum antibiotics ④ 30 mL/kg IV crystalloid ⑤ vasopressors if MAP<65 after fluid.'}}
+  ],
+  en:[
+    {stem:'58yo M, DKA. pH 7.18, glucose 580, K+ 5.4. Top priority in the first hour?',
+      a:{'Med-Gemini':'NS 15–20 mL/kg/hr IV bolus; monitor K+, add KCl if K+<5.3. Insulin 0.1 U/kg/hr after fluids start.','MedGemma 1.5':'IV NS 1L over 1h; K+ monitoring; regular insulin 0.1 U/kg/hr. Note: verify with institutional DKA protocol.','BioMistral 7B':'Normal saline + insulin. (too short, no dose)','Claude Opus + RAG':'Per ADA 2024 DKA guideline (PMID: 36287829): (1) 0.9% NS 15–20 mL/kg/hr; (2) assess K+; (3) hold insulin until K+>3.3. 3 citations provided.'}},
+    {stem:'72yo with AFib, CHA2DS2-VASc=4, starting warfarin. INR target?',
+      a:{'Med-Gemini':'INR 2.0–3.0 (non-valvular AF standard).','MedGemma 1.5':'INR 2–3.','BioMistral 7B':'INR 2 to 3.','Claude Opus + RAG':'Per 2023 ACC/AHA/ACCP/HRS guideline (DOI: 10.1016/j.jacc.2023.08.017): non-valvular AF, INR 2.0–3.0. Valvular: 2.5–3.5.'}},
+    {stem:'Suspected septic shock. SSC 1-hour bundle must be completed within?',
+      a:{'Med-Gemini':'Within 1 hour: lactate, cultures, broad-spectrum abx, 30 mL/kg crystalloid if hypotension/lactate≥4.','MedGemma 1.5':'Within 1 hour: cultures, antibiotics, lactate, fluids, vasopressor if needed.','BioMistral 7B':'Sepsis bundle in 1 hour.','Claude Opus + RAG':'SSC 2021 1-hour bundle (PMID: 34599691): (1) lactate (2) blood cultures pre-abx (3) broad-spectrum antibiotics (4) 30 mL/kg crystalloid (5) vasopressors if MAP<65 after fluids.'}}
+  ]
+};
+function renderQ(){
+  const i=+document.getElementById('qPick').value;
+  const L=window.I18n?I18n.get():'en';
+  const item=QS[L][i];
+  document.getElementById('qStem').textContent=item.stem;
+  const box=document.getElementById('modelAns');
+  box.innerHTML='';
+  Object.entries(item.a).forEach(([m,t])=>{
+    const d=document.createElement('div');
+    d.style.cssText='padding:10px;background:var(--c-bg-alt);border-radius:6px;border-left:3px solid var(--c-accent)';
+    d.innerHTML='<strong style="font-size:.82rem;color:var(--c-accent)">'+m+'</strong><p style="margin:6px 0 0;font-size:.82rem;line-height:1.5">'+t+'</p>';
+    box.appendChild(d);
+  });
+}
+document.getElementById('qPick').addEventListener('change',renderQ);
+document.addEventListener('langchange',renderQ);
+document.addEventListener('DOMContentLoaded',renderQ);
+
+// Quiz
+const QF={zh:{q1_y:'通用 LLM 推理 + RAG 提供新證據 + 引用可追溯，是 2026 的主流配方。',q2_y:'MedGemma 1.5 開源權重自架在內網 GPU，PHI 完全不離開機構。',q3_y:'ChemCrow 是 agent 架構：GPT-4 + 18 個化學工具，能自主規劃合成路徑。',q4_y:'唯一同時滿足 PHI 不離院、可控 latency、可負擔預算、可附 citation 的方案，是自架開源領域 LLM + RAG（MedGemma 1.5 或 BioMistral + 機構文件 + 離線 UpToDate）。Med-Gemini cloud（A）違反 PHI 政策；個人帳號（B）違反 HIPAA；無 BAA 直接走 GPT-5（C）也違規且不可追溯。',q5_y:'PubMedBERT（Gu 2021）在 BC5CDR、ChemProt 等 entity-level NER F1 上勝過 BioBERT 1–4pp、勝過 general BERT 5–8pp。關鍵不在「訓練資料量」而在 vocabulary：from-scratch in-domain vocab 可保留醫療術語為單一 token，continued-from-general 的 BioBERT 已被 WordPiece 切碎且無法修正。對 generation 任務則 BioGPT（從通用 GPT-2 繼續）反而合理，因為需要 world knowledge。'},en:{q1_y:'General LLM reasoning + RAG fresh evidence + traceable citations is the 2026 default.',q2_y:'MedGemma 1.5 open weights self-hosted on internal GPUs keeps all PHI in-house.',q3_y:'ChemCrow is an agent: GPT-4 + 18 chemistry tools, autonomously plans synthesis routes.',q4_y:'Only self-hosted open-source domain LLM + RAG (MedGemma 1.5 or BioMistral + institutional docs + offline UpToDate) meets every constraint: PHI stays in-house, latency controlled, budget feasible, citations traceable. Med-Gemini cloud (A) violates PHI policy; personal accounts (B) violate HIPAA; plain GPT-5 without BAA (C) is also non-compliant and non-traceable.',q5_y:'PubMedBERT (Gu 2021) beats BioBERT by 1–4pp and general BERT by 5–8pp on entity-level NER F1 (BC5CDR, ChemProt). The reason isn\'t training-data volume but vocabulary: from-scratch in-domain vocab can keep medical terms as single tokens, while BioBERT inherits general BERT\'s WordPiece that has already shredded them — continued training can\'t fix the boundary. For generation, BioGPT (continued from general GPT-2) is the right design because world knowledge is needed.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

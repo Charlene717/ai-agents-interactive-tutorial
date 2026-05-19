@@ -1,0 +1,557 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 1: AI &amp; LLM Foundations — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html" class="active">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 1 / 20</div>
+<h1 data-zh="AI 與 LLM 基礎" data-en="AI &amp; LLM Foundations">AI 與 LLM 基礎</h1>
+<p class="subtitle" data-lang="zh">理解 ML / DL / Transformer 怎麼變成今天的 Claude、GPT、Gemini——以及它們對你的研究真正能做什麼。</p>
+<p class="subtitle" data-lang="en">Understand how ML / DL / Transformers became today's Claude, GPT, Gemini — and what they can actually do for your research.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="十個你必須先認識的名詞" data-en="Ten terms you must know first">十個你必須先認識的名詞</h2>
+<div data-lang="zh"><p>後面所有章節都會反覆出現這些詞。先讀過一次，後面看到時就不會卡。每張卡片是 1 個術語的「最短可用定義」。</p></div>
+<div data-lang="en"><p>These ten words recur in every later chapter. Skim them once now and the rest of the tutorial will read smoothly. Each card is the shortest usable definition.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🌐</div><h4>AI</h4>
+<div data-lang="zh"><p><strong>Artificial Intelligence</strong>。讓電腦做出「看起來智能」的行為的任何技術——包含 1950 年代的規則系統、1980 年代的專家系統，到今天的深度學習。是最廣的傘狀詞。</p></div>
+<div data-lang="en"><p><strong>Artificial Intelligence</strong>: any technique that lets a computer appear intelligent — from 1950s rule systems and 1980s expert systems to today's deep learning. The broadest umbrella term.</p></div>
+</div>
+<div class="card"><div class="card-icon">📈</div><h4>ML</h4>
+<div data-lang="zh"><p><strong>Machine Learning</strong>。從資料中「學」出規律的演算法（regression、SVM、random forest、XGBoost），跟「人寫規則」相對。是 AI 的子集合。</p></div>
+<div data-lang="en"><p><strong>Machine Learning</strong>: algorithms that learn patterns from data (regression, SVM, random forest, XGBoost), as opposed to hand-written rules. A subset of AI.</p></div>
+</div>
+<div class="card"><div class="card-icon">🕸️</div><h4>DL</h4>
+<div data-lang="zh"><p><strong>Deep Learning</strong>。使用「多層神經網路」的 ML——CNN（影像）、RNN（序列）、Transformer（語言）。2012 年 AlexNet 以後成主流。</p></div>
+<div data-lang="en"><p><strong>Deep Learning</strong>: ML with multi-layer neural networks — CNN (images), RNN (sequences), Transformer (language). Has dominated since AlexNet (2012).</p></div>
+</div>
+<div class="card"><div class="card-icon">⚡</div><h4>Transformer</h4>
+<div data-lang="zh"><p>2017 年 Google「<em>Attention is All You Need</em>」論文提出的網路架構，核心是 self-attention（每個 token 看所有 token）。是現代 LLM 唯一骨幹。</p></div>
+<div data-lang="en"><p>The 2017 Google "Attention is All You Need" architecture, built around self-attention (each token attends to every other). The sole backbone of modern LLMs.</p></div>
+</div>
+<div class="card"><div class="card-icon">💬</div><h4>LLM</h4>
+<div data-lang="zh"><p><strong>Large Language Model</strong>。在數兆 token 上以 Transformer 訓練、能對任意自然語言輸入做下游任務的通用模型。Claude、GPT、Gemini、Llama 都是 LLM。</p></div>
+<div data-lang="en"><p><strong>Large Language Model</strong>: a Transformer trained on trillions of tokens, able to handle arbitrary natural-language tasks. Claude, GPT, Gemini, Llama are all LLMs.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏛️</div><h4>Foundation Model</h4>
+<div data-lang="zh"><p>2021 年 Stanford 提出的概念：用大規模自監督預訓練、可被下游任務 fine-tune 的通用模型。LLM 是其中一種，AlphaFold、scGPT、CLIP 也是。</p></div>
+<div data-lang="en"><p>A 2021 Stanford-coined term: self-supervised general-purpose models that downstream tasks fine-tune from. LLMs are one kind; AlphaFold, scGPT, and CLIP are others.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎓</div><h4>Pretraining</h4>
+<div data-lang="zh"><p>第一階段訓練：在巨量 unlabeled text（網頁、書、論文）上學「下一個 token」這個目標。耗時數百萬 GPU-hours，目的是學語言與世界知識。</p></div>
+<div data-lang="en"><p>Stage one: train on massive unlabeled text (web, books, papers) with a "next-token" objective. Costs millions of GPU-hours; teaches language and world knowledge.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>Fine-tuning</h4>
+<div data-lang="zh"><p>把預訓練模型在特定任務（如醫學問答、結構化抽取）的小資料集上再訓練。包含 SFT、RLHF、DPO、LoRA 等變體。能讓模型「專科化」。</p></div>
+<div data-lang="en"><p>Continue training a pretrained model on a small task-specific dataset (medical QA, structured extraction). Includes SFT, RLHF, DPO, and LoRA. "Specializes" the model.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔡</div><h4>Token</h4>
+<div data-lang="zh"><p>LLM 的最小處理單位——subword 片段，不是字、不是 word。「mitochondrial」≈ 1 token；「scRNA-seq」≈ 3–4 tokens；1 中文字 ≈ 1.5–2 tokens。計費依此。</p></div>
+<div data-lang="en"><p>The LLM's smallest unit — a subword piece, not a character or word. "mitochondrial" ≈ 1 token; "scRNA-seq" ≈ 3–4; 1 Chinese char ≈ 1.5–2. Billing is per token.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧭</div><h4>Embedding</h4>
+<div data-lang="zh"><p>把 token 或整段文字轉成的高維向量（768、1536 或 3072 維），讓「語意相似」的東西在向量空間中靠近。是 RAG、語意搜尋的基礎。</p></div>
+<div data-lang="en"><p>A high-dimensional vector (768, 1536, or 3072 dims) representing a token or text snippet. Semantically similar items lie close in that space. The basis of RAG and semantic search.</p></div>
+</div>
+</div>
+</section>
+
+<!-- ===== Beginner intro ===== -->
+<section class="section">
+<div class="section-label" data-zh="初學者導讀" data-en="GENTLE INTRO">初學者導讀</div>
+<h2 data-zh="兩個類比讓你「秒懂」LLM" data-en="Two analogies that make LLMs click">兩個類比讓你「秒懂」LLM</h2>
+<div data-lang="zh">
+<p><strong>類比 1：超強的「下一句填空」遊戲玩家。</strong>小時候大家玩過「我說一句你接下一句」的遊戲。LLM 就是這個遊戲的世界冠軍——它看完前面 100 萬個字（也就是 context），然後吐出「最合理的下一個字」。它一次只吐一個字，吐完再看一遍上下文，吐下一個。如此循環。它不是「想」出整段話，它是「逐字採樣」。理解這一點，就理解為什麼它能寫得很流利、又會突然冒出假 PMID——因為「最像 PMID 的東西」就是一串七位數字。</p>
+<p><strong>類比 2：實驗室裡的超博學新博後。</strong>剛來實驗室的博後讀過你領域裡幾乎所有 paper、會寫程式、會做圖、英文寫作流暢——但是他<strong>從沒進過你的實驗室</strong>。所以他不知道你的細胞株、你的 IRB 編號、你的 PI 偏好。他需要你給他<strong>背景</strong>（context）、<strong>任務</strong>（task）、<strong>規範</strong>（constraints）。給足了，他能幫你 10 倍速；給不足，他會「自由發揮」，編出聽起來很對但實際上錯的東西。Prompt 工程就是「跟新博後溝通的 SOP」。</p>
+</div>
+<div data-lang="en">
+<p><strong>Analogy 1: The world champion at "next-sentence" games.</strong> Remember the childhood game where you say a sentence and someone has to continue it? LLMs are the world champion at this. They read up to 1 million prior tokens (the context), then output "the most plausible next word." One word at a time, re-reading context after each. They don't "think up" a paragraph — they sample word by word. Once you see this, two things fall out: why they sound fluent, and why they sometimes invent a PMID — because "something PMID-shaped" is a 7-digit string.</p>
+<p><strong>Analogy 2: The brilliant new postdoc.</strong> A postdoc just joined your lab. They've read every paper in your field, code well, make figures, and write fluent English — but they <strong>have never been in your lab</strong>. They don't know your cell line, your IRB number, your PI's pet peeves. You have to brief them: give <strong>context</strong>, the <strong>task</strong>, and the <strong>constraints</strong>. Brief well and they multiply your speed 10×; brief poorly and they freelance, producing plausible-sounding nonsense. Prompt engineering is the SOP for talking to that postdoc.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼生醫研究者需要懂 LLM？" data-en="Why should biomedical researchers understand LLMs?">為什麼生醫研究者需要懂 LLM？</h2>
+<div data-lang="zh">
+<p>2026 年，AI 已經不再是「比較花俏的搜尋引擎」。一個受過訓練的研究員，用 Claude Opus 4.6 或 GPT-5.5 Pro，可以在 30 分鐘內把 50 篇相關論文濃縮為 systematic review 草稿；可以邊寫 grant 邊請 AI 同時做 outline、literature gap、budget justification；可以把 R 程式碼錯誤丟給 Claude Code，10 秒拿到 diff。</p>
+<p>但同樣的工具，若不理解它的<strong>本質與限制</strong>，會讓你：引用根本不存在的論文、把錯誤的 p-value 寫進稿件、在臨床資料上違反 HIPAA、被審稿人或 IRB 退件。這一章先把概念釐清——讓你後面所有的 prompt、agent、生醫專用工具都不會「黑箱崇拜」。</p>
+</div>
+<div data-lang="en">
+<p>By 2026, AI is no longer a fancier search engine. A trained researcher using Claude Opus 4.6 or GPT-5.5 Pro can compress 50 papers into a systematic-review draft in 30 minutes; draft a grant outline, gap analysis, and budget justification in parallel; debug R code by pasting the error into Claude Code and getting a diff in 10 seconds.</p>
+<p>But the same tools, used without understanding their <strong>nature and limits</strong>, will: cite papers that don't exist, write wrong p-values into manuscripts, breach HIPAA on clinical data, and get you desk-rejected or IRB-paused. This module clears the foundations so the prompt, agent, and domain-specific chapters that follow never feel like black-box magic.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>LLM 是一個<strong>機率性語言生成器</strong>，不是知識資料庫，不是邏輯推理機。它輸出的每一個 token 都是「在這段上下文之下，最可能的下一個字」。理解這一點，就理解了它為什麼會幻覺、為什麼 prompt 影響極大、為什麼需要 grounding。</span>
+<span data-lang="en"><strong>Core mindset:</strong> An LLM is a <strong>probabilistic text generator</strong> — not a knowledge base, not a logic engine. Every output token is "the most likely next word given the context." Once you grasp this, hallucinations, prompt sensitivity, and the need for grounding all become obvious.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="一、從 AI 到 LLM 的五層關係" data-en="I. From AI to LLM: Five Nested Layers">一、從 AI 到 LLM 的五層關係</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🌐</div><h4>AI</h4>
+<div data-lang="zh"><p>任何讓機器「看起來智能」的技術——包含規則系統、專家系統、ML、DL。</p></div>
+<div data-lang="en"><p>Any technology making machines "appear intelligent" — rule systems, expert systems, ML, DL.</p></div>
+</div>
+<div class="card"><div class="card-icon">📈</div><h4>ML</h4>
+<div data-lang="zh"><p>機器學習：從資料中學習模式（regression、SVM、random forest、XGBoost）。</p></div>
+<div data-lang="en"><p>Machine Learning: learn patterns from data (regression, SVM, random forest, XGBoost).</p></div>
+</div>
+<div class="card"><div class="card-icon">🕸️</div><h4>DL</h4>
+<div data-lang="zh"><p>深度學習：多層神經網路；包含 CNN、RNN、Transformer。</p></div>
+<div data-lang="en"><p>Deep Learning: multi-layer neural nets — CNN, RNN, Transformer.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚡</div><h4>Transformer</h4>
+<div data-lang="zh"><p>2017 Google「Attention is All You Need」提出的架構，是所有現代 LLM 的骨幹。</p></div>
+<div data-lang="en"><p>The 2017 Google "Attention is All You Need" architecture — the backbone of every modern LLM.</p></div>
+</div>
+<div class="card"><div class="card-icon">💬</div><h4>LLM</h4>
+<div data-lang="zh"><p>大型語言模型：以 Transformer 在數兆 token 上訓練的通用文本模型（Claude、GPT、Gemini）。</p></div>
+<div data-lang="en"><p>Large Language Model: a general-purpose text model trained on trillions of tokens with Transformers (Claude, GPT, Gemini).</p></div>
+</div>
+<div class="card"><div class="card-icon">🔬</div><h4>Foundation Model</h4>
+<div data-lang="zh"><p>更廣的概念：用大規模自監督訓練、可下游 fine-tune 的通用模型；LLM 是其中一種。</p></div>
+<div data-lang="en"><p>A broader notion: self-supervised, downstream-fine-tunable general models. LLMs are one kind.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="運作機制" data-en="HOW IT WORKS">運作機制</div>
+<h2 data-zh="二、Transformer 三步驟簡化版" data-en="II. Transformer in Three Simplified Steps">二、Transformer 三步驟簡化版</h2>
+<div class="workflow">
+  <div class="workflow-step" data-step="1"><h4 data-zh="① Tokenize：把文字切成小塊" data-en="① Tokenize: chop text into pieces">① Tokenize：把文字切成小塊</h4>
+  <div data-lang="zh"><p>「scRNA-seq」可能被切成 <code>["sc", "RNA", "-", "seq"]</code>。每個 token 變成一組數字向量（embedding）。</p></div>
+  <div data-lang="en"><p>"scRNA-seq" might split into <code>["sc", "RNA", "-", "seq"]</code>. Each token becomes a numeric vector (embedding).</p></div>
+  </div>
+  <div class="workflow-step" data-step="2"><h4 data-zh="② Self-Attention：每個 token「看」全部其他 token" data-en="② Self-Attention: every token attends to every other">② Self-Attention：每個 token「看」全部其他 token</h4>
+  <div data-lang="zh"><p>計算每對 token 之間的「相關度」，把上下文資訊融入每個位置。這就是模型「理解」語意的核心。</p></div>
+  <div data-lang="en"><p>Compute pairwise "relevance" between tokens, fusing context into every position. This is how the model "understands" meaning.</p></div>
+  </div>
+  <div class="workflow-step" data-step="3"><h4 data-zh="③ Predict：輸出「下一個 token 的機率分佈」" data-en="③ Predict: output a probability distribution over the next token">③ Predict：輸出「下一個 token 的機率分佈」</h4>
+  <div data-lang="zh"><p>模型不是一次生成整段，是逐 token sampling——溫度 (temperature) 控制隨機度。重複這個步驟，直到產生 stop token。</p></div>
+  <div data-lang="en"><p>The model doesn't emit whole paragraphs at once — it samples one token at a time. Temperature controls randomness. Repeat until a stop token.</p></div>
+  </div>
+</div>
+
+<details class="accordion-item" style="margin-top:18px">
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 資深讀者深入：Self-attention 的數學與架構演進" data-en="🔬 Deeper dive: the math of self-attention &amp; architectural evolution">🔬 資深讀者深入：Self-attention 的數學與架構演進</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p>對每個 token i，self-attention 計算三個投影：<code>Q_i = W_Q · x_i</code>，<code>K_i = W_K · x_i</code>，<code>V_i = W_V · x_i</code>。token i 對 token j 的 attention weight 為 <code>α_ij = softmax_j ( Q_i · K_j / √d_k )</code>，最終輸出是 <code>Σ_j α_ij · V_j</code>。整段話 n 個 token，全部 pair 的計算是 O(n²)——這是為什麼 1M context 雖然可行，但 attention 矩陣需要 (1M)² = 10¹² 個 floats、約 4 TB，必須用 FlashAttention（Dao 2022）這類分塊算法才能塞進 GPU。</p>
+<p>架構演進的關鍵節點：2017 vanilla Transformer → 2018 BERT（encoder-only，雙向）→ 2018–2020 GPT-1/2/3（decoder-only，單向自回歸）→ 2022 InstructGPT 引入 RLHF → 2023 LLaMA/Mistral 推開源 → 2024 Mamba/S4 嘗試線性 attention → 2025 MoE（Mixture of Experts，DeepSeek V3 / GPT-5）讓總參數爆增但 active 參數變少 → 2026 多模態原生（GPT-5.5、Gemini 2.5 把影像/影片直接 tokenize）。對讀者最務實的洞察是：所有 closed model（Claude、GPT、Gemini）的核心仍是 decoder-only Transformer + RLHF/DPO，差異主要在 scale、data quality、post-training 三件事，而不在「架構秘技」。</p>
+<p>記憶曲線提醒：1M context 不代表 1M 都能等效檢索。RULER（Hsieh 2024）等 benchmark 顯示，多數 frontier model 在實際長文 reasoning 上「有效 context」約為宣稱值的 50–70%。重要事實放在開頭或結尾 (lost-in-the-middle, Liu 2024 TACL) 是工程常識。</p>
+</div>
+<div data-lang="en">
+<p>For each token i, self-attention computes three projections: <code>Q_i = W_Q · x_i</code>, <code>K_i = W_K · x_i</code>, <code>V_i = W_V · x_i</code>. The attention weight from token i to token j is <code>α_ij = softmax_j ( Q_i · K_j / √d_k )</code>, and the output is <code>Σ_j α_ij · V_j</code>. Over n tokens, full pairwise computation is O(n²): for n = 1M the attention matrix has 10¹² floats (~4 TB), which is why FlashAttention (Dao 2022) and other tiled algorithms are required.</p>
+<p>Key milestones: 2017 vanilla Transformer → 2018 BERT (encoder-only, bidirectional) → 2018–2020 GPT-1/2/3 (decoder-only autoregressive) → 2022 InstructGPT (RLHF) → 2023 LLaMA/Mistral (open weights) → 2024 Mamba/S4 (linear attention attempts) → 2025 MoE (DeepSeek V3 / GPT-5) inflates total params while keeping active params small → 2026 native multimodality (GPT-5.5, Gemini 2.5 tokenize image/video directly). The practical takeaway: every closed model (Claude, GPT, Gemini) is still a decoder-only Transformer with RLHF/DPO. Differences are mainly scale, data quality, and post-training — not magical architectures.</p>
+<p>Recall caveat: 1M context does not mean uniform 1M retrievability. Benchmarks like RULER (Hsieh 2024) show "effective context" is typically 50–70% of the advertised value. Put critical facts at the start or end (lost-in-the-middle, Liu 2024 TACL) — common engineering wisdom.</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Learning paradigms ===== -->
+<section class="section">
+<div class="section-label" data-zh="學習範式" data-en="LEARNING PARADIGMS">學習範式</div>
+<h2 data-zh="監督 / 自監督 / 強化學習：三種訓練 LLM 的方式" data-en="Supervised / Self-supervised / Reinforcement — three ways to train LLMs">監督 / 自監督 / 強化學習：三種訓練 LLM 的方式</h2>
+<div data-lang="zh"><p>LLM 之所以強大，是<strong>三種範式疊加</strong>的結果：先用「自監督」吃下半個網際網路，再用「監督」教它好好對話，最後用「強化學習」對齊人類偏好。任何一種單獨用都做不出 ChatGPT。</p></div>
+<div data-lang="en"><p>What makes modern LLMs powerful is the <strong>stacking</strong> of three paradigms: self-supervised pretraining devours half the internet, supervised fine-tuning teaches conversation, reinforcement learning aligns to human preference. None alone produces a ChatGPT.</p></div>
+<table class="comp-table">
+<thead><tr><th data-zh="範式" data-en="Paradigm">範式</th><th data-zh="信號" data-en="Signal">信號</th><th data-zh="LLM 對應階段" data-en="LLM stage">LLM 階段</th><th data-zh="典型資料量" data-en="Typical data">資料量</th><th data-zh="代表方法" data-en="Methods">方法</th></tr></thead>
+<tbody>
+<tr><td data-zh="自監督 Self-Supervised" data-en="Self-Supervised"><strong>自監督</strong></td><td data-zh="從資料本身造目標（下一個 token）" data-en="Targets come from the data itself (next token)">從資料本身造目標</td><td data-zh="Pretraining" data-en="Pretraining">Pretraining</td><td>10–30 T tokens</td><td>Next-token prediction · MLM</td></tr>
+<tr><td data-zh="監督 Supervised" data-en="Supervised"><strong>監督</strong></td><td data-zh="人類標註的「正確答案」" data-en="Human-labelled "correct answer"">人工標註答案</td><td>SFT (Supervised Fine-tuning)</td><td>10K–1M demos</td><td data-zh="指令對話樣本" data-en="Instruction–response pairs">指令對話樣本</td></tr>
+<tr><td data-zh="強化學習 RL" data-en="Reinforcement Learning"><strong>強化學習</strong></td><td data-zh="人類偏好或可驗證 reward" data-en="Human preference or verifiable reward">人類偏好 / reward</td><td>RLHF · DPO · RLAIF</td><td>100K–1M 比較</td><td>PPO · DPO · GRPO</td></tr>
+</tbody>
+</table>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>研究者視角：</strong>你做 RNA-seq 訓練個分類器 (e.g., 細胞型別 → 監督)、做 contrastive embedding (自監督)、做 active learning (RL-ish)——你已經懂這三種範式的味道了，只是 LLM 在 trillion-token 量級上跑而已。</span>
+<span data-lang="en"><strong>Researcher's view:</strong> If you've trained a cell-type classifier (supervised), made contrastive embeddings (self-supervised), or run active learning (RL-ish), you already know these flavors. LLMs just run them at trillion-token scale.</span>
+</div></div>
+</section>
+
+<!-- ===== Why 2017 Transformer was the turning point ===== -->
+<section class="section">
+<div class="section-label" data-zh="歷史" data-en="HISTORY">歷史</div>
+<h2 data-zh="為什麼 2017 年的 Transformer 是 AI 的「分水嶺」？" data-en="Why was 2017's Transformer the watershed?">為什麼 2017 年的 Transformer 是 AI 的「分水嶺」？</h2>
+<div data-lang="zh">
+<p>在 2017 年之前，處理語言的主流是 <strong>RNN / LSTM</strong>（一個字一個字依序看）。問題有三：(1) 無法平行計算（必須等前一個字算完）；(2) 長距離依賴衰減（一段話 20 個字後，開頭的資訊就被「遺忘」）；(3) GPU 利用率低，scale 不上去。</p>
+<p>2017 年 6 月 Vaswani 等八人在 Google Brain 投出「Attention is All You Need」，提出 <strong>純 attention</strong> 架構：每個位置可以一次看到整句、所有 pair 都平行算。這直接解鎖了「<strong>scaling law</strong>」（Kaplan 2020、Hoffmann 2022 Chinchilla）——資料越多、模型越大、loss 越低；2018 GPT-1 → 2019 GPT-2 → 2020 GPT-3 → 2022 ChatGPT → 2024 Claude 3 → 2025 GPT-5。所有現代 LLM 都還是這個架構的後代。</p>
+<p>對研究者的啟示是：技術跳變很少由「比較好調參」帶來，多半由「<strong>讓 scaling 變可能的架構改變</strong>」帶來。AlphaFold 2、scGPT、ESM-3 之所以可能，都依賴 Transformer 這層基建。</p>
+</div>
+<div data-lang="en">
+<p>Before 2017, language was dominated by <strong>RNN / LSTM</strong> models (one token at a time). Three pain points: (1) no parallelism (must wait for the prior token); (2) long-range decay (information from 20 tokens back is "forgotten"); (3) low GPU utilization, can't scale.</p>
+<p>In June 2017, eight Google Brain authors submitted "Attention is All You Need," proposing a <strong>pure-attention</strong> architecture: every position sees the entire sentence at once, and all pairs compute in parallel. This single move unlocked <strong>scaling laws</strong> (Kaplan 2020, Hoffmann 2022 Chinchilla) — more data + bigger model = lower loss. From 2018 GPT-1 → GPT-2 → GPT-3 → 2022 ChatGPT → 2024 Claude 3 → 2025 GPT-5. Every modern LLM is a descendant.</p>
+<p>The research lesson: real jumps in capability rarely come from "better tuning." They come from architectural shifts that <strong>make scaling possible</strong>. AlphaFold 2, scGPT, and ESM-3 are all downstream of this Transformer foundation.</p>
+</div>
+</section>
+
+<!-- ===== Real-world case studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="REAL-WORLD CASES">真實案例</div>
+<h2 data-zh="兩個真實的生醫 AI 故事" data-en="Two real biomed AI stories">兩個真實的生醫 AI 故事</h2>
+
+<div class="callout tip" style="display:block"><div style="display:flex;gap:10px;align-items:start;margin-bottom:8px"><span class="callout-icon">🩺</span><strong data-zh="案例 A：Eric Topol 與 GPT-4 在心電圖解讀的開放實驗" data-en="Case A: Eric Topol's open experiment with GPT-4 on ECGs">案例 A：Eric Topol 與 GPT-4 在心電圖解讀的開放實驗</strong></div>
+<div data-lang="zh"><p>Eric Topol（Scripps 創新主任、《Deep Medicine》作者）在 2023–2024 年多次公開分享他把<strong>單張心電圖</strong>丟給 GPT-4 / GPT-4V，請它先給「3 個最可能的 differential diagnosis + 各自的支持/反對證據」。多次測試中，模型在「AV block、QT 延長、LBBB、心房顫動」等典型 pattern 上判斷準確率與資深心臟科住院醫師相當；但在「電軸偏移 + 結構性心臟病的合併判讀」上常常給出「教科書式但臨床無關的」答案。他的結論是：<strong>AI 不是要取代心臟科醫師，是把住院醫師「升級」成資深心臟科的速度加倍</strong>。重點是醫師依然下最終判斷，並且要學會「會問模型對的問題」。這個案例後來被收進他在 Nature Medicine 與多場演講中「AI as a co-pilot, not autopilot」的論述核心。</p></div>
+<div data-lang="en"><p>Eric Topol (Scripps Translational, author of <em>Deep Medicine</em>) repeatedly shared, throughout 2023–2024, an open experiment: he fed <strong>single 12-lead ECG images</strong> to GPT-4 / GPT-4V and asked for "the three most likely differential diagnoses with supporting and opposing evidence." Across many cases, the model matched senior cardiology residents on classic patterns (AV block, prolonged QT, LBBB, atrial fibrillation) but produced "textbook-but-clinically-irrelevant" answers when axis deviation combined with structural disease. His conclusion: <strong>AI does not replace cardiologists — it doubles the rate at which residents grow into seniors</strong>. The clinician still decides; the trick is "asking the model the right question." This case became central to his Nature Medicine essays and talks framing AI as "co-pilot, not autopilot."</p></div>
+</div>
+
+<div class="callout tip" style="display:block"><div style="display:flex;gap:10px;align-items:start;margin-bottom:8px"><span class="callout-icon">🧬</span><strong data-zh="案例 B：DeepMind AlphaFold 2 釋出 2 億+ 結構徹底改寫結構生物學" data-en="Case B: DeepMind AlphaFold 2's 200M+ structures reshaped structural biology">案例 B：DeepMind AlphaFold 2 釋出 2 億+ 結構徹底改寫結構生物學</strong></div>
+<div data-lang="zh"><p>2020 年 DeepMind 在 CASP14 用 <strong>AlphaFold 2</strong> 把蛋白結構預測的 GDT_TS 推到接近實驗解析度（中位 92），震驚整個結構生物學社群。2021–2022 年他們把模型開源並與 EMBL-EBI 合作建立 <strong>AlphaFold Protein Structure Database</strong>，到 2024 年釋出超過 <strong>2 億個</strong>預測結構，涵蓋幾乎所有 UniProt 蛋白。這直接改變了多個學科的日常工作流：藥物設計可以從「等 X-ray 結晶」變成「先看 AlphaFold 結構」；微生物學者可以快速看冷門菌的 effector domain；某 PI 在實驗室會議告訴博後：「不要再花 6 個月做 crystal — 先看 AlphaFold，再決定值不值得做」。這個案例的教學意義是：<strong>一個 foundation model 釋出的結構資料庫，可以比任何單一發現更深遠地改變一個領域</strong>。2024 AlphaFold 3 進一步覆蓋蛋白-蛋白-小分子-核酸交互作用，繼續擴大這個版圖。</p></div>
+<div data-lang="en"><p>At CASP14 in 2020, DeepMind's <strong>AlphaFold 2</strong> pushed structure prediction's median GDT_TS into the experimental range (~92), shocking the structural-biology community. In 2021–2022 they open-sourced the model and partnered with EMBL-EBI to build the <strong>AlphaFold Protein Structure Database</strong>, releasing more than <strong>200 million</strong> predicted structures by 2024 — covering nearly all of UniProt. Daily workflows shifted overnight: drug design now starts with "look up AlphaFold first"; microbiologists profile obscure effector domains in minutes; one PI famously told a postdoc, "Don't spend six months on crystals — check AlphaFold first." The teaching point: <strong>a single foundation-model-derived database can reshape a field more than any one paper ever could</strong>. AlphaFold 3 (2024) extended this to protein–protein–ligand–nucleic-acid complexes.</p></div>
+</div>
+</section>
+
+<!-- ===== Interactive: Param Counter ===== -->
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="互動 ① 模型參數量計算器" data-en="Interactive ① Model Parameter Counter">互動 ① 模型參數量計算器</h2>
+<div data-lang="zh"><p>玩玩看：拖動 hidden dim 與 layer 數，看一個「假想 Transformer」會有多少參數。<strong>近似公式：</strong>每層約 <code>12 · d² + 13 · d</code> 個參數（含 attention 的 Q/K/V/O 矩陣 + FFN 4d 中介層 + LayerNorm）。實際模型還要加上 vocab embedding (vocab × d) 與 positional embedding。</p></div>
+<div data-lang="en"><p>Play with the sliders below: hidden dimension and layer count produce parameter count for a toy Transformer. <strong>Approx formula:</strong> each layer ≈ <code>12 · d² + 13 · d</code> (Q/K/V/O matrices + FFN 4d intermediate + LayerNorm). Real models also add vocab embedding (vocab × d) and positional embedding.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="Hidden dimension (d)" data-en="Hidden dimension (d)">Hidden dim (d)</span> <span id="pcD">4096</span></label><input type="range" id="pcDSlider" min="256" max="16384" value="4096" step="128"></div>
+<div class="slider-group"><label><span data-zh="層數 (L)" data-en="Layers (L)">層數 (L)</span> <span id="pcL">32</span></label><input type="range" id="pcLSlider" min="6" max="128" value="32" step="2"></div>
+<div class="slider-group"><label><span data-zh="詞彙量 (vocab)" data-en="Vocab size">詞彙量</span> <span id="pcV">128000</span></label><input type="range" id="pcVSlider" min="32000" max="256000" value="128000" step="8000"></div>
+<div style="margin-top:14px;padding:14px;background:var(--c-bg-alt);border-radius:8px;text-align:center">
+  <div data-lang="zh" style="font-size:.82rem;color:var(--c-ink-muted);margin-bottom:4px">總參數量 ≈</div>
+  <div data-lang="en" style="font-size:.82rem;color:var(--c-ink-muted);margin-bottom:4px">Total parameters ≈</div>
+  <div id="pcOut" style="font-family:var(--font-mono);font-size:1.5rem;color:var(--c-highlight);font-weight:700">—</div>
+  <div id="pcCompare" style="margin-top:8px;font-size:.82rem;color:var(--c-ink-muted)"></div>
+</div>
+</div>
+</section>
+
+<!-- ===== Interactive: ML task classifier ===== -->
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="互動 ② ML 任務分類器：點點看屬於哪種學習" data-en="Interactive ② ML Task Classifier: which paradigm?">互動 ② ML 任務分類器：點點看屬於哪種學習</h2>
+<div data-lang="zh"><p>點下方任一個生醫任務，看看它屬於監督、自監督、還是強化學習。點完所有再看自己的判斷正確率。</p></div>
+<div data-lang="en"><p>Click any biomedical task below to see whether it's supervised, self-supervised, or reinforcement learning. Click them all to see your score.</p></div>
+<div class="interactive-panel">
+<div id="mlTasks" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"></div>
+<div id="mlTaskScore" style="margin-top:14px;text-align:center;font-family:var(--font-mono);color:var(--c-ink-muted)"></div>
+</div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="COMMON PITFALLS">常見誤區</div>
+<h2 data-zh="新手最常踩的 6 個坑" data-en="Six mistakes beginners always make">新手最常踩的 6 個坑</h2>
+<div class="callout warn" style="display:block"><div data-lang="zh">
+<ol style="margin:4px 0 0 18px;line-height:1.85;padding:0">
+<li><strong>把 LLM 當成「會記事實的資料庫」</strong>——它記的是 token co-occurrence，不是 fact，所以會自信地給你假 PMID。</li>
+<li><strong>覺得「模型越大越好」</strong>——許多日常任務（grammar fix、JSON 抽取）小模型已經足夠，省 10× 成本。</li>
+<li><strong>把整個 1 GB BAM 檔貼進 chat</strong>——LLM 不會 parse binary；先 sample / 統計再丟。</li>
+<li><strong>同一個 prompt 連問三次得不同答案就崩潰</strong>——這是 stochastic sampling，不是 bug。要重現請把 temperature=0 或固定 seed。</li>
+<li><strong>不分敏感資料就丟到 chatgpt.com</strong>——PHI / 病人資料必須走 BAA 或 on-prem，這是 HIPAA 紅線。</li>
+<li><strong>盲信「temperature=0 就不會錯」</strong>——它只是讓輸出穩定，不會讓 fact 變對；幻覺與 temperature 弱相關。</li>
+</ol></div>
+<div data-lang="en">
+<ol style="margin:4px 0 0 18px;line-height:1.85;padding:0">
+<li><strong>Treating the LLM as a factual database</strong> — it stores token co-occurrence, not facts, so it confidently fabricates PMIDs.</li>
+<li><strong>"Bigger is always better"</strong> — many daily tasks (grammar fix, JSON extraction) run fine on small models at 10× lower cost.</li>
+<li><strong>Pasting a 1 GB BAM into chat</strong> — LLMs can't parse binary; sample or summarize first.</li>
+<li><strong>Panicking that three identical prompts give three different answers</strong> — that's stochastic sampling, not a bug. Set temperature = 0 (or fix a seed) to reproduce.</li>
+<li><strong>Dropping PHI into chatgpt.com</strong> — patient data must go through BAA or on-prem. HIPAA red line.</li>
+<li><strong>Believing "temperature = 0 means no errors"</strong> — it only stabilizes output. Hallucinations are only weakly tied to temperature.</li>
+</ol></div></div>
+</section>
+
+<!-- ===== Biostats / Maths Perspective ===== -->
+<section class="section">
+<div class="section-label" data-zh="生統數理視角" data-en="BIOSTATS / MATHS VIEW">生統數理視角</div>
+<h2 data-zh="給統計背景讀者的進階註腳" data-en="Footnotes for the statistically inclined">給統計背景讀者的進階註腳</h2>
+<div data-lang="zh">
+<p><strong>① Softmax 與 temperature 的數學形式。</strong>對 logits <code>z = (z_1, …, z_V)</code>（V 為詞彙量），帶 temperature T 的機率為 <code>p_i(T) = exp(z_i / T) / Σ_j exp(z_j / T)</code>。T → 0 退化為 argmax；T → ∞ 退化為均勻分布。當 T = 1 即一般 softmax。Temperature 不改變排序，只改變「熵」——低 T 熵小，輸出可預測；高 T 熵大，輸出多樣。可視為 softmax 後的<strong>溫度調整 Gibbs 分布</strong>，跟模擬退火同源。</p>
+<p><strong>② Cross-entropy loss 與 perplexity。</strong>訓練 LLM 的目標函數是負對數似然 <code>L = − (1/N) · Σ log p(x_t | x_&lt;t)</code>。Perplexity = <code>exp(L)</code>，可理解為「模型在每一步平均要從幾個 token 中猶豫」。GPT-3 在 The Pile 上 PPL ≈ 9，現代 frontier 大致 3–5。</p>
+<p><strong>③ Scaling law 的統計學詮釋。</strong>Kaplan 2020 與 Chinchilla（Hoffmann 2022）顯示，loss L 與計算量 C、資料量 D、參數量 N 之間在對數尺度上近似冪律：<code>L(N,D) ≈ A · N^(-α) + B · D^(-β) + L_∞</code>。可視為一個三變量的非線性回歸，且訓練成本 C ≈ 6 · N · D 是強約束。「最佳 token 數 ≈ 20 倍參數量」這個經驗法則就是從這個拉格朗日最佳化推出來的。</p>
+<p><strong>④ Bayesian 視角。</strong>把 LLM 看作 <code>p(output | prompt, θ)</code>，prompt 工程其實是「在改 prior 與條件分布」。RLHF 則是用偏好資料移動 posterior，DPO（Rafailov 2023）證明可以直接最大化偏好對的似然，省去 PPO 的價值函數。</p>
+</div>
+<div data-lang="en">
+<p><strong>① Softmax with temperature.</strong> For logits <code>z = (z_1, …, z_V)</code>, the temperature-T probabilities are <code>p_i(T) = exp(z_i / T) / Σ_j exp(z_j / T)</code>. T → 0 collapses to argmax; T → ∞ becomes uniform. Temperature does not change ranking, only entropy. This is the Gibbs distribution with inverse-temperature 1/T — same family as simulated annealing.</p>
+<p><strong>② Cross-entropy loss and perplexity.</strong> LLM training minimizes negative log-likelihood <code>L = − (1/N) · Σ log p(x_t | x_&lt;t)</code>. Perplexity = <code>exp(L)</code>: "how many tokens is the model effectively hesitating between at each step?" GPT-3 on The Pile ≈ 9; frontier models today ≈ 3–5.</p>
+<p><strong>③ Scaling laws as nonlinear regression.</strong> Kaplan 2020 and Chinchilla (Hoffmann 2022) found loss follows an approximate power law in compute C, data D, and parameters N: <code>L(N,D) ≈ A · N^(-α) + B · D^(-β) + L_∞</code>, with the strong constraint C ≈ 6 · N · D. The "≈ 20 tokens per parameter" heuristic comes from the Lagrangian optimum.</p>
+<p><strong>④ Bayesian framing.</strong> Treat an LLM as <code>p(output | prompt, θ)</code>. Prompt engineering is "changing the conditioning"; RLHF moves the posterior with preference data; DPO (Rafailov 2023) skips PPO's value function by maximizing preference-pair likelihood directly.</p>
+</div>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="思考題" data-en="DISCUSSION">思考題</div>
+<h2 data-zh="跟你的同儕一起討論這些問題" data-en="Discuss these with your peers">跟你的同儕一起討論這些問題</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>🧭 Q1</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你的 PI 剛剛在 lab meeting 上說「AI 寫出來的東西不能信，我們實驗室禁止使用 ChatGPT」。但你已經發現它能幫你 debug R 程式碼省下幾小時。<strong>問題：</strong>你會怎麼說服 PI 允許「合規且揭露」的 AI 使用？你會準備哪些證據？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Your PI just declared in lab meeting "AI can't be trusted; ChatGPT is banned." But you've seen it save you hours of R debugging. <strong>Question:</strong> How would you persuade your PI to allow "compliant and disclosed" AI use? What evidence would you bring?</p></div></div>
+<div class="card"><h4>🧬 Q2</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你研究方向是癌症免疫治療，最近正在 review TCR-engineered T cell 文獻。<strong>問題：</strong>在這個研究流程的哪一步，AI 加速最有價值？哪一步你寧可慢慢做也不交給 AI？為什麼？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> You work on cancer immunotherapy and are reviewing TCR-engineered T-cell literature. <strong>Question:</strong> At which step in your workflow does AI add the most value? Which step would you rather do slowly by hand? Why?</p></div></div>
+<div class="card"><h4>⚖️ Q3</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你的同事用 ChatGPT 「<em>幫忙</em>」寫了一段 Methods 而沒揭露。期刊現在普遍要求「揭露 AI 使用」。<strong>問題：</strong>你會如何處理？如果是 PI 自己這樣做呢？對「揭露」的邊界你怎麼想——只揭露 substantive contribution、還是任何「拼字檢查以上」的使用？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> A colleague used ChatGPT to "help" write the Methods without disclosure. Most journals now require AI-use disclosure. <strong>Question:</strong> How would you handle it? What if the PI did the same? Where do you draw the disclosure line — substantive contributions only, or anything beyond spell-check?</p></div></div>
+<div class="card"><h4>🌏 Q4</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你的實驗室主要做中文/英文雙語研究，但 LLM 在英文上明顯更強且更便宜（中文 token 數 ~1.7×）。<strong>問題：</strong>你會選擇統一用英文跟模型互動、還是用中文？如果有非英文母語的合作者呢？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Your lab works bilingually, but LLMs are clearly stronger and cheaper in English (Chinese ≈ 1.7× tokens). <strong>Question:</strong> Will you standardize all model interaction in English or keep Chinese? What if you have non-native-English collaborators?</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="Temperature 與生成行為" data-en="Temperature &amp; Generation Behavior">Temperature 與生成行為</h2>
+<div data-lang="zh"><p>拖動 temperature，看模型在「下一個 token」上會做出多保守或多冒險的選擇。<strong>低溫</strong>讓模型聚焦於高機率字（適合醫學 fact、code）；<strong>高溫</strong>讓罕見字也有機會（適合 brainstorm、創意改寫）。</p></div>
+<div data-lang="en"><p>Drag the temperature to see how conservative or adventurous the model gets on its next token. <strong>Low temp</strong> concentrates on high-probability words (good for medical facts, code); <strong>high temp</strong> opens the door to rare words (good for brainstorming, creative rewrites).</p></div>
+<div class="interactive-panel">
+  <div class="slider-group"><label><span data-zh="Temperature" data-en="Temperature">Temperature</span> <span id="tempVal">0.70</span></label><input type="range" id="tempSlider" min="0" max="200" value="70" step="5"></div>
+  <p data-lang="zh" style="margin-top:14px"><strong>Prompt：</strong>「在心肌組織的 scRNA-seq 分析中，最重要的 QC 指標是」</p>
+  <p data-lang="en" style="margin-top:14px"><strong>Prompt:</strong> "In scRNA-seq analysis of cardiac tissue, the most important QC metric is"</p>
+  <div id="tokenList" style="margin:16px 0;display:flex;flex-direction:column;gap:6px"></div>
+  <p style="font-size:.85rem;color:var(--c-ink-muted);text-align:center"><span data-zh="長條越長 = 被選中的機率越高。Temperature 越高機率分佈越平。" data-en="Longer bar = higher selection probability. Higher temperature flattens the distribution.">長條越長 = 被選中的機率越高。Temperature 越高機率分佈越平。</span></p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模型比較" data-en="MODEL LANDSCAPE">模型比較</div>
+<h2 data-zh="三、2026 年五大主流模型一覽" data-en="III. The 2026 Big Five at a Glance">三、2026 年五大主流模型一覽</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="家族" data-en="Family">家族</th><th data-zh="最強模型" data-en="Flagship">最強模型</th><th>Context</th><th data-zh="特色" data-en="Strength">特色</th><th data-zh="授權" data-en="License">授權</th></tr></thead>
+<tbody>
+<tr><td>Anthropic Claude</td><td>Opus 4.6 / Sonnet 4.6</td><td>1M</td><td data-zh="長文本推理、agentic coding（SWE-bench 80%）、安全對齊" data-en="Long-context reasoning, agentic coding (SWE-bench 80%), safety">長文本推理、agentic coding（SWE-bench 80%）、安全對齊</td><td data-zh="商用 API" data-en="Commercial API">商用 API</td></tr>
+<tr><td>OpenAI GPT</td><td>GPT-5.5 Pro</td><td>1M</td><td data-zh="原生多模態（文/圖/音/影片）、最廣 ecosystem" data-en="Native multimodality (text/image/audio/video), broadest ecosystem">原生多模態（文/圖/音/影片）、最廣 ecosystem</td><td data-zh="商用 API" data-en="Commercial API">商用 API</td></tr>
+<tr><td>Google Gemini</td><td>Gemini 2.5 Pro</td><td>1M–2M</td><td data-zh="深度整合 Workspace / Vertex；PDF / YouTube 直接吃" data-en="Deep Workspace / Vertex integration; ingests PDFs and YouTube">深度整合 Workspace / Vertex；PDF / YouTube 直接吃</td><td data-zh="商用 API" data-en="Commercial API">商用 API</td></tr>
+<tr><td>Meta Llama 4</td><td>Maverick / Scout</td><td>~10M (Scout)</td><td data-zh="開源權重、可自架（700M MAU 條款）" data-en="Open weights, self-hostable (700M MAU clause)">開源權重、可自架（700M MAU 條款）</td><td data-zh="Meta custom" data-en="Meta custom">Meta custom</td></tr>
+<tr><td>Alibaba Qwen / DeepSeek</td><td>Qwen 3.5 / DeepSeek V4 Pro</td><td>1M</td><td data-zh="完全開源（Apache 2.0 / MIT）、SWE 80%+、多語" data-en="Fully open (Apache 2.0 / MIT), SWE 80%+, multilingual">完全開源（Apache 2.0 / MIT）、SWE 80%+、多語</td><td>Apache 2.0 / MIT</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>研究選型建議：</strong>處理病人資料 → 需要 BAA / on-prem（Azure OpenAI、AWS Bedrock、自架開源）。一般科研 → 直接用商用 API。預算敏感且資料非敏感 → 開源模型（DeepSeek V4 / Qwen 3.5）效能已逼近商用，可自架。</span>
+<span data-lang="en"><strong>Practical choice:</strong> Patient data → require BAA or on-prem (Azure OpenAI, AWS Bedrock, self-host). General research → commercial API. Budget-tight + non-sensitive data → open-source (DeepSeek V4, Qwen 3.5) now rivals commercial, self-host friendly.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實務 prompt 範例" data-en="HANDS-ON PROMPT">實務 prompt 範例</div>
+<h2 data-zh="四、第一個專業 prompt" data-en="IV. Your First Professional Prompt">四、第一個專業 prompt</h2>
+<div data-lang="zh"><p>從「請幫我解釋 RNA-seq」這種 prompt，升級為提供角色、上下文、輸出格式三件套：</p></div>
+<div data-lang="en"><p>Upgrade "please explain RNA-seq" into a prompt that names role, context, and output format:</p></div>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'bad1')">❌ 不好</button><button class="code-tab-btn" onclick="switchTab(this,'good1')">✅ 專業</button></div>
+<div class="code-tab-content active" id="bad1"><pre>請幫我解釋 RNA-seq.
+<span class="comment"># Please explain RNA-seq.</span>
+
+<span class="comment"># 問題：太籠統，模型不知道你的層次、用途、需要多深。</span>
+<span class="comment"># Problem: too generic — model doesn't know your level, purpose, or depth.</span></pre></div>
+<div class="code-tab-content" id="good1"><pre><span class="kw">Role:</span> 你是生醫研究指導教授，擅長把複雜方法說給臨床醫師聽。
+<span class="kw">Context:</span> 對象是剛入學的內科住院醫師，他想知道 bulk RNA-seq 與 scRNA-seq 差在哪、各
+適合什麼研究問題、有哪些 2024–2026 年的新技術。
+<span class="kw">Task:</span> 用 400 字以內，分三段（原理／應用差異／2024–2026 重點趨勢）說明，每段附
+1 個臨床情境例子。
+<span class="kw">Format:</span> 繁體中文 markdown；每段標題使用 ## ；最後給 3 條延伸閱讀（含 PMID）。
+<span class="kw">Constraint:</span> 若資料不確定，請註明「需查證」而非虛構 PMID。</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="五、什麼任務該用 AI、什麼任務不該？" data-en="V. When to Use AI, When Not To">五、什麼任務該用 AI、什麼任務不該？</h2>
+<div class="decision-tree">
+<h4 data-zh="生醫研究 AI 適用判斷流程" data-en="Decision Flow for Biomed AI Use">生醫研究 AI 適用判斷流程</h4>
+<div class="dt-node"><span class="dt-q">Q1</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>輸入是否含 PHI / 病人識別資料？</strong>是 → 必須使用 BAA / on-prem / 去識別化後處理；否 → 進 Q2。</div><div data-lang="en"><strong>Does the input contain PHI / patient identifiers?</strong> Yes → require BAA / on-prem / de-identify first; No → go to Q2.</div></div>
+<div class="dt-node"><span class="dt-q">Q2</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>輸出將直接寫入論文或臨床決策？</strong>是 → 必須人類審核 + 引用驗證 + 揭露；否 → 進 Q3。</div><div data-lang="en"><strong>Will output go directly into a manuscript or clinical decision?</strong> Yes → human review + citation verification + disclosure; No → go to Q3.</div></div>
+<div class="dt-node"><span class="dt-q">Q3</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>任務是否屬於「轉換 / 重組 / 草稿 / debug」？</strong>是 → AI 加速 5–10×；否（如：新穎科學論證）→ 主導權仍在人類。</div><div data-lang="en"><strong>Is the task "transform / restructure / draft / debug"?</strong> Yes → AI gives 5–10× speedup; No (e.g., novel scientific argument) → human stays in the lead.</div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">1. 一個 LLM 在「下一個 token」這個層級實際在做什麼？</p>
+<p data-lang="en">1. At the "next token" level, what is an LLM actually doing?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 從訓練語料中精確查詢答案</span><span data-lang="en">A. Looking up exact answers from training data</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 推理出邏輯一致的命題</span><span data-lang="en">B. Deriving logically consistent propositions</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 從上下文計算下一個 token 的機率分佈，並 sampling</span><span data-lang="en">C. Computing a probability distribution over the next token given context, then sampling</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 把整段話一次生成</span><span data-lang="en">D. Generating the whole passage in one shot</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">2. 你需要在臨床資料（含病人識別碼）上跑分析、希望用 LLM 輔助 debug。最合適做法？</p>
+<p data-lang="en">2. You need to debug analysis code on clinical data (with patient identifiers) using LLM help. Best approach?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 把整份 csv 貼到 chatgpt.com</span><span data-lang="en">A. Paste the entire CSV into chatgpt.com</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 使用有 BAA 的企業版（Azure OpenAI / ChatGPT Enterprise / Claude for Work）並去識別化資料</span><span data-lang="en">B. Use an enterprise plan with a BAA (Azure OpenAI / ChatGPT Enterprise / Claude for Work) and de-identify data</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 不要用 AI，全部自己 debug</span><span data-lang="en">C. Don't use AI, debug everything manually</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 換用開源模型在公雲 GPU 上跑</span><span data-lang="en">D. Switch to open-source model on public-cloud GPU</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">3. 你想要 LLM 幫你寫一段創意的研究故事介紹 (intro hook)。Temperature 設定建議？</p>
+<p data-lang="en">3. You want the LLM to write a creative intro hook for a research story. Suggested temperature?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 0.0（完全確定）</span><span data-lang="en">A. 0.0 (deterministic)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 0.2（極低）</span><span data-lang="en">B. 0.2 (very low)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 0.7–1.0（中高，鼓勵多樣性）</span><span data-lang="en">C. 0.7–1.0 (medium-high, encourages variety)</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 不影響</span><span data-lang="en">D. Doesn't matter</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 一位資深 PI 找你協助：他想了解 self-supervised learning 為什麼是 LLM 預訓練主流。他自己背景是 wet-lab molecular biology，10 年沒寫過程式碼。他並沒否認 AI 重要，他只是看著 GPT-4 / Claude 3 困惑「為什麼這些東西沒人告訴它答案就會自己學會？」。你決定用 30 秒解釋一個核心觀念。下列哪個說法最準確且最容易聽懂？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. A senior PI asks for help understanding why self-supervised learning dominates LLM pretraining. Wet-lab molecular biologist, no coding for 10 years. Not dismissive — genuinely puzzled: "how do these things learn anything without labels?" You have 30 seconds. Which explanation is most accurate AND most accessible?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 「就是讓模型背 wikipedia」</span><span data-lang="en">A. "It just memorizes Wikipedia"</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 「人類花了 1000 萬小時標註資料」</span><span data-lang="en">B. "Humans labeled it for 10 million hours"</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 「強化學習打贏 AlphaGo 後就會做這個」</span><span data-lang="en">C. "Same as AlphaGo, just RL"</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 「目標就是『遮住一個字猜回來』——標籤是『資料自己』；網路上的文本天然就是訓練樣本，所以可以擴到兆級。」</span><span data-lang="en">D. "The target is 'mask a word, guess it back' — the label IS the data itself; web text is automatically a training sample, which is why it scales to trillions."</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">5. 一個 70B 參數模型跟 7B 模型在你「JSON 結構化抽取病歷 ICD-10」任務上，下列何者為真？</p>
+<p data-lang="en">5. On your "structured ICD-10 extraction from charts" task, comparing a 70B-parameter model to a 7B one, which is most likely true?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 70B 必然 10× 準確、值得多花成本</span><span data-lang="en">A. 70B is necessarily 10× more accurate and worth the cost</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 兩者在「結構化抽取」這類「窄任務」差距常 &lt;3%，7B 已足，70B 是浪費</span><span data-lang="en">B. On narrow structured tasks the gap is often &lt;3%; 7B suffices, 70B is overkill</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 7B 完全沒用</span><span data-lang="en">C. 7B is useless</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 7B 比 70B 在所有任務上都強</span><span data-lang="en">D. 7B is better than 70B everywhere</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>6. Softmax 分布的 temperature T → 0 時，分佈在數學上會逼近？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 6. As temperature T → 0 in a softmax distribution, the distribution approaches?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 均勻分布（每個 token 同機率）</span><span data-lang="en">A. Uniform distribution (every token equal)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 高斯分布</span><span data-lang="en">B. Gaussian</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 退化為 argmax，整個機率集中在最大 logit 的 token（接近 one-hot）</span><span data-lang="en">C. Collapses to argmax — one-hot at the largest-logit token</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 維持原狀</span><span data-lang="en">D. Unchanged</span></div>
+</div><div class="quiz-feedback" id="fb6"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="index.html"><span class="nav-dir" data-zh="← 回主頁" data-en="← Hub">← 回主頁</span><span class="nav-title" data-zh="教學首頁" data-en="Tutorial Hub">教學首頁</span></a>
+<a href="tokens.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 2: Token 與 Context Window" data-en="Step 2: Tokens &amp;amp; Context Window">Step 2: Token 與 Context Window</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Temperature simulator
+const TOKENS={
+  zh:[{w:'粒線體比例',p:0.55},{w:'基因數',p:0.18},{w:'雙細胞偵測',p:0.12},{w:'測序深度',p:0.08},{w:'ambient RNA',p:0.04},{w:'染色質可及性',p:0.02},{w:'空間位置',p:0.01}],
+  en:[{w:'mitochondrial fraction',p:0.55},{w:'gene count',p:0.18},{w:'doublet detection',p:0.12},{w:'sequencing depth',p:0.08},{w:'ambient RNA',p:0.04},{w:'chromatin accessibility',p:0.02},{w:'spatial location',p:0.01}]
+};
+function softmax(arr,T){const m=Math.max(...arr);const e=arr.map(x=>Math.exp((x-m)/T));const s=e.reduce((a,b)=>a+b,0);return e.map(x=>x/s);}
+function updateTemp(){
+  const t=Math.max(0.05,+document.getElementById('tempSlider').value/100);
+  document.getElementById('tempVal').textContent=t.toFixed(2);
+  const L=window.I18n?I18n.get():'en';
+  const tokens=TOKENS[L];
+  const logits=tokens.map(x=>Math.log(x.p));
+  const probs=softmax(logits,t);
+  const list=document.getElementById('tokenList');
+  list.innerHTML='';
+  tokens.forEach((tok,i)=>{
+    const row=document.createElement('div');
+    row.style.display='flex';row.style.alignItems='center';row.style.gap='10px';
+    const pct=probs[i]*100;
+    row.innerHTML=`<div style="min-width:130px;font-family:var(--font-mono);font-size:.85rem">${tok.w}</div><div style="flex:1;height:18px;background:var(--c-bg-alt);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct.toFixed(1)}%;background:linear-gradient(90deg,var(--c-accent),var(--c-highlight));"></div></div><div style="min-width:50px;font-family:var(--font-mono);font-size:.78rem;color:var(--c-ink-muted);text-align:right">${pct.toFixed(1)}%</div>`;
+    list.appendChild(row);
+  });
+}
+document.getElementById('tempSlider').addEventListener('input',updateTemp);
+document.addEventListener('langchange',updateTemp);
+document.addEventListener('DOMContentLoaded',updateTemp);
+
+// Param counter
+function fmt(n){if(n>=1e12)return(n/1e12).toFixed(2)+' T';if(n>=1e9)return(n/1e9).toFixed(2)+' B';if(n>=1e6)return(n/1e6).toFixed(2)+' M';return n.toLocaleString();}
+function pcUpdate(){
+  const d=+document.getElementById('pcDSlider').value;
+  const L=+document.getElementById('pcLSlider').value;
+  const V=+document.getElementById('pcVSlider').value;
+  document.getElementById('pcD').textContent=d;
+  document.getElementById('pcL').textContent=L;
+  document.getElementById('pcV').textContent=V.toLocaleString();
+  const perLayer=12*d*d+13*d;
+  const embed=V*d;
+  const total=perLayer*L+embed;
+  document.getElementById('pcOut').textContent=fmt(total);
+  const lang=window.I18n?I18n.get():'en';
+  let near='';
+  if(total<5e8)near=lang==='zh'?'≈ 比 GPT-2 small 還小':'≈ smaller than GPT-2 small';
+  else if(total<5e9)near=lang==='zh'?'≈ Llama 3 8B / Mistral 7B 等級':'≈ Llama 3 8B / Mistral 7B range';
+  else if(total<5e10)near=lang==='zh'?'≈ Llama 3 70B / Mixtral 等級':'≈ Llama 3 70B / Mixtral range';
+  else if(total<5e11)near=lang==='zh'?'≈ GPT-3 175B / Claude Opus 估計':'≈ GPT-3 175B / Claude Opus range';
+  else near=lang==='zh'?'≈ 兆級 MoE（GPT-5 / DeepSeek V3 等估計）':'≈ trillion-scale MoE (estimated GPT-5 / DeepSeek V3)';
+  document.getElementById('pcCompare').textContent=near;
+}
+['pcDSlider','pcLSlider','pcVSlider'].forEach(id=>document.getElementById(id).addEventListener('input',pcUpdate));
+document.addEventListener('langchange',pcUpdate);
+document.addEventListener('DOMContentLoaded',pcUpdate);
+
+// ML task classifier
+const ML_TASKS=[
+  {zh:'用 1 萬筆腫瘤切片影像+病理科醫師標註訓練分類器',en:'Train a classifier on 10K tumour slides + pathologist labels',ans:'sup'},
+  {zh:'BERT 預訓練：遮住一個 token 讓模型猜回來',en:'BERT pretraining: mask a token and predict it',ans:'self'},
+  {zh:'RLHF：人類標註「A 回答比 B 好」訓練 reward model',en:'RLHF: humans label "A is better than B" to train a reward model',ans:'rl'},
+  {zh:'用蛋白序列做 masked language modelling 預訓練 ESM',en:'Pretrain ESM with masked-language modelling on protein sequences',ans:'self'},
+  {zh:'用 1000 個藥物-靶點 binary label 訓練 binding 預測',en:'Train binding predictor on 1000 labeled drug-target pairs',ans:'sup'},
+  {zh:'AlphaGo Zero 用自我對弈獲得 reward 學棋',en:'AlphaGo Zero learns chess by self-play rewards',ans:'rl'},
+  {zh:'SimCLR 對比學習，用同張影像的兩個增強版作正樣本',en:'SimCLR contrastive learning: two augmentations of the same image are positives',ans:'self'},
+  {zh:'用 logistic regression + 5000 病人 outcome label 訓練風險模型',en:'Train a logistic-regression risk model on 5000 labeled patient outcomes',ans:'sup'}
+];
+function renderTasks(){
+  const L=window.I18n?I18n.get():'en';
+  const w=document.getElementById('mlTasks');w.innerHTML='';
+  const LABEL={sup:{zh:'監督',en:'Supervised',color:'rgba(40,140,90,0.25)'},self:{zh:'自監督',en:'Self-Supervised',color:'rgba(60,110,200,0.25)'},rl:{zh:'強化',en:'RL',color:'rgba(200,120,40,0.25)'}};
+  ML_TASKS.forEach((t,i)=>{
+    const c=document.createElement('div');
+    c.style.cssText='cursor:pointer;padding:12px;background:var(--c-bg-alt);border:1px solid var(--c-border-light);border-radius:8px;transition:.15s;font-size:.84rem';
+    c.innerHTML=`<div>${t[L]}</div><div class="ml-label" style="margin-top:8px;font-size:.7rem;color:var(--c-ink-muted)">${L==='zh'?'點擊揭曉':'click to reveal'}</div>`;
+    c.onclick=()=>{
+      if(c.dataset.done)return;c.dataset.done='1';
+      c.style.background=LABEL[t.ans].color;
+      c.querySelector('.ml-label').innerHTML=`<strong>${LABEL[t.ans][L]}</strong>`;
+      const total=document.querySelectorAll('#mlTasks div[data-done="1"]').length;
+      const all=ML_TASKS.length;
+      document.getElementById('mlTaskScore').textContent=L==='zh'?`已揭曉 ${total} / ${all}`:`Revealed ${total} / ${all}`;
+    };
+    w.appendChild(c);
+  });
+  document.getElementById('mlTaskScore').textContent='';
+}
+document.addEventListener('langchange',renderTasks);
+document.addEventListener('DOMContentLoaded',renderTasks);
+
+// Quiz
+const QF={zh:{
+  q1_y:'LLM 在 token level 是「給定上下文，採樣下一個 token 的機率分佈」——這就是它能流利又會自信編造的根本原因，所有後續章節都以此為基。其他選項把它誤解為查表 (A)、邏輯機 (B)、批次輸出 (D)。',
+  q2_y:'PHI 處理必須兩個條件都成立：(1) 與供應商簽 BAA（Azure OpenAI / ChatGPT Enterprise / Claude for Work），(2) 仍儘可能去識別化。光把 csv 貼到公開 chat (A) 違反 HIPAA；放棄 AI (C) 並非最佳；公雲開源 (D) 還是把 PHI 暴露給雲端供應商。',
+  q3_y:'創意 brainstorm 設 0.7–1.0 可以讓多樣性出來；fact / code / SQL 建議 0.0–0.3 求穩定。T=0 對創意太死板，T 對輸出有重大影響 (D 錯)。',
+  q4_y:'自監督的精髓就是「從資料本身造目標」——遮字猜字 (MLM) 或預測下一個字 (CLM) 都是。網路文本不需人類標註就能造出 trillion 數量級樣本，這是 scaling 的鎖鑰。A 過簡化、B 反事實、C 混淆 paradigm。',
+  q5_y:'結構化抽取屬「窄任務」，70B 對 7B 增益常 &lt;3% 但 cost 10×。應該先用小模型 + 好 prompt 試；除非品質不足再升級。A 是常見迷思；C/D 反事實。',
+  q6_y:'低 T 時 exp(z/T) 中最大 logit 對應的項主導，分母被它吃掉，機率近似集中於一個 token——即 argmax / one-hot。T → ∞ 才是均勻 (A)。T=1 是一般 softmax。'},
+en:{
+  q1_y:'At the token level the LLM "samples from a probability distribution over the next token given context." This is why it sounds fluent yet confidently fabricates. (A) lookup, (B) logic, (D) batch are all misreadings.',
+  q2_y:'PHI requires BOTH: (1) a BAA with the vendor (Azure OpenAI / ChatGPT Enterprise / Claude for Work) AND (2) de-identification where possible. (A) violates HIPAA, (C) is unnecessary, (D) still leaks PHI to the cloud GPU host.',
+  q3_y:'Creative brainstorm 0.7–1.0; factual / code / SQL 0.0–0.3. T=0 is too rigid for creativity; T clearly matters (so D is wrong).',
+  q4_y:'Self-supervision creates targets from the data itself — masked LM or next-token prediction. No human label needed, so web text scales to trillions. (A) oversimplified, (B) factually wrong, (C) confuses paradigms.',
+  q5_y:'Structured extraction is a narrow task; 70B vs 7B often differ &lt;3% but cost 10×. Start small, escalate only if quality fails. (A) common myth; (C)(D) false.',
+  q6_y:'As T → 0, the largest logit dominates exp(z/T), collapsing to argmax (one-hot). Uniform happens at T → ∞.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

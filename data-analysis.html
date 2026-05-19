@@ -1,0 +1,446 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 9: AI-Accelerated Data Analysis — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html" class="active">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 9 / 20</div>
+<h1 data-zh="AI 加速資料分析" data-en="AI-Accelerated Data Analysis">AI 加速資料分析</h1>
+<p class="subtitle" data-lang="zh">把 LLM 當資深 RA：解釋錯誤、寫 code、改 plot、解讀統計輸出、起草 methods，但別讓它替你選統計檢定。</p>
+<p class="subtitle" data-lang="en">Treat the LLM as a senior RA — let it explain errors, write code, polish plots, interpret stats, draft methods. Never let it pick your statistical test.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="資料分析 AI 必懂十詞" data-en="Ten terms for AI-accelerated data analysis">資料分析 AI 必懂十詞</h2>
+<div data-lang="zh"><p>這 10 個詞貫穿這一章。先讀過一次，後面 EDA、missing data、causal inference 的討論就會輕鬆許多。</p></div>
+<div data-lang="en"><p>These ten words recur throughout. Skim once and the EDA / missing data / causal inference discussion below flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📓</div><h4>Code Interpreter / Jupyter AI</h4>
+<div data-lang="zh"><p>ChatGPT Advanced Data Analysis（前身 Code Interpreter）與 JupyterLab AI 擴充：在 sandbox 跑 Python，自己看執行結果再下一輪 prompt。是「natural-language EDA」的代表，但 sandbox 沒持久檔案、有時 numerical instability。</p></div>
+<div data-lang="en"><p>ChatGPT Advanced Data Analysis (formerly Code Interpreter) and JupyterLab AI extensions: execute Python in a sandbox and feed results back to the next prompt. The poster child of natural-language EDA — but sandboxes lack persistent files and can have numerical instability.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔍</div><h4>EDA (Exploratory Data Analysis)</h4>
+<div data-lang="zh"><p>Tukey 1977 提出的「先看資料再選 model」工作流：missing 比例、distribution、outlier、變數間關係。LLM 加速 EDA 的 boilerplate（pandas-profiling、ydata-profiling），但「該看什麼」仍需研究者判斷。</p></div>
+<div data-lang="en"><p>Tukey's 1977 "look at your data before picking a model" workflow: missingness, distributions, outliers, pairwise relations. LLMs accelerate EDA boilerplate (pandas-profiling, ydata-profiling), but "what to look at" still requires the researcher.</p></div>
+</div>
+<div class="card"><div class="card-icon">🗂️</div><h4>Schema</h4>
+<div data-lang="zh"><p>資料表的欄位名、型別、unit、constraint。給 LLM 寫 cleaning / merge code 前最該交付的「上下文最小集」。比直接貼整份 csv 更安全、更節省 token、避免幻覺欄位。</p></div>
+<div data-lang="en"><p>The column names, types, units, and constraints of a table. The minimal context you should give an LLM before asking for cleaning/merge code — safer than pasting the full CSV, saves tokens, and prevents hallucinated columns.</p></div>
+</div>
+<div class="card"><div class="card-icon">🐼</div><h4>pandas / dplyr</h4>
+<div data-lang="zh"><p>Python pandas（Wes McKinney 2010）與 R dplyr（Wickham 2014）：兩大 tidy-data 操作 DSL。LLM 在兩者之間互轉幾乎無痛，但細節（pandas 的 SettingWithCopyWarning、dplyr 的 group_by 副作用）仍需注意。</p></div>
+<div data-lang="en"><p>Python pandas (Wes McKinney 2010) and R dplyr (Wickham 2014): the two tidy-data DSLs. LLMs convert between them nearly painlessly, but details (pandas SettingWithCopyWarning, dplyr group_by side effects) still need care.</p></div>
+</div>
+<div class="card"><div class="card-icon">📊</div><h4>ggplot2</h4>
+<div data-lang="zh"><p>R 的 grammar-of-graphics 視覺化套件（Wickham 2007）。LLM 對 ggplot2 syntax 熟悉度極高，可一次到位「期刊 spec」。但 mis-leading axis、broken y、bar+error 等「figure 倫理問題」仍要人類把關。</p></div>
+<div data-lang="en"><p>R's grammar-of-graphics package (Wickham 2007). LLMs handle ggplot2 syntax superbly and can one-shot "journal spec." But misleading axes, broken y, bar+error bars and other figure-ethics issues still need human review.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>SHAP</h4>
+<div data-lang="zh"><p>SHapley Additive exPlanations（Lundberg &amp; Lee 2017）：把博弈論 Shapley value 套到 ML 解釋上，告訴你每個 feature 對單一 prediction 的貢獻。生醫 ML 的標配 explainability，但有 correlation 陷阱（Aas 2021）。</p></div>
+<div data-lang="en"><p>SHapley Additive exPlanations (Lundberg &amp; Lee 2017): apply game-theoretic Shapley values to ML, telling you each feature's contribution to a single prediction. Standard biomedical-ML explainability, but with correlation pitfalls (Aas 2021).</p></div>
+</div>
+<div class="card"><div class="card-icon">🚨</div><h4>Anomaly Detection</h4>
+<div data-lang="zh"><p>找「不像其他」的點：Tukey fence（IQR×1.5）、Z-score、Isolation Forest、autoencoder reconstruction error。LLM 可推薦方法，但「離群是錯誤還是真實生物學現象」仍是人類判斷。</p></div>
+<div data-lang="en"><p>Find points "unlike the rest": Tukey fence (IQR×1.5), Z-score, Isolation Forest, autoencoder reconstruction error. LLMs can recommend methods, but "is the outlier an error or real biology?" remains a human call.</p></div>
+</div>
+<div class="card"><div class="card-icon">❓</div><h4>Missing Data (MCAR/MAR/MNAR)</h4>
+<div data-lang="zh"><p>Rubin 1976 分類：MCAR（completely at random）、MAR（at random given observed）、MNAR（not at random）。處理策略完全不同：MCAR 可 listwise delete；MAR 須 MI（multiple imputation, Rubin 1987）；MNAR 需 sensitivity analysis。AI 預設常做 listwise 是大坑。</p></div>
+<div data-lang="en"><p>Rubin 1976: MCAR (completely at random), MAR (at random given observed), MNAR (not at random). Strategies differ entirely: MCAR allows listwise deletion; MAR needs multiple imputation (Rubin 1987); MNAR needs sensitivity analysis. AIs default to listwise — a major pitfall.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔗</div><h4>Causal Inference</h4>
+<div data-lang="zh"><p>Pearl &amp; Mackenzie 2018《The Book of Why》：從 association 到 causation 需要 DAG、do-calculus、IV（instrumental variable）。LLM 可寫 propensity score、IV 估計 code，但「哪個變數該 condition」必須由領域專家用 DAG 思考。</p></div>
+<div data-lang="en"><p>Pearl &amp; Mackenzie 2018 (<em>The Book of Why</em>): moving from association to causation needs DAGs, do-calculus, and instrumental variables (IV). LLMs can code propensity scores and IV estimators, but "which variable to condition on" must come from a domain expert thinking with a DAG.</p></div>
+</div>
+<div class="card"><div class="card-icon">🪟</div><h4>SuperPlots / Visual Honesty</h4>
+<div data-lang="zh"><p>Lord et al. 2020 (JCB)：用 dot-plot + 群組均值 + biological replicate 顯示比 bar+SEM 更誠實。Weissgerber 2015 (PLOS Bio)「Beyond Bar &amp; Line Graphs」是同主題經典。LLM 寫 ggplot 容易產生 bar+SEM，要主動要求 SuperPlot 風格。</p></div>
+<div data-lang="en"><p>Lord et al. 2020 (JCB): dot-plot + group mean + biological replicates is more honest than bar+SEM. Weissgerber 2015 (PLOS Bio) "Beyond Bar &amp; Line Graphs" is the classic. LLMs default to bar+SEM in ggplot — explicitly request SuperPlot style.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="LLM 在資料分析中能做與不能做的事" data-en="What LLMs can and cannot do in data analysis">LLM 在資料分析中能做與不能做的事</h2>
+<div data-lang="zh">
+<p>2026 年，資料分析的瓶頸已不再是「會不會寫 ggplot2」，而是「能不能正確選 model、看懂 output、不過度詮釋」。LLM 在前者表現非常好，在後者依然容易出錯——尤其是「自動推薦統計檢定」常常忽略 assumption（normality、independence、proportional hazards）。</p>
+<p>本章定義 5 個層級的「AI 可介入點」，給每層配對推薦工具，並用 DESeq2 / ggplot2 / pandas 三個生醫常見場景示範 prompt template。最後給一張「分流圖」讓你決定何時找統計師而不是 AI。</p>
+</div>
+<div data-lang="en">
+<p>By 2026, the data-analysis bottleneck isn't "can you write ggplot2" — it's "can you pick the right model, read the output, and resist over-interpretation." LLMs are very good at the former, still error-prone at the latter — especially when "auto-suggesting" a statistical test, which often skips assumption checks (normality, independence, proportional hazards).</p>
+<p>This chapter defines five levels of "AI can help here," pairs tools with each level, and walks through DESeq2 / ggplot2 / pandas prompt templates. A triage diagram tells you when to call a statistician instead.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>把 LLM 當「資深 RA」——它寫 code 比你快、解釋語法比你穩，但<strong>研究問題、實驗設計、統計選型的責任永遠在你身上</strong>。給它 schema、給它 head() 輸出、給它明確問題，它的價值最大化。</span>
+<span data-lang="en"><strong>Core mindset:</strong> Think of the LLM as a senior RA — faster at code, steadier at syntax, but <strong>research question, experimental design, and statistical choices remain your responsibility</strong>. Feed it the schema, head() output, and a precise question to maximise its value.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="五個層級" data-en="FIVE LEVELS">五個層級</div>
+<h2 data-zh="一、AI 可介入的五個層級" data-en="I. Five levels of AI involvement">一、AI 可介入的五個層級</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🐛</div><h4 data-zh="① 解釋錯誤" data-en="① Explain errors">① 解釋錯誤</h4>
+<div data-lang="zh"><p>把 traceback 貼上去 → 立即診斷。最低風險。</p></div>
+<div data-lang="en"><p>Paste the traceback → instant diagnosis. Lowest risk.</p></div>
+</div>
+<div class="card"><div class="card-icon">📝</div><h4 data-zh="② 寫 code" data-en="② Write code">② 寫 code</h4>
+<div data-lang="zh"><p>EDA、cleaning、plot、merge。先給 schema + head()。</p></div>
+<div data-lang="en"><p>EDA, cleaning, plots, merges. Provide schema + head() first.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎨</div><h4 data-zh="③ 改 plot" data-en="③ Polish plots">③ 改 plot</h4>
+<div data-lang="zh"><p>期刊 style、字體、配色、PDF 尺寸。一次到位。</p></div>
+<div data-lang="en"><p>Journal style, fonts, palette, PDF size. Usually one-shot.</p></div>
+</div>
+<div class="card"><div class="card-icon">📊</div><h4 data-zh="④ 解讀 output" data-en="④ Interpret output">④ 解讀 output</h4>
+<div data-lang="zh"><p>DESeq2 / survival / glmm 表格 → 給語言解釋。<strong>需人類覆核</strong>。</p></div>
+<div data-lang="en"><p>DESeq2 / survival / glmm tables → plain-language interpretation. <strong>Human review required.</strong></p></div>
+</div>
+<div class="card"><div class="card-icon">✍️</div><h4 data-zh="⑤ 起草 methods" data-en="⑤ Draft methods">⑤ 起草 methods</h4>
+<div data-lang="zh"><p>給套件版本 + 步驟，AI 生 paragraph。注意版本號是否被幻覺。</p></div>
+<div data-lang="en"><p>Provide package versions + steps; AI drafts a paragraph. Watch for hallucinated versions.</p></div>
+</div>
+<div class="card"><div class="card-icon">🚫</div><h4 data-zh="✗ 選統計檢定" data-en="✗ Pick the test">✗ 選統計檢定</h4>
+<div data-lang="zh"><p><strong>不建議</strong>讓 AI 替你決定該用 t-test 還是 Wilcoxon、是否該配對、是否要 mixed model——assumption 必須由人讀 docs / 找統計師。</p></div>
+<div data-lang="en"><p><strong>Not recommended</strong> to let AI choose t-test vs. Wilcoxon, paired vs. unpaired, mixed model or not — assumption checks belong to a human (docs / statistician).</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工具地圖" data-en="TOOL MAP">工具地圖</div>
+<h2 data-zh="二、R 與 Python 兩條主線" data-en="II. R and Python parallel toolchains">二、R 與 Python 兩條主線</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">📈</div><h4>R 生態</h4>
+<div data-lang="zh"><p><strong>Positron + Copilot</strong>：RStudio 接班人 + AI 補完。<strong>ChatGPT advanced data analysis</strong>：上傳 csv 直接跑 code interpreter。<strong>Claude with files</strong>：把 Rmd / qmd / xlsx 一次丟進去解讀。</p></div>
+<div data-lang="en"><p><strong>Positron + Copilot</strong>: RStudio's successor + AI completion. <strong>ChatGPT advanced data analysis</strong>: upload CSV, run code interpreter. <strong>Claude with files</strong>: drop Rmd / qmd / xlsx and have it read.</p></div>
+</div>
+<div class="card"><div class="card-icon">🐍</div><h4>Python 生態</h4>
+<div data-lang="zh"><p><strong>Jupyter AI</strong>：notebook 內 magic command 直接呼叫 Claude / GPT。<strong>Hex / Deepnote AI</strong>：雲端 notebook + 內建 AI，適合團隊。<strong>VS Code + Copilot</strong>：最通用組合。</p></div>
+<div data-lang="en"><p><strong>Jupyter AI</strong>: in-notebook magic commands call Claude / GPT. <strong>Hex / Deepnote AI</strong>: cloud notebooks + built-in AI, team-friendly. <strong>VS Code + Copilot</strong>: the universal combo.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動分流" data-en="TASK TRIAGE">互動分流</div>
+<h2 data-zh="分析任務分流圖" data-en="Analysis Task Triage">分析任務分流圖</h2>
+<div data-lang="zh"><p>點選一個常見任務，看推薦 prompt template、預期成果、與要避免的陷阱。</p></div>
+<div data-lang="en"><p>Click a task to see the recommended prompt template, expected outcome, and the trap to avoid.</p></div>
+<div class="interactive-panel">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="taskBtns">
+    <button class="code-tab-btn active" onclick="pickTask(this,'eda')">EDA</button>
+    <button class="code-tab-btn" onclick="pickTask(this,'stat')">Statistical test</button>
+    <button class="code-tab-btn" onclick="pickTask(this,'plot')">Plot polish</button>
+    <button class="code-tab-btn" onclick="pickTask(this,'methods')">Write methods</button>
+    <button class="code-tab-btn" onclick="pickTask(this,'debug')">Debug</button>
+  </div>
+  <div id="taskBox" style="background:var(--c-bg-alt);border:1px solid var(--c-line);border-radius:8px;padding:18px"></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實務 prompt 範例" data-en="HANDS-ON PROMPTS">實務 prompt 範例</div>
+<h2 data-zh="三、三個生醫場景的 prompt template" data-en="III. Three biomed prompt templates">三、三個生醫場景的 prompt template</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'p1')">DESeq2 解讀</button><button class="code-tab-btn" onclick="switchTab(this,'p2')">ggplot2 美化</button><button class="code-tab-btn" onclick="switchTab(this,'p3')">pandas debug</button></div>
+<div class="code-tab-content active" id="p1"><pre><span class="kw">Role:</span> Senior biostatistician familiar with bulk RNA-seq.
+<span class="kw">Context:</span> 我用 DESeq2 v1.42 跑 6 vs 6 samples（control vs treated）。
+  attach summary &amp; head(results):
+<span class="comment"># baseMean log2FC lfcSE stat pvalue padj</span>
+<span class="comment"># GeneA 1240  2.1   0.32  6.5  8e-11  2e-8</span>
+<span class="comment"># GeneB  430 -1.8   0.41 -4.4  1e-5   3e-3</span>
+  &lt;...500 more...&gt;
+<span class="kw">Task:</span> 1) 解釋 padj 為什麼用 BH 而非 Bonferroni;
+       2) 找出 top 10 up-regulated 並提出 3 個可能 pathway;
+       3) 標示哪些結果需要 caution（lfcSE &gt; 1, baseMean &lt; 10）。
+<span class="kw">Format:</span> markdown table + 簡短說明。
+<span class="kw">Constraint:</span> 不要建議改檢定方式；若需 shrinkage，請只提示 <span class="func">apeglm</span>。</pre></div>
+<div class="code-tab-content" id="p2"><pre><span class="kw">Role:</span> R / ggplot2 expert.
+<span class="kw">Context:</span> 附現有 code：
+<span class="func">ggplot</span>(df, <span class="func">aes</span>(group, expr, fill = group)) + <span class="func">geom_boxplot</span>()
+<span class="kw">Task:</span> 改成 Nature 期刊 style：
+  - Arial 7 pt, panel 50×40 mm, 300 dpi PDF
+  - 配色用 <span class="str">"#3B6FB6"</span> 與 <span class="str">"#D26B47"</span>
+  - 顯示 individual points (jitter, alpha 0.5)
+  - 加 significance bracket（給 p = 0.013 預設）
+  - 移除 legend，y 軸 label = <span class="str">"Normalised expression"</span>
+<span class="kw">Format:</span> 完整可執行 R code，含 <span class="func">ggsave</span>()。</pre></div>
+<div class="code-tab-content" id="p3"><pre><span class="kw">Role:</span> Python data engineer.
+<span class="kw">Context:</span> 我跑這段 code 報 KeyError:
+df = pd.<span class="func">read_csv</span>(<span class="str">"clin.csv"</span>)
+sub = df[df[<span class="str">"OS_event"</span>] == <span class="num">1</span>].<span class="func">groupby</span>(<span class="str">"stage"</span>)[<span class="str">"OS_time"</span>].<span class="func">mean</span>()
+<span class="comment"># KeyError: 'OS_event'</span>
+df.columns.<span class="func">tolist</span>() 顯示有 [<span class="str">'OS event'</span>, <span class="str">'OS time'</span>, <span class="str">'Stage'</span>]
+<span class="kw">Task:</span> 1) 找出 bug；2) 給 robust 版本（自動 trim 欄名空格、忽略大小寫）；
+       3) 給 1 個 pytest 確保未來 schema 變更會被偵測。
+<span class="kw">Format:</span> 解釋 + 完整 code + test。</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="任務比較" data-en="TASK COMPARISON">任務比較</div>
+<h2 data-zh="四、五種任務 × 推薦工具 × 預期省時" data-en="IV. Five tasks × tool recommendation × expected speedup">四、五種任務 × 推薦工具 × 預期省時</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="任務" data-en="Task">任務</th><th data-zh="推薦工具" data-en="Recommended">推薦工具</th><th data-zh="預期省時" data-en="Speedup">省時</th><th data-zh="風險" data-en="Risk">風險</th></tr></thead>
+<tbody>
+<tr><td data-zh="EDA (head / summary / 缺值)" data-en="EDA (head / summary / missing)">EDA</td><td data-zh="Claude with files、ChatGPT ADA" data-en="Claude with files, ChatGPT ADA">Claude / ChatGPT ADA</td><td>3–5×</td><td data-zh="低" data-en="Low">低</td></tr>
+<tr><td data-zh="統計檢定選擇" data-en="Pick a statistical test">統計檢定選擇</td><td data-zh="人類 + 統計師（AI 僅輔助文獻搜尋）" data-en="Human + statistician (AI only for literature lookup)">人類 + 統計師</td><td>1×</td><td data-zh="高" data-en="High">高</td></tr>
+<tr><td data-zh="Plot 美化" data-en="Plot polish">Plot 美化</td><td>Copilot / Claude</td><td>5–10×</td><td data-zh="低" data-en="Low">低</td></tr>
+<tr><td data-zh="Methods 段落初稿" data-en="Draft methods paragraph">Methods 初稿</td><td>Claude / GPT</td><td>3–4×</td><td data-zh="中（版本號要驗證）" data-en="Medium (verify versions)">中</td></tr>
+<tr><td data-zh="Debug" data-en="Debug">Debug</td><td>Copilot Chat / Claude Code</td><td>5–20×</td><td data-zh="低" data-en="Low">低</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>p-value 紅線：</strong>AI 不該決定 cutoff（0.05 vs 0.01）、不該替你做 multiple testing correction 之外的選擇、不該幫你決定要不要丟 outlier。這些都是會被 reviewer 質疑的「研究判斷」。</span>
+<span data-lang="en"><strong>p-value redline:</strong> AI shouldn't pick your cutoff (0.05 vs 0.01), decide multiple-testing strategy, or whether to drop outliers. Those are research judgements reviewers will probe.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="五、AI 還是統計師？" data-en="V. AI or statistician?">五、AI 還是統計師？</h2>
+<div class="decision-tree">
+<h4 data-zh="分流流程" data-en="Triage Flow">分流流程</h4>
+<div class="dt-node"><span class="dt-q">Q1</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是否為新穎研究設計（cluster RCT、adaptive、survival with competing risk）？</strong>是 → 找統計師；否 → Q2。</div><div data-lang="en"><strong>Novel study design (cluster RCT, adaptive, survival with competing risk)?</strong> Yes → statistician; No → Q2.</div></div>
+<div class="dt-node"><span class="dt-q">Q2</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是 routine 操作（DEG、PCA、UMAP、boxplot、Kaplan-Meier）？</strong>是 → AI 加速；否 → Q3。</div><div data-lang="en"><strong>Routine task (DEG, PCA, UMAP, boxplot, Kaplan-Meier)?</strong> Yes → AI accelerates; No → Q3.</div></div>
+<div class="dt-node"><span class="dt-q">Q3</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>結論將直接影響臨床決策？</strong>是 → AI 起草 + 統計師審 + 第二位專家驗；否 → AI + 你自審即可。</div><div data-lang="en"><strong>Will the conclusion directly drive a clinical decision?</strong> Yes → AI draft + statistician review + second-expert audit; No → AI + your own review suffices.</div></div>
+</div>
+</section>
+
+<!-- ===== Expanded Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：Hex AI notebook 與 ChatGPT GTEx EDA" data-en="Two deeper cases: Hex AI notebook and ChatGPT GTEx EDA">兩個深入案例：Hex AI notebook 與 ChatGPT GTEx EDA</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🔬</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：Hex AI 把 RNA-seq DESeq2 結果即時轉成 interactive notebook 讓 wet-lab PI 看懂</h4>
+<p>2025 年某 cancer immunology lab 跑完一個 anti-PD1 RNA-seq experiment（治療 vs control，每組 6 mice），bioinformatician 產出 DESeq2 results table（CSV，~20000 rows）丟給 wet-lab PI。PI 打開 CSV 看到 log2FoldChange、padj、baseMean 等欄位完全不知道從何下手——傳統做法是 bioinformatician 寫一份 PowerPoint，但 PI 一旦問「IFN gene set 是否 enriched？」、「能否依 KEGG pathway 分組？」就要重做。Lab 改用 Hex（hex.tech）——一個結合 Python notebook + AI assistant 的 collaborative platform：bioinformatician 上傳 DESeq2 CSV，用 AI assistant 一行 prompt「make a volcano plot with top 10 genes labelled, allow filtering by padj cutoff」即生成 interactive Plotly volcano。PI 自己拖 padj slider 從 0.05 到 0.01；點 IFN-gamma gene 看 raw counts boxplot；用 AI 問「show GSEA for these DEGs against MSigDB Hallmark」自動跑 fgsea + 可視化。整個 EDA 從「bioinformatician 來回 5 次」變成 PI 自助 30 分鐘。<strong>關鍵</strong>：Hex 的 AI assistant 不是 chatbot，而是 notebook-aware——它看到 cell output（dataframe shape、column types），生成的 code 馬上 run 並 render。對 wet-lab PI 把 BI tool 與 ML notebook 之間的 gap 補上。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: Hex AI turned RNA-seq DESeq2 results into a live interactive notebook for a wet-lab PI</h4>
+<p>In 2025 a cancer-immunology lab completed an anti-PD1 RNA-seq experiment (treatment vs control, 6 mice each). The bioinformatician produced a DESeq2 results CSV (~20k rows) and handed it off. The wet-lab PI opened it and stared at log2FoldChange, padj, baseMean — no idea where to start. Traditional route: a PowerPoint deck from the bioinformatician — but every PI follow-up ("is the IFN gene set enriched?" "can we group by KEGG pathway?") restarted the cycle. The lab switched to Hex (hex.tech), a collaborative notebook + AI-assistant platform. The bioinformatician uploaded the DESeq2 CSV and ran one prompt: "make a volcano plot with top 10 genes labelled and a padj cutoff filter." Hex emitted interactive Plotly. The PI dragged the padj slider from 0.05 to 0.01, clicked IFN-gamma to see raw-count boxplots, asked the AI "show GSEA for these DEGs against MSigDB Hallmark" — fgsea + visualization happened in-line. EDA went from "5 round-trips with the bioinformatician" to "30 minutes self-service." <strong>Key</strong>: Hex's AI assistant is notebook-aware, not a chatbot — it sees cell outputs (dataframe shapes, column types), and generated code runs and renders immediately. It closed the gap between BI tools and ML notebooks for wet-lab PIs.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🧬</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：ChatGPT Advanced Data Analysis 用 4 個 prompt 完成 GTEx 子集 PCA + UMAP + 細胞型別 enrichment</h4>
+<p>2026 年初某 MD/PhD student 想快速看 GTEx v9 中 cardiovascular tissues（heart, aorta, coronary, atrial）的 expression structure，沒有寫 code 經驗。用 ChatGPT Advanced Data Analysis（前身 Code Interpreter）：(1) 「Read this GTEx subset CSV (~3000 samples × 20000 genes), give me schema and missing rate per column」——AI 在 sandbox 跑 pandas，回 summary；(2) 「Do PCA on log-CPM, plot PC1 vs PC2 colored by tissue」——AI 自動先 log1p + scale，產 matplotlib 圖；(3) 「Run UMAP on top 50 PCs, show three settings of n_neighbors」——AI 用 umap-learn 一次跑 3 個面板對比；(4) 「For the cluster in top-left, do over-representation analysis vs CellMarker DB」——AI 用 gseapy + Enrichr API 跑完，列出 cardiomyocyte markers significantly enriched。整個過程 ~45 分鐘，無一行 code 親手寫。<strong>關鍵注意</strong>：(a) sandbox 沒持久 file，每個 chat session 重來；(b) sandbox numerical 有時 unstable（同樣 PCA 跑兩次方向會反），需 prompt「set random_state=42」；(c) 不能上傳 PHI；(d) 適合 quick exploration，不適合 production pipeline（沒版本控制、沒 reproducibility）。學生後來把這個 EDA 結果交給 bioinformatician 跑正式版，省下 PI 與博後 ~2 週討論時間。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: ChatGPT Advanced Data Analysis ran PCA + UMAP + cell-type enrichment on a GTEx subset in 4 prompts</h4>
+<p>Early 2026, an MD/PhD student with no coding background wanted a quick look at GTEx v9 cardiovascular tissues (heart, aorta, coronary, atrial). Using ChatGPT Advanced Data Analysis (formerly Code Interpreter): (1) "Read this GTEx subset CSV (~3000 samples × 20000 genes), give schema and missingness per column" — AI ran pandas in the sandbox, returned summary; (2) "PCA on log-CPM, plot PC1 vs PC2 colored by tissue" — AI auto log1p + scaled and emitted matplotlib; (3) "UMAP on top 50 PCs, show three n_neighbors settings" — AI used umap-learn for a 3-panel comparison; (4) "For the top-left cluster, do over-representation analysis vs CellMarker DB" — AI ran gseapy + Enrichr API and listed cardiomyocyte markers as enriched. Total time: ~45 min, zero hand-written code. <strong>Key cautions</strong>: (a) sandbox files don't persist across sessions; (b) numerical instability (PCA direction can flip across runs) — prompt "set random_state=42"; (c) no PHI uploads; (d) good for exploration, bad for production (no version control, no reproducibility). The student handed the EDA to a bioinformatician for the formal run, saving ~2 weeks of PI/postdoc discussion time.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="AI 加速資料分析最常踩的五個坑" data-en="Five common AI-data-analysis pitfalls">AI 加速資料分析最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：接受 AI 推薦的統計檢定卻不查 assumption</strong><br>
+為什麼錯：AI 推薦 t-test 時不會主動跑 Shapiro-Wilk + Levene；推薦 Cox 不會跑 PH assumption test（Schoenfeld residuals）。若資料不符 assumption，p-value 完全失效。Knief &amp; Forstmeier 2025 (R Soc Open Sci) 在生態學重新分析資料顯示「直接信 AI 推薦」可能有 ~30% 結論翻轉。<br>
+正確做法：對任何 stat test，先列 assumption 並逐一驗證；不滿足時用 robust 變體（Welch t-test 默認、Mann-Whitney、permutation）。Delacre 2017 建議 Welch 為 t-test 預設。</div>
+<div data-lang="en"><strong>Pitfall 1: Accepting AI's stat-test recommendation without checking assumptions</strong><br>
+Why wrong: when AI recommends a t-test it doesn't auto-run Shapiro-Wilk + Levene; for Cox it doesn't auto-run PH-assumption tests (Schoenfeld residuals). If assumptions fail, p-values are meaningless. Knief &amp; Forstmeier 2025 (R Soc Open Sci) re-analysing ecology data showed "trusting AI's recommendation" flips ~30% of conclusions.<br>
+Fix: for any test, enumerate assumptions and verify each. If violated, use robust variants (Welch t-test as default, Mann-Whitney, permutation). Delacre 2017 argues Welch should be the t-test default.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：AI 自動處理 missing data 不分 MCAR/MAR/MNAR</strong><br>
+為什麼錯：LLM 預設 missing 處理常是 listwise delete（dropna()）或 mean imputation——這在 MCAR 才正確。若是 MAR，需用 MI（multiple imputation, Rubin 1987）保留 uncertainty；MNAR 須 sensitivity analysis（如 Heckman selection）。在 EHR、survey、long-term cohort 上 MNAR 極常見，listwise 會嚴重 bias。<br>
+正確做法：先做 missing pattern 視覺化（mice::md.pattern, naniar::vis_miss）；用 Little's MCAR test 或檢視 missing 與其他變數的關聯；MAR 用 mice / Amelia / IterativeImputer + Rubin's rules；MNAR 用 multiple sensitivity scenarios。</div>
+<div data-lang="en"><strong>Pitfall 2: AI handling missing data without distinguishing MCAR/MAR/MNAR</strong><br>
+Why wrong: LLMs default to listwise deletion (dropna()) or mean imputation — valid only under MCAR. MAR requires multiple imputation (Rubin 1987) to preserve uncertainty; MNAR needs sensitivity analysis (e.g., Heckman selection). In EHR, surveys, and long cohorts, MNAR is the norm — listwise badly biases results.<br>
+Fix: first visualise the missingness pattern (mice::md.pattern, naniar::vis_miss); run Little's MCAR test or check missingness vs other variables; MAR → mice / Amelia / IterativeImputer + Rubin's rules; MNAR → multiple sensitivity scenarios.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：AI 把 categorical 當 ordinal（或反之）</strong><br>
+為什麼錯：blood type（A/B/AB/O）、ICD code、tissue type 是 nominal categorical；NYHA Class（I/II/III/IV）、cancer stage 是 ordinal。LLM 看到「Class 1, 2, 3, 4」常以為是 numeric 直接 fit linear regression——這把 Class III - Class I 強加為 2 倍的「Class II 距離」，毫無生物意義。<br>
+正確做法：給 LLM schema 時明確標 dtype（nominal/ordinal/numeric）；fit 前用 R 的 factor() + levels = c(...) 或 pandas Categorical(ordered=True)；對 ordinal 用 ordinal regression（MASS::polr、statsmodels OrderedModel）而非 OLS。</div>
+<div data-lang="en"><strong>Pitfall 3: AI treats categorical as ordinal (or vice versa)</strong><br>
+Why wrong: blood type (A/B/AB/O), ICD codes, tissue types are nominal; NYHA Class (I–IV), cancer stage are ordinal. LLMs see "Class 1, 2, 3, 4" and often default to numeric linear regression — forcing "Class III − Class I = 2 × Class II distance," biologically meaningless.<br>
+Fix: when giving the LLM a schema, explicitly tag dtype (nominal/ordinal/numeric); before fitting use R's factor() + levels = c(...) or pandas Categorical(ordered=True); for ordinal data use ordinal regression (MASS::polr, statsmodels OrderedModel), not OLS.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：ggplot 美化但 mis-leading axis</strong><br>
+為什麼錯：AI 一鍵美化 ggplot 容易：(a) y-axis broken / zoom-in 放大 5% 差異看起來像 10 倍；(b) bar+SEM 隱藏 individual variance；(c) cherry-pick 配色讓 control 看起來灰、treatment 看起來「漂亮的紅」——這些都是 figure ethics 問題。Weissgerber 2015 (PLOS Bio) 與 Lord 2020 (JCB) 已提供 best practice。<br>
+正確做法：(a) y 軸從 0 開始（除非有強理由）；(b) 用 SuperPlot（dot + group mean + biological replicate）而非 bar+SEM；(c) 用 perceptually-uniform palette（viridis、Okabe-Ito）；(d) 對任何 figure 自問「reviewer 會說我在誤導嗎？」。</div>
+<div data-lang="en"><strong>Pitfall 4: Polished ggplots with misleading axes</strong><br>
+Why wrong: AI one-shot polishing easily produces: (a) broken/zoomed y-axis making a 5% difference look 10×; (b) bar+SEM hiding individual variance; (c) cherry-picked palettes making control look grey and treatment a "pretty red" — all figure-ethics violations. Weissgerber 2015 (PLOS Bio) and Lord 2020 (JCB) provide best practice.<br>
+Fix: (a) y-axis starts at 0 unless strongly justified; (b) use SuperPlot (dot + group mean + biological replicate) instead of bar+SEM; (c) use perceptually-uniform palettes (viridis, Okabe-Ito); (d) for any figure, ask "would a reviewer say I'm misleading?"</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：在 nested data 直接 lm() 忽略 random effects</strong><br>
+為什麼錯：scRNA-seq 多細胞屬於同一病人、multi-site clinical trial 多病人屬於同一醫院、repeated-measure ANOVA 多 timepoint 屬於同一受試——資料有 nested / clustered 結構但 lm() 假設 independence，會嚴重低估 SE、誇大 p-value。LLM 看到 long-format 表常直接 lm，忽略 cluster。Bolker 2009 (TREE) 是經典 reference。<br>
+正確做法：對任何 nested data 用 mixed model（lme4::lmer、glmmTMB、Stan brms）。scRNA-seq 用 pseudobulk（per-sample 平均後 DESeq2）或 muscat::pbDS；EHR 用 GLMM with site random effect。</div>
+<div data-lang="en"><strong>Pitfall 5: Running lm() on nested data ignoring random effects</strong><br>
+Why wrong: scRNA-seq cells belong to patients, multi-site trials cluster within hospitals, repeated-measure ANOVA shares subject-timepoints. The data is nested/clustered but lm() assumes independence — severely under-estimating SE and inflating p-values. LLMs see long-format tables and default to lm without clustering. Bolker 2009 (TREE) is the classic reference.<br>
+Fix: any nested data → mixed model (lme4::lmer, glmmTMB, Stan brms). scRNA-seq → pseudobulk (per-sample mean, then DESeq2) or muscat::pbDS; EHR → GLMM with site random effect.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 6：AI 寫 ML pipeline 沒做 data leakage 防護</strong><br>
+為什麼錯：常見 leakage 來源——(a) 在 train/test split 前做 normalisation / feature selection；(b) 同一個 patient 的多次 sample 被分到 train 與 test；(c) 用未來資料預測過去（label peek）；(d) 用 cross-validation 跑 hyperparameter 又用同一份 CV 報 performance。Kapoor &amp; Narayanan 2023 在 medical ML 重新分析發現 ~50% 論文有 leakage。<br>
+正確做法：(a) preprocessing 包入 Pipeline / recipes，只在 train fold fit；(b) GroupKFold 對 patient ID 分組；(c) nested CV：outer 報 performance、inner 選 hyperparameter；(d) 永遠 held-out 一份 test set，最後一次評估。</div>
+<div data-lang="en"><strong>Pitfall 6: AI-written ML pipelines lacking data-leakage protection</strong><br>
+Why wrong: common leakage sources — (a) normalisation / feature selection before train/test split; (b) one patient's samples split across train and test; (c) using future data to predict past (label peeking); (d) tuning hyperparameters on CV and reporting performance from the same CV. Kapoor &amp; Narayanan 2023 found ~50% of medical-ML papers have leakage.<br>
+Fix: (a) wrap preprocessing in sklearn Pipeline / tidymodels recipes, fit only on train folds; (b) GroupKFold by patient ID; (c) nested CV: outer reports performance, inner tunes; (d) always hold out a final test set for one-shot evaluation.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：AI、causal inference、SHAP 與 Tufte" data-en="Advanced: AI, causal inference, SHAP and Tufte">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 AI 對 causal inference 的局限、SHAP 解釋陷阱、AI-generated plots 與 Tufte 原則" data-en="🔬 AI vs causal inference, SHAP pitfalls, AI plots and Tufte">🔬 AI 對 causal inference 的局限、SHAP 解釋陷阱、Tufte 原則</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① AI 對 causal inference 的根本局限。</strong>LLM 學的是 statistical association（co-occurrence），但 causal inference 要求 distribution interventional（do-calculus, Pearl 2009）。Schölkopf 2021（<em>Toward Causal Representation Learning</em>, IEEE）證明從觀察資料學「invariant causal mechanism」是 underdetermined——除非加入額外假設（faithfulness、no hidden confounder）或 randomized experiment。LLM 寫 propensity score / IV / DiD code 都沒問題，但「該 condition 哪些變數、IV 是否 valid、parallel trend 是否成立」必須由 DAG 思考的領域專家判斷。Cinelli &amp; Hazlett 2020（OMNI, <em>JRSS-B</em>）的 sensitivity analysis 工具可以量化 unmeasured confounder 對結論的威脅。</p>
+<p><strong>② SHAP 解釋的陷阱（Aas et al. 2021, AI）。</strong>原始 SHAP 假設 feature 互相獨立計算 Shapley value。實際生醫資料常有強 correlation（age + Charlson、BMI + waist circumference）。在 correlated features 下 SHAP 會把 importance 「分攤」到 correlated 兄弟 features，看起來「每個都不重要」。Aas 2021 提出 conditional SHAP（給定其他 features 的條件分布）修正，但成本是計算 expensive。對醫師：看 SHAP plot 時要問「這些 features 之間 correlation matrix 長怎樣？」</p>
+<p><strong>③ AI-generated plots 與 Tufte 原則。</strong>Tufte 1983（<em>The Visual Display of Quantitative Information</em>）核心：data-ink ratio 高、minimize chartjunk、small multiples 比 stacked 好。AI 預設 ggplot 容易違反：(a) gridline 過密；(b) legend 重複資訊；(c) 3D pie chart（仍偶有出現）。對應 fix：theme_classic()、guides(color = "none")、用 small-multiple faceting。生醫 figure 還有 Weissgerber 2015 (PLOS Bio) 補充「show individual data points」、Lord 2020 (JCB) 的 SuperPlot 模式。</p>
+<p><strong>④ Hex AI / Code Interpreter 的工程限制。</strong>(a) Sandbox 沒持久檔案，每 session 重來；(b) memory 上限 ~1 GB，大 dataset 須先 subsample 或用 polars/Arrow；(c) numerical instability—— 同一個 PCA 跑兩次可能 sign flip（PC1 方向反），須設 random_state；(d) 不能直接 access 外部 DB / API（除非 Code Interpreter 開放 internet）；(e) Hex / Mode / Observable 等 commercial platform 有 secrets manager 與 BAA，個人版 ChatGPT 沒有。</p>
+<p><strong>⑤ 關鍵 references。</strong>Pearl &amp; Mackenzie 2018 (<em>The Book of Why</em>) · Schölkopf 2021 (causal representation learning) · Cinelli &amp; Hazlett 2020 (OMNI) · Lundberg &amp; Lee 2017 (SHAP, NeurIPS) · Aas 2021 (correlated SHAP, AI Journal) · Rubin 1976 (missing data) / 1987 (MI) · Knief &amp; Forstmeier 2025 · Weissgerber 2015 · Lord 2020 · Kapoor &amp; Narayanan 2023 (medical ML leakage).</p>
+</div>
+<div data-lang="en">
+<p><strong>① The fundamental AI vs causal-inference gap.</strong> LLMs learn statistical association (co-occurrence), but causal inference requires interventional distributions (do-calculus, Pearl 2009). Schölkopf 2021 (<em>Toward Causal Representation Learning</em>, IEEE) showed that learning "invariant causal mechanisms" from observation alone is underdetermined — extra assumptions (faithfulness, no hidden confounder) or randomized experiments are required. LLMs happily write propensity-score / IV / DiD code, but "which variables to condition on, whether the IV is valid, whether the parallel-trends assumption holds" must come from a domain expert thinking with a DAG. Cinelli &amp; Hazlett 2020 (OMNI, <em>JRSS-B</em>) provide sensitivity-analysis tools to bound the threat from unmeasured confounders.</p>
+<p><strong>② SHAP pitfalls (Aas et al. 2021, AI).</strong> Vanilla SHAP assumes feature independence when computing Shapley values. Real biomedical features are often strongly correlated (age + Charlson, BMI + waist circumference). Under correlation, SHAP splits "importance" across correlated siblings, making each look unimportant. Aas 2021 proposed conditional SHAP (using conditional feature distributions) as a fix, at heavy compute cost. For clinicians: always ask "what does the correlation matrix among these features look like?" before reading a SHAP plot.</p>
+<p><strong>③ AI plots and Tufte's principles.</strong> Tufte 1983 (<em>The Visual Display of Quantitative Information</em>): high data-ink ratio, minimize chartjunk, small multiples beat stacked. AI default ggplots tend to violate: (a) over-dense gridlines; (b) duplicated legend info; (c) the occasional 3D pie chart. Fixes: theme_classic(), guides(color = "none"), small-multiple faceting. For biomed figures add Weissgerber 2015 (PLOS Bio) "show individual data points" and Lord 2020 (JCB) SuperPlots.</p>
+<p><strong>④ Engineering limits of Hex AI / Code Interpreter.</strong> (a) Sandboxes don't persist files; each session resets. (b) ~1 GB memory cap; large datasets need subsampling or polars/Arrow. (c) Numerical instability — PCA can sign-flip across runs; set random_state. (d) No external DB/API access (unless internet enabled). (e) Hex / Mode / Observable etc. have secrets management and BAA; personal ChatGPT doesn't.</p>
+<p><strong>⑤ Key references.</strong> Pearl &amp; Mackenzie 2018 (<em>The Book of Why</em>) · Schölkopf 2021 (causal representation learning) · Cinelli &amp; Hazlett 2020 (OMNI) · Lundberg &amp; Lee 2017 (SHAP, NeurIPS) · Aas 2021 (correlated SHAP) · Rubin 1976/1987 · Knief &amp; Forstmeier 2025 · Weissgerber 2015 · Lord 2020 · Kapoor &amp; Narayanan 2023 (medical ML leakage).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: AI 能否 ever 取代統計師？</h4>
+<p>2026 年 LLM 已能寫各種 stat code、解釋 output、甚至自動跑 assumption check。某 lab PI 提案：「我們不再聘專職統計師，用 AI + 博後審即可」。lab 內統計師反駁：「AI 會說『這是 mixed model』，但不會問『你的隨機 effect 是 site 還是 patient？這影響 inference 對象』。」<strong>請思考</strong>：哪些統計問題 AI 已足夠？哪些必須人類統計師？「AI + 統計師」協作模式該怎樣設計？clinical trial 的 SAP 是否可由 AI 起草？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Can AI ever replace a statistician?</h4>
+<p>By 2026 LLMs write stat code, interpret output, and even auto-check assumptions. A PI suggests: "We don't need a full-time statistician — AI + postdoc review will do." The lab statistician counters: "AI will say 'this is a mixed model' but won't ask 'is your random effect site or patient? It changes the inference target.'" <strong>Consider</strong>: which statistical tasks are AI-sufficient? Which require a human statistician? How should "AI + statistician" collaboration be structured? Should an AI draft the SAP for a clinical trial?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 黑盒分析 vs 透明分析在 reviewer 面前哪個更可信？</h4>
+<p>傳統 SPSS / R 分析提供完整 syntax 與 output，reviewer 可重跑。AI assistant 分析（Hex AI、ChatGPT ADA）是 conversational：「我問它它跑」，最終 figure 來自一連串對話，無法逐字重現。某 NEJM reviewer 拒絕一篇用 ChatGPT 完成 EDA 的稿件：「我看不到 deterministic pipeline」。<strong>請思考</strong>：對 reviewer 與 reader，conversational analysis 該如何揭露？是否該附 chat transcript？AI 分析的 reproducibility 標準（Wilkinson 2016 FAIR）該如何制定？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: Black-box vs transparent analysis — which is more trustworthy to reviewers?</h4>
+<p>Traditional SPSS / R analyses ship full syntax + output reviewers can rerun. AI-assistant analyses (Hex AI, ChatGPT ADA) are conversational — "I ask, it runs" — and the final figure emerges from a dialogue, not reproducible verbatim. One NEJM reviewer rejected an AI-EDA paper: "I can't see a deterministic pipeline." <strong>Consider</strong>: how should conversational analyses be disclosed to reviewers and readers? Should chat transcripts be attached? What reproducibility standard (Wilkinson 2016 FAIR) should AI analyses follow?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: 訓練 wet-lab PI 用 ChatGPT ADA 還是 Hex AI？</h4>
+<p>某 cancer center 想推「PI 自助分析」訓練：ChatGPT Advanced Data Analysis 入門低、無安裝、free tier 即可開始；Hex 是 notebook-aware、可 share、有 BAA。但 ChatGPT ADA sandbox 限制多（無 file 持久、PHI 風險）；Hex 學習曲線較高、需訂閱。<strong>請思考</strong>：對沒寫 code 經驗的 wet-lab PI，第一個工具該推什麼？訓練該強調哪些素養（schema 思維、assumption check、reproducibility）？lab 預算有限時的 cost-benefit？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Train wet-lab PIs on ChatGPT ADA or Hex AI?</h4>
+<p>A cancer center wants to train "PI self-service analysis": ChatGPT Advanced Data Analysis is low entry, no install, free tier; Hex is notebook-aware, shareable, has BAA. But ChatGPT ADA sandboxes have constraints (no file persistence, PHI risk); Hex has a steeper learning curve and a subscription. <strong>Consider</strong>: for a PI with no coding background, which is the first tool to recommend? Which literacy skills should training emphasize (schema thinking, assumption checks, reproducibility)? Cost–benefit on a tight budget?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: AI 揭露在 figure-level 的標準？</h4>
+<p>某論文 figure 1 是 Excel 手繪 schematic，figure 2 是 PI 寫的 ggplot，figure 3 是博後用 Cursor 寫的 ggplot，figure 4 是博後用 ChatGPT ADA 一句 prompt 生成的 volcano。reviewer 問「哪些是 AI 生成？」博後不確定該逐 figure 揭露還是論文 methods 概括。ICMJE 2024 要求 AI 揭露但未指定粒度。<strong>請思考</strong>：揭露粒度該到哪？「AI 寫 vs AI 美化 vs AI 設計」如何分類？是否該在 figure caption 加 tag（如「[AI-assisted: ChatGPT-4o, 2026/03]」）？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Figure-level granularity for AI disclosure?</h4>
+<p>In one paper Figure 1 is an Excel hand-drawn schematic, Figure 2 a PI-written ggplot, Figure 3 a postdoc + Cursor ggplot, Figure 4 a one-prompt ChatGPT ADA volcano. A reviewer asks "which are AI-generated?" The postdoc isn't sure whether to disclose per figure or summarise in methods. ICMJE 2024 requires AI disclosure but doesn't specify granularity. <strong>Consider</strong>: how granular should disclosure be? How do you categorise "AI wrote vs polished vs designed"? Should figure captions carry tags (e.g., "[AI-assisted: ChatGPT-4o, 2026/03]")?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh">1. 下列哪一項<strong>不適合</strong>讓 LLM 主導決策？</p>
+<p data-lang="en">1. Which of the following is the <strong>least</strong> appropriate for LLM-led decision-making?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 自動產 EDA summary 表</span><span data-lang="en">A. Auto-generate EDA summary tables</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 把 ggplot 改成期刊 style</span><span data-lang="en">B. Restyle ggplot to journal format</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 把 DESeq2 結果表轉成中文敘述</span><span data-lang="en">C. Translate DESeq2 results to plain text</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 替你選 t-test vs Wilcoxon</span><span data-lang="en">D. Pick t-test vs Wilcoxon for you</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">2. 要讓 LLM 寫 pandas data cleaning，最該先給它的是？</p>
+<p data-lang="en">2. To make an LLM write pandas cleaning code, what should you give it first?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 整份原始 csv</span><span data-lang="en">A. The full raw CSV</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 你想得到的最終結論</span><span data-lang="en">B. The conclusion you want</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. schema（欄位、型別）+ head() 輸出 + 明確問題</span><span data-lang="en">C. Schema (columns, types) + head() output + a precise question</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 病人姓名與 ID</span><span data-lang="en">D. Patient names and IDs</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">3. 你正在寫 methods 段落，請 AI 補套件版本。最安全做法？</p>
+<p data-lang="en">3. Writing a methods paragraph, you ask AI to fill in package versions. Safest approach?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 直接信任 AI 寫的版本號</span><span data-lang="en">A. Trust whatever versions the AI writes</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 跑 sessionInfo() / pip freeze，把實際版本給 AI</span><span data-lang="en">B. Run sessionInfo() / pip freeze, paste real versions back to AI</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 完全省略版本號</span><span data-lang="en">C. Drop versions entirely</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 寫「最新版」帶過</span><span data-lang="en">D. Just write "latest version"</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你正在分析一個 multi-site clinical cohort（5 家醫院、共 800 病人、每人 baseline + 3、6、12 個月 follow-up）。Outcome 是 6 個月 LDL。你貼 long-format CSV 給 ChatGPT，問「最該用哪個 model 看治療對 LDL 的效果？」AI 回「用 multiple linear regression，treatment + age + sex 為 covariates」並給出 R lm() code。你應該？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. You're analysing a multi-site clinical cohort (5 hospitals, 800 patients, each with baseline + 3, 6, 12-month follow-up). Outcome: 6-month LDL. You paste the long-format CSV to ChatGPT and ask "what model for treatment effect on LDL?" The AI replies "multiple linear regression with treatment + age + sex as covariates" and emits R lm() code. You should?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 直接 run AI 的 lm() code 並寫進 paper</span><span data-lang="en">A. Run the AI's lm() code and put results in the paper</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 換 GPT-5 重問，看會不會給不同建議</span><span data-lang="en">B. Re-ask GPT-5 in case the suggestion changes</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 質疑 AI 建議：資料有 nested 結構（病人 nested in 醫院、measurement nested in 病人），lm() 假設 independence 會嚴重低估 SE。改用 mixed model（lmer，site 與 patient 為 random effects）</span><span data-lang="en">C. Push back: the data is nested (patients nested in hospitals, measurements nested in patients); lm() assumes independence and badly under-estimates SE. Use a mixed model (lmer, site + patient as random effects) instead</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 把所有 covariate 加進 lm()，p 值會更穩</span><span data-lang="en">D. Add every covariate to lm() — the p-values will stabilise</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 SHAP 在 correlated features 上的陷阱（Aas et al. 2021），下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. On SHAP pitfalls under correlated features (Aas et al. 2021), which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Correlated features 不影響 SHAP，可放心解釋</span><span data-lang="en">A. Correlation doesn't affect SHAP — interpret freely</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. SHAP 在 correlated features 下會誇大 importance</span><span data-lang="en">B. SHAP inflates importance under correlation</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 原始 SHAP 假設 feature 獨立計算 Shapley value。在 correlated features 下 importance 會被「分攤」到 correlated 兄弟，看起來每個都不重要。Aas 2021 提出 conditional SHAP（給定其他 feature 的條件分布）修正，但計算 expensive。實務上看 SHAP plot 要同時看 feature correlation matrix</span><span data-lang="en">C. Vanilla SHAP assumes feature independence when computing Shapley values. Under correlation, importance gets "split" across correlated siblings, making each look unimportant. Aas 2021 proposed conditional SHAP (using conditional feature distributions) at heavy compute cost. Always read SHAP plots alongside a correlation matrix</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. SHAP 完全不適用於 ML 模型，只能用 LIME</span><span data-lang="en">D. SHAP doesn't apply to ML models — only LIME does</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="coding.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Prev">← 上一步</span><span class="nav-title" data-zh="Step 8: 編程輔助 AI" data-en="Step 8: AI-Assisted Coding">Step 8: 編程輔助 AI</span></a>
+<a href="agents.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 10: Agentic Workflows 與 MCP" data-en="Step 10: Agentic Workflows &amp;amp; MCP">Step 10: Agentic Workflows 與 MCP</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Task triage
+const TASK={
+  eda:{zh:{t:'EDA（探索性資料分析）',p:'「附 schema 與 head()，請 1) 條列每欄缺值率 2) 找潛在錯誤型別 3) 給 3 個值得進一步看的 hypothesis」',o:'缺值表 + 型別問題 + hypothesis 列表',w:'別把含 PHI 的原始檔直接丟個人版'},en:{t:'EDA (Exploratory Analysis)',p:'"Given the schema and head(), 1) list missingness per column 2) flag type issues 3) suggest 3 hypotheses worth examining."',o:'Missingness table + type issues + hypothesis list',w:'Do not paste PHI-bearing raw files into personal tier.'}},
+  stat:{zh:{t:'統計檢定選擇',p:'「附樣本量、配對狀態、分布視覺化，請<strong>列出</strong>可選檢定與各自 assumption；最終由我或統計師決定」',o:'候選清單 + assumption 表（不替你決定）',w:'若 AI 直接給「應該用 X」，要求它改成「列出選項」'},en:{t:'Pick a statistical test',p:'"Given N, pairing, distribution plots, <strong>enumerate</strong> candidate tests with their assumptions. Final choice belongs to me / a statistician."',o:'Candidate list + assumption table (no decision made for you)',w:'If AI prescribes "use X," push back: ask for options instead.'}},
+  plot:{zh:{t:'Plot 美化',p:'「期刊 X 的 figure spec：字體 Arial 7pt、panel 50×40 mm、配色…請輸出完整 ggsave-able code」',o:'可直接 source 的 R / Python 程式碼',w:'最終 PDF 要在 Illustrator 開檢查字型是否 outline'},en:{t:'Polish plots',p:'"Journal X spec: Arial 7 pt, 50×40 mm panel, palette … give complete ggsave-able code."',o:'Source-ready R / Python code',w:'Open the final PDF in Illustrator to confirm fonts outlined.'}},
+  methods:{zh:{t:'Methods 段落',p:'「給套件版本（sessionInfo 已附）、步驟，請寫 250 字 methods，APA 格式引用，所有版本號必須與我給的相符」',o:'250 字段落 + reference 清單',w:'AI 容易幻覺版本號；務必對齊 sessionInfo()'},en:{t:'Draft methods paragraph',p:'"With versions from sessionInfo() and the steps below, write a 250-word methods paragraph, APA citations, all versions must match the input."',o:'250-word paragraph + reference list',w:'AI tends to hallucinate versions; cross-check against sessionInfo().'}},
+  debug:{zh:{t:'Debug',p:'「附完整 traceback、出錯的程式片段、最小可重現範例、套件版本，請 1) 定位 root cause 2) 給修正 3) 給單元測試」',o:'root cause + diff + test',w:'若 fix 改了你不熟的全域設定，務必查 docs'},en:{t:'Debug',p:'"Attach full traceback, the failing snippet, a minimal repro, and package versions. Then 1) root-cause 2) give a fix 3) add a unit test."',o:'Root cause + diff + test',w:'If the fix touches unfamiliar global settings, double-check the docs.'}}
+};
+let TCUR='eda';
+function pickTask(b,k){b.parentElement.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');TCUR=k;renderTask();}
+function renderTask(){const L=window.I18n?I18n.get():'en';const d=TASK[TCUR][L];const labels=L==='zh'?{p:'Prompt 模板',o:'預期成果',w:'要避免的陷阱'}:{p:'Prompt template',o:'Expected output',w:'Pitfall to avoid'};document.getElementById('taskBox').innerHTML=`<h4 style="margin-top:0">${d.t}</h4><p><strong>${labels.p}：</strong>${d.p}</p><p><strong>${labels.o}：</strong>${d.o}</p><p style="color:var(--c-warn,#b35900)"><strong>⚠ ${labels.w}：</strong>${d.w}</p>`;}
+document.addEventListener('langchange',renderTask);
+document.addEventListener('DOMContentLoaded',renderTask);
+
+// Quiz
+const QF={zh:{q1_y:'統計檢定選擇牽涉 assumption 與研究設計，責任在人類。',q2_y:'Schema + head() + 明確問題是黃金組合，能避免 AI 亂猜欄位。',q3_y:'sessionInfo() / pip freeze 提供 ground-truth，能消除版本幻覺。',q4_y:'C 正確。multi-site cohort 是典型 nested data：病人 nested in 醫院、measurement nested in 病人。lm() 假設 independence 會嚴重低估 SE、誇大 p-value（Bolker 2009 TREE）。正確是 mixed model：lmer(LDL ~ treatment + age + sex + time + (1|site/patient), data = df)；time 視設計可加 (time|patient) random slope。AI 預設常忽略 nesting，這是「不檢查 assumption 就信」的典型坑（Pitfall 1 + 5）。',q5_y:'C 正確。原始 SHAP 假設 features 獨立計算 Shapley value——在 correlated features 下 importance 會「分攤」到 correlated 兄弟，使每個都看起來不重要（Aas et al. 2021）。修正是 conditional SHAP（用條件分布）但計算 expensive。實務 takeaway：永遠把 SHAP plot 與 feature correlation matrix 一起看，否則容易把「重要但 correlated」誤判為「不重要」。SHAP 並非不適用 ML（D），也不會誇大（B）；correlation 不影響的說法（A）違反 Aas 2021 的結論。'},en:{q1_y:'Choosing tests touches assumptions and design — that responsibility stays with humans.',q2_y:'Schema + head() + a precise question prevents the AI from guessing columns.',q3_y:'sessionInfo() / pip freeze gives ground truth and eliminates hallucinated versions.',q4_y:'C is correct. A multi-site cohort is classic nested data: patients nested in hospitals, measurements nested in patients. lm() assumes independence and severely under-estimates SE / inflates p-values (Bolker 2009 TREE). Use a mixed model: lmer(LDL ~ treatment + age + sex + time + (1|site/patient), data = df); add (time|patient) random slopes if appropriate. AI defaults often miss nesting — this is the canonical "trust without assumption check" pitfall (Pitfall 1 + 5).',q5_y:'C is correct. Vanilla SHAP assumes feature independence when computing Shapley values — under correlation, importance splits across correlated siblings and each looks unimportant (Aas et al. 2021). The fix is conditional SHAP (conditional feature distributions) at heavy compute cost. Takeaway: always read SHAP plots alongside the correlation matrix, otherwise "important but correlated" gets mis-read as "unimportant." SHAP isn\'t inapplicable to ML (D), nor does it inflate importance (B); the claim that correlation has no effect (A) contradicts Aas 2021.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>
