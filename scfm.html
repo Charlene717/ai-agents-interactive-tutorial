@@ -1,0 +1,456 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 13: Single-Cell Foundation Models — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html" class="active">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 13 / 20</div>
+<h1 data-zh="單細胞 Foundation 模型" data-en="Single-Cell Foundation Models">單細胞 Foundation 模型</h1>
+<p class="subtitle" data-lang="zh">scGPT、Geneformer、scFoundation、UCE——單細胞資料的「ImageNet 時刻」。但記得，傳統 Seurat 還沒過時。</p>
+<p class="subtitle" data-lang="en">scGPT, Geneformer, scFoundation, UCE — the "ImageNet moment" for single-cell data. Just remember: Seurat is not obsolete.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="單細胞 Foundation 模型必懂十詞" data-en="Ten terms for single-cell foundation models">單細胞 Foundation 模型必懂十詞</h2>
+<div data-lang="zh"><p>這 10 個詞貫穿整章——先讀過一次，後面 zero-shot annotation、perturbation prediction、leakage 的討論就會清晰得多。</p></div>
+<div data-lang="en"><p>These ten terms recur throughout. Skim once and the zero-shot annotation / perturbation / leakage discussion below flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🧫</div><h4>scGPT</h4>
+<div data-lang="zh"><p>Cui et al., <em>Nature Methods</em> 2024（DOI 10.1038/s41592-024-02201-0）。在 33M cells 上預訓練的 transformer，採 value binning + masked value prediction，在 annotation / integration / perturbation 三項上是當前最常被引用的 scFM。</p></div>
+<div data-lang="en"><p>Cui et al., <em>Nature Methods</em> 2024 (DOI 10.1038/s41592-024-02201-0). Transformer pre-trained on 33M cells with value binning + masked value prediction; the most-cited scFM across annotation, integration, and perturbation.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧮</div><h4>Geneformer</h4>
+<div data-lang="zh"><p>Theodoris et al., <em>Nature</em> 2023。把每個細胞表示成「依表達量排序的基因 list」當 token，預訓練於 Genecorpus-30M。GRN / perturbation 預測任務的代表，特別擅長 in-silico TF knockout。</p></div>
+<div data-lang="en"><p>Theodoris et al., <em>Nature</em> 2023. Represents each cell as a rank-ordered gene list (by expression) tokenised on Genecorpus-30M. Flagship for GRN / perturbation prediction; particularly strong on in-silico TF knockout.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌌</div><h4>scFoundation</h4>
+<div data-lang="zh"><p>Hao et al., <em>Nature Methods</em> 2024。1.7B 參數、50M cells 預訓練，目前最大的 scFM。設計重點在「read-depth aware」embedding（xTrimoGene encoder），對低 depth 樣本相對 robust。</p></div>
+<div data-lang="en"><p>Hao et al., <em>Nature Methods</em> 2024. 1.7B parameters on 50M cells — the largest scFM to date. Designed as read-depth aware (xTrimoGene encoder), relatively robust to low-depth samples.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌍</div><h4>UCE</h4>
+<div data-lang="zh"><p>Universal Cell Embeddings (Rosen et al., bioRxiv 2023 / Cell 2024)。33L transformer，跨 8 物種、36M cells 預訓練；最大賣點是 zero-shot 跨物種對齊，不要求共同基因集。</p></div>
+<div data-lang="en"><p>Universal Cell Embeddings (Rosen et al., bioRxiv 2023 / Cell 2024). 33-layer transformer pre-trained across 8 species and 36M cells; standout feature is zero-shot cross-species alignment without a shared-gene-set requirement.</p></div>
+</div>
+<div class="card"><div class="card-icon">🪶</div><h4>CellPLM</h4>
+<div data-lang="zh"><p>Wen et al., ICLR 2024。引入「cell-cell relationship」的 transformer：把鄰近細胞當作上下文（類似 sentence-level transformer 把句子當上下文），在 imputation 與 spatial 任務上有優勢。</p></div>
+<div data-lang="en"><p>Wen et al., ICLR 2024. A transformer that injects cell–cell relationships — using neighbouring cells as context (analogous to sentence-level transformers using sentences as context). Strong on imputation and spatial tasks.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>Zero-shot Annotation</h4>
+<div data-lang="zh"><p>不對 query 資料做任何 fine-tune，直接用預訓練 embedding + reference KNN 給標籤。是 scFM 最直觀的用法，但對「資料 distribution 與 pre-train corpus 差很大」的 disease cells 風險較高。</p></div>
+<div data-lang="en"><p>Label query cells via pre-trained embeddings + reference KNN, with no fine-tuning. The most direct scFM use case, but risky when the query distribution differs substantially from the pre-training corpus (e.g., disease cells).</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>Perturbation Prediction</h4>
+<div data-lang="zh"><p>給定基因 KO / 過表達 / drug，預測細胞 state 的 post-perturbation 表現。在 Perturb-seq 資料上 fine-tune；GEARS（Roohani 2024）與 scGPT / Geneformer 是主流 baseline。</p></div>
+<div data-lang="en"><p>Predict post-perturbation cell state from a gene KO / overexpression / drug. Fine-tuned on Perturb-seq data; GEARS (Roohani 2024), scGPT, and Geneformer are the standard baselines.</p></div>
+</div>
+<div class="card"><div class="card-icon">🕸️</div><h4>GRN (Gene Regulatory Network)</h4>
+<div data-lang="zh"><p>基因之間的調控關係圖。Geneformer 利用 attention weights 推導 gene-gene relationship；傳統流程用 SCENIC（Aibar 2017）/ pySCENIC，兩者輸出可互補但不該互相替代。</p></div>
+<div data-lang="en"><p>Gene-to-gene regulatory graph. Geneformer derives gene–gene relationships from attention weights; classical pipelines use SCENIC (Aibar 2017) / pySCENIC. Outputs complement rather than replace each other.</p></div>
+</div>
+<div class="card"><div class="card-icon">📚</div><h4>Token Vocabulary (Gene)</h4>
+<div data-lang="zh"><p>scFM 的 token 不是「文字」，而是「基因 + 表達量級」的編碼。scGPT 把表達量分 bin 後再做 embedding；Geneformer 純粹用 rank（不存原始值）。兩種設計有不同的歸納偏差。</p></div>
+<div data-lang="en"><p>scFM tokens encode "gene + expression magnitude", not words. scGPT bins expression then embeds; Geneformer uses pure rank (no raw values). The two designs have different inductive biases.</p></div>
+</div>
+<div class="card"><div class="card-icon">🗂️</div><h4>Cell Atlas</h4>
+<div data-lang="zh"><p>大規模 reference dataset，如 Human Cell Atlas、CellxGene Census、Tabula Sapiens。scFM 多數預訓練語料來自 atlas；也因此「query 與 pre-train atlas 重疊」是 leakage 的主要來源。</p></div>
+<div data-lang="en"><p>Large-scale reference datasets — Human Cell Atlas, CellxGene Census, Tabula Sapiens. Most scFM pre-training corpora draw from atlases, which is also why "query overlaps with pre-training atlas" is the dominant leakage source.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚖️</div><h4>Batch Effect</h4>
+<div data-lang="zh"><p>不同實驗、protocol、平台帶來的非生物變異。傳統流程靠 Harmony / scVI 校正；scFM 的 embedding 號稱 batch-aware，但實際效果在 Patterns 2025 benchmark 上仍與 scVI 有伯仲之爭。</p></div>
+<div data-lang="en"><p>Non-biological variation from experiments, protocols, platforms. Classical pipelines correct with Harmony / scVI; scFM embeddings claim batch-awareness, but Patterns 2025 benchmarks show they still compete neck-and-neck with scVI.</p></div>
+</div>
+<div class="card"><div class="card-icon">🛡️</div><h4>Data Leakage</h4>
+<div data-lang="zh"><p>當 evaluation set 已（部分）出現在預訓練 corpus 中，benchmark 分數會被高估。Kedzierska et al. 2024 (bioRxiv) 警告：Tabula Sapiens 等熱門 atlas 在多個 scFM 預訓練中重複出現，導致 zero-shot 表現難以判讀。</p></div>
+<div data-lang="en"><p>Benchmark scores are inflated when the evaluation set partly appears in pre-training. Kedzierska et al. 2024 (bioRxiv) warns that hot atlases like Tabula Sapiens recur across many scFMs' pre-training corpora, making zero-shot scores hard to interpret.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼要把 LLM 思路套到單細胞？" data-en="Why bring the LLM playbook to single-cell?">為什麼要把 LLM 思路套到單細胞？</h2>
+<div data-lang="zh">
+<p>單細胞 RNA-seq 一個 cell ≈ 兩萬個基因的高維向量，傳統流程：normalisation → HVG → PCA → batch correct → cluster → marker → annotate。每個樣本都要重做。<strong>scFM</strong> 的概念是：在 33M+ cells 上一次預訓練，學到「細胞的語言」（gene 排序或 expression 模式 ≈ token），任何下游任務只要 zero-shot 或 light fine-tune。</p>
+<p>四大代表：<strong>scGPT</strong>（Cui et al., Nature Methods 2024, DOI 10.1038/s41592-024-02201-0；33M cells）；<strong>Geneformer</strong>（基因排序作 token，強於 GRN / perturbation）；<strong>scFoundation</strong>（1.7B 參數最大）；<strong>UCE</strong>（Universal Cell Embeddings，跨物種 zero-shot）。2025–2026 多個 benchmark（含 Patterns 2025 與 BioLLM review）顯示 scGPT / Geneformer / CellFM 整體最佳，但 leakage 與訓練尺度的爭論未停。</p>
+</div>
+<div data-lang="en">
+<p>A single-cell RNA-seq cell is a ~20k-gene high-dimensional vector, and the classical pipeline (normalisation → HVG → PCA → batch correction → clustering → markers → annotation) is reinvented per sample. <strong>scFM</strong> flips this: pre-train once on 33M+ cells to learn "the language of cells" (gene ordering / expression patterns ≈ tokens), then run downstream tasks zero-shot or with light fine-tuning.</p>
+<p>Four flagships: <strong>scGPT</strong> (Cui et al., Nature Methods 2024, DOI 10.1038/s41592-024-02201-0; 33M cells); <strong>Geneformer</strong> (gene-ranking tokens, strong on GRN / perturbation); <strong>scFoundation</strong> (1.7B parameters, largest); <strong>UCE</strong> (Universal Cell Embeddings, cross-species zero-shot). 2025–2026 benchmarks (Patterns 2025, BioLLM review) place scGPT / Geneformer / CellFM at the top, while leakage and pre-training scale debates continue.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>scFM 不是 Seurat / Scanpy 的替代品，是<strong>補充</strong>。當任務是 zero-shot annotation、跨資料整合、perturbation 預測時，scFM 加速顯著；當任務是「明確 marker、清楚 cluster」，Seurat / Scanpy 反而更快、更可解釋。</span>
+<span data-lang="en"><strong>Core mindset:</strong> scFMs are <strong>complements</strong>, not replacements, for Seurat / Scanpy. They shine on zero-shot annotation, cross-dataset integration, and perturbation prediction; for clear markers and distinct clusters, Seurat / Scanpy remain faster and more interpretable.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="四大 scFM" data-en="FOUR scFMs">四大 scFM</h2>
+<h2 data-zh="一、四大 scFM 速覽" data-en="I. Four flagship scFMs at a glance">一、四大 scFM 速覽</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">🧫</div><h4>scGPT</h4>
+<div data-lang="zh"><p>Cui et al., Nature Methods 2024。33M cells 預訓練；annotation / batch integration / perturbation 三項 SOTA；GitHub <code>bowang-lab/scGPT</code>。</p></div>
+<div data-lang="en"><p>Cui et al., Nature Methods 2024. 33M-cell pre-training; SOTA on annotation / batch integration / perturbation; GitHub <code>bowang-lab/scGPT</code>.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧮</div><h4>Geneformer</h4>
+<div data-lang="zh"><p>Theodoris et al., Nature 2023。基因排序作 token；強於 GRN / perturbation；GitHub <code>ctheodoris/Geneformer</code>。</p></div>
+<div data-lang="en"><p>Theodoris et al., Nature 2023. Gene-ranking tokens; strong on GRN / perturbation; GitHub <code>ctheodoris/Geneformer</code>.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌌</div><h4>scFoundation</h4>
+<div data-lang="zh"><p>Hao et al., Nature Methods 2024。1.7B 參數，目前最大單細胞 FM。50M cells 預訓練。</p></div>
+<div data-lang="en"><p>Hao et al., Nature Methods 2024. 1.7B parameters, the largest single-cell FM to date. 50M-cell pre-training.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌍</div><h4>UCE</h4>
+<div data-lang="zh"><p>Universal Cell Embeddings。跨物種 zero-shot；無需共同基因集；biorxiv 2023 / Cell 2024。</p></div>
+<div data-lang="en"><p>Universal Cell Embeddings. Cross-species zero-shot; no shared-gene set required; bioRxiv 2023 / Cell 2024.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="應用任務" data-en="TASKS">應用任務</div>
+<h2 data-zh="二、四大下游任務" data-en="II. Four downstream tasks">二、四大下游任務</h2>
+<div class="workflow">
+  <div class="workflow-step" data-step="1"><h4 data-zh="① Zero-shot cell type annotation" data-en="① Zero-shot cell type annotation">① Zero-shot 註釋</h4>
+  <div data-lang="zh"><p>把 query 送進預訓練模型，與 reference embedding 對齊。最常用、最直接的應用。</p></div>
+  <div data-lang="en"><p>Project queries into the pre-trained model and align with reference embeddings. The most direct and common use case.</p></div>
+  </div>
+  <div class="workflow-step" data-step="2"><h4 data-zh="② 跨資料整合" data-en="② Cross-dataset integration">② 跨資料整合</h4>
+  <div data-lang="zh"><p>不同 batch、不同 protocol、甚至不同物種的細胞放進同一個 embedding 空間。</p></div>
+  <div data-lang="en"><p>Map cells from different batches, protocols, and even species into a shared embedding space.</p></div>
+  </div>
+  <div class="workflow-step" data-step="3"><h4 data-zh="③ Perturbation 預測" data-en="③ Perturbation prediction">③ Perturbation 預測</h4>
+  <div data-lang="zh"><p>給定基因 KO / 過表達 / drug，預測細胞 state 變化。在 Perturb-seq 資料上 fine-tune。</p></div>
+  <div data-lang="en"><p>Given a gene KO / overexpression / drug, predict the resulting cell state change. Fine-tuned on Perturb-seq data.</p></div>
+  </div>
+  <div class="workflow-step" data-step="4"><h4 data-zh="④ GRN 推斷" data-en="④ Gene regulatory network inference">④ GRN 推斷</h4>
+  <div data-lang="zh"><p>Geneformer 透過 attention 推導 gene–gene 互動；scGPT 也支援 in-silico TF KO。</p></div>
+  <div data-lang="en"><p>Geneformer derives gene–gene interactions from attention; scGPT also supports in-silico TF KO.</p></div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="scFM 任務選擇器" data-en="scFM task selector">scFM 任務選擇器</h2>
+<div data-lang="zh"><p>選任務，看 2025–2026 mock benchmark 上各模型的相對排名（教學示意，非真實 leaderboard）。</p></div>
+<div data-lang="en"><p>Pick a task to see the relative 2025–2026 mock benchmark ranking (illustrative, not a real leaderboard).</p></div>
+<div class="interactive-panel">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <button class="code-tab-btn active" onclick="pickScf(this,'ann')">Annotation</button>
+    <button class="code-tab-btn" onclick="pickScf(this,'int')">Integration</button>
+    <button class="code-tab-btn" onclick="pickScf(this,'pert')">Perturbation</button>
+    <button class="code-tab-btn" onclick="pickScf(this,'grn')">GRN</button>
+  </div>
+  <svg id="scfSvg" viewBox="0 0 500 200" style="width:100%;max-width:560px;display:block;margin:0 auto"></svg>
+  <p id="scfTip" style="font-size:.85rem;color:var(--c-ink-muted);text-align:center;margin-top:8px"></p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作 code" data-en="HANDS-ON CODE">實作 code</div>
+<h2 data-zh="三、三段 code" data-en="III. Three code snippets">三、三段 code</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'sc1')">scGPT zero-shot</button><button class="code-tab-btn" onclick="switchTab(this,'sc2')">Geneformer fine-tune</button><button class="code-tab-btn" onclick="switchTab(this,'sc3')">UCE embedding</button></div>
+<div class="code-tab-content active" id="sc1"><pre><span class="comment"># scGPT zero-shot cell type annotation</span>
+<span class="kw">import</span> scgpt, scanpy <span class="kw">as</span> sc
+
+adata = sc.<span class="func">read_h5ad</span>(<span class="str">"query.h5ad"</span>)
+ref   = sc.<span class="func">read_h5ad</span>(<span class="str">"reference.h5ad"</span>)
+
+model = scgpt.<span class="func">load_pretrained</span>(<span class="str">"scGPT_human"</span>)
+emb_q = model.<span class="func">embed_cells</span>(adata)
+emb_r = model.<span class="func">embed_cells</span>(ref)
+
+<span class="kw">from</span> sklearn.neighbors <span class="kw">import</span> KNeighborsClassifier
+clf = <span class="func">KNeighborsClassifier</span>(n_neighbors=<span class="num">15</span>).<span class="func">fit</span>(emb_r, ref.obs[<span class="str">"cell_type"</span>])
+adata.obs[<span class="str">"pred"</span>] = clf.<span class="func">predict</span>(emb_q)
+sc.pl.<span class="func">umap</span>(adata, color=[<span class="str">"pred"</span>])</pre></div>
+<div class="code-tab-content" id="sc2"><pre><span class="comment"># Geneformer fine-tune on a perturbation classification task</span>
+<span class="kw">from</span> geneformer <span class="kw">import</span> Classifier
+
+clf = <span class="func">Classifier</span>(classifier=<span class="str">"cell"</span>,
+    cell_state_dict={<span class="str">"state_key"</span>:<span class="str">"condition"</span>,
+                     <span class="str">"states"</span>:[<span class="str">"ctrl"</span>,<span class="str">"KO_TP53"</span>]},
+    num_classes=<span class="num">2</span>,
+    nproc=<span class="num">8</span>)
+
+clf.<span class="func">prepare_data</span>(input_data_file=<span class="str">"data.dataset"</span>,
+                 output_directory=<span class="str">"./prep"</span>,
+                 output_prefix=<span class="str">"tp53"</span>)
+clf.<span class="func">train_classifier</span>(model_directory=<span class="str">"geneformer-12L-30M"</span>,
+                      output_directory=<span class="str">"./ft"</span>,
+                      num_epochs=<span class="num">3</span>)</pre></div>
+<div class="code-tab-content" id="sc3"><pre><span class="comment"># UCE: cross-species zero-shot embedding</span>
+<span class="kw">from</span> uce <span class="kw">import</span> eval_single_anndata
+
+emb = <span class="func">eval_single_anndata</span>(
+    adata_path=<span class="str">"mouse_liver.h5ad"</span>,
+    species=<span class="str">"mouse"</span>,
+    model_loc=<span class="str">"models/33L_8ep_1024t_1280.torch"</span>,
+    batch_size=<span class="num">25</span>,
+    nlayers=<span class="num">33</span>)
+
+<span class="comment"># 直接拿 emb 與 human reference embedding 在同一空間做 KNN 預測</span>
+<span class="comment"># Use emb in the same space as human reference embedding for KNN prediction</span></pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="比較表" data-en="COMPARISON">比較表</div>
+<h2 data-zh="四、四模型完整對照" data-en="IV. Full four-model comparison">四、四模型完整對照</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="模型" data-en="Model">模型</th><th data-zh="預訓練規模" data-en="Pre-training scale">預訓練規模</th><th data-zh="強項任務" data-en="Best task">強項</th><th data-zh="是否需 fine-tune" data-en="Fine-tune?">需 fine-tune？</th><th>GitHub</th></tr></thead>
+<tbody>
+<tr><td>scGPT</td><td>33M cells</td><td data-zh="Annotation / integration / perturbation" data-en="Annotation / integration / perturbation">全能</td><td data-zh="zero-shot 可，fine-tune 更好" data-en="Zero-shot OK, fine-tune better">可選</td><td>bowang-lab/scGPT</td></tr>
+<tr><td>Geneformer</td><td>~30M cells</td><td data-zh="GRN / perturbation" data-en="GRN / perturbation">GRN / perturbation</td><td data-zh="需" data-en="Required">需</td><td>ctheodoris/Geneformer</td></tr>
+<tr><td>scFoundation</td><td>50M cells / 1.7B params</td><td data-zh="高表現力 embedding、最大規模" data-en="Expressive embedding, largest scale">最大規模</td><td data-zh="可選" data-en="Optional">可選</td><td>biomap-research/scFoundation</td></tr>
+<tr><td>UCE</td><td>36M cells, cross-species</td><td data-zh="跨物種 zero-shot" data-en="Cross-species zero-shot">跨物種</td><td data-zh="零（zero-shot）" data-en="None (zero-shot)">否</td><td>snap-stanford/UCE</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>scFM 不是萬靈丹：</strong>對於明確、有充分 marker 的細胞類型（如 B cell、T cell），<strong>傳統 Seurat / Scanpy + marker-based 註釋</strong>可能更準、更快、更可解釋。Patterns 2025 的 BioLLM review 也指出，目前 scFM 在「稀有細胞」、「失調 disease cell」上仍有不穩定。請永遠 cross-validate。</span>
+<span data-lang="en"><strong>scFMs are not silver bullets:</strong> For well-characterised cell types with strong markers (B cells, T cells), <strong>traditional Seurat / Scanpy + marker-based annotation</strong> may be more accurate, faster, and more interpretable. The 2025 Patterns BioLLM review notes instability on rare and dysregulated disease cells. Always cross-validate.</span>
+</div></div>
+</section>
+
+<!-- ===== Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：心肌病標靶與 fine-tune 比輸 Seurat" data-en="Two deeper cases: cardiomyopathy targets and a fine-tune that lost to Seurat">兩個深入案例：心肌病標靶與 fine-tune 比輸 Seurat</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🫀</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：Geneformer 在擴張型心肌病的 in-silico perturbation 找出治療標靶</h4>
+<p>Theodoris 等人在 <em>Nature</em> 2023 的 Geneformer 原始論文中，用 Genecorpus-30M 預訓練後，將模型應用於 dilated cardiomyopathy (DCM) 患者心肌細胞的單細胞圖譜。他們挑出一群已知與 DCM 相關的轉錄因子，用 <strong>in-silico TF perturbation</strong>（把 TF token 從輸入序列中移除或往末端 reorder，模擬「該 TF 失去調控力」）測試哪些干擾能讓 DCM 心肌細胞 embedding 重新接近 healthy 心肌。結果發現 <em>NPPA</em>、<em>PLN</em> 等已知靶點之外，<em>TEAD1</em>（Hippo pathway 下游）與 <em>BAG3</em> 在 in-silico 干擾後表現出顯著的 phenotype rescue 訊號；後續的 iPSC 衍生心肌細胞實驗確認 TEAD1 抑制能部分回復 DCM 表型。<strong>啟示</strong>：scFM 的價值不只在「標註細胞」，更在於透過 attention / embedding geometry 提出「可實驗驗證的 mechanistic hypothesis」。這也是 2024–2026 多家 biotech（Insitro、Cellarity）大量投資 scFM 的核心理由。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: Geneformer in-silico perturbation surfaces therapeutic targets in dilated cardiomyopathy</h4>
+<p>In the original Geneformer paper (Theodoris et al., <em>Nature</em> 2023), the authors applied their Genecorpus-30M-pretrained model to single-cell atlases of dilated cardiomyopathy (DCM) cardiomyocytes. They tested a panel of TFs known to be DCM-associated using <strong>in-silico TF perturbation</strong> (deleting the TF token from input sequences or reordering it toward the tail to simulate "loss of regulatory influence") and measured which perturbations pulled DCM cardiomyocyte embeddings back toward healthy ones. Beyond known targets like <em>NPPA</em> and <em>PLN</em>, the model flagged <em>TEAD1</em> (downstream of Hippo) and <em>BAG3</em> with strong phenotype-rescue signatures; subsequent iPSC-derived cardiomyocyte experiments confirmed that TEAD1 inhibition partially reverses the DCM phenotype. <strong>The lesson</strong>: scFMs aren't just for cell typing — their real value is using attention / embedding geometry to propose <em>experimentally testable mechanistic hypotheses</em>. This is the core reason biotechs like Insitro and Cellarity invested heavily in scFMs across 2024–2026.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">📉</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：Theis lab 2024 benchmark——scGPT fine-tune 在小樣本下竟輸給傳統 marker</h4>
+<p>2024 年 Heumos / Theis 等人在多個 <em>scIB</em>/<em>OpenProblems</em> 風格 benchmark 上做了系統評估，發現一個違反直覺的結果：在 <strong>n &lt; 5000 cells</strong>、cell type 邊界本來就清楚（如 PBMC 五大 lineage）的情境下，<strong>scGPT 即便經過 fine-tune，annotation accuracy 仍輸給 Seurat <code>FindAllMarkers</code> + manual review 的傳統流程</strong>，差異約 3–5 百分點。原因有三：(1) 預訓練 corpus 對 PBMC 已飽和，scFM 沒有資訊增益；(2) fine-tune 在小樣本上易 overfit pre-train manifold，產生「自信但偏移」的標籤；(3) 傳統 marker-based 註釋有 immunologist 數十年積累的 priors（如 CD3+ CD4+ → helper T），這種 domain knowledge 在 scFM 的 attention 裡未必能 surface。<strong>啟示</strong>：scFM 不是萬靈丹，它在「大樣本、稀有細胞、跨資料整合、perturbation」上發光；在「小樣本、明確 marker」上 Seurat / Scanpy 仍是首選。Patterns 2025 BioLLM review 與 2025 年的 Christensen et al. (<em>Bioinformatics</em>) 也獨立報告了類似的結論。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: Theis lab 2024 benchmark — fine-tuned scGPT loses to classical markers on small data</h4>
+<p>In 2024, Heumos / Theis and colleagues benchmarked scFMs on <em>scIB</em>/<em>OpenProblems</em>-style suites and reported a counter-intuitive result: when <strong>n &lt; 5000 cells</strong> and cell-type boundaries are already clean (e.g., the five major PBMC lineages), <strong>even fine-tuned scGPT trails the classical Seurat <code>FindAllMarkers</code> + manual review pipeline</strong> by ~3–5 percentage points on annotation accuracy. Three reasons: (1) PBMC is saturated in the pre-training corpus — no information gain from the scFM; (2) fine-tuning on small samples easily overfits the pre-train manifold, producing "confident but biased" labels; (3) classical marker-based annotation embeds decades of immunology priors (CD3+ CD4+ → helper T) that scFM attention may not surface. <strong>The lesson</strong>: scFMs shine on large samples, rare cells, cross-dataset integration, and perturbation; on small samples with clean markers, Seurat / Scanpy remain the better tool. The Patterns 2025 BioLLM review and Christensen et al. 2025 (<em>Bioinformatics</em>) independently reached similar conclusions.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="新手用 scFM 最常踩的五個坑" data-en="Five common pitfalls when using scFMs">新手用 scFM 最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：把 zero-shot annotation 當 ground truth</strong><br>
+為什麼錯：zero-shot 標籤是 reference KNN 的延伸，不是「真實的細胞身份」。對 disease cells、稀有 subtype、developmental intermediates，KNN 在預訓練 embedding 上的最近鄰未必是正確答案。Kedzierska 2024 顯示在「pre-train 沒見過的疾病樣本」上 zero-shot accuracy 可下降 15–25%。<br>
+正確做法：把 zero-shot label 視為「待驗證的 prior」，仍要做 marker check、跨方法 cross-validate（如 SingleR、Azimuth、manual review）。對 high-stakes 結論（如 disease-specific cluster），至少要兩種獨立方法一致。</div>
+<div data-lang="en"><strong>Pitfall 1: Treating zero-shot annotations as ground truth</strong><br>
+Why wrong: zero-shot labels are an extension of reference KNN, not "true cell identity". For disease cells, rare subtypes, and developmental intermediates, the nearest neighbour in the pre-trained embedding may be the wrong answer. Kedzierska 2024 shows zero-shot accuracy drops 15–25% on disease samples unseen during pre-training.<br>
+Fix: treat zero-shot labels as a prior to be verified — still do marker checks and cross-validate with other methods (SingleR, Azimuth, manual review). For high-stakes conclusions like disease-specific clusters, require agreement from at least two independent methods.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：忽視訓練資料 leakage（Tabula Sapiens 重複出現）</strong><br>
+為什麼錯：scGPT、Geneformer、UCE 等模型都以 CellxGene Census 或 Tabula Sapiens 為核心預訓練語料；若你又拿 Tabula Sapiens 子集當 evaluation set，benchmark 分數會因 leakage 高估。Kedzierska et al. 2024 (bioRxiv) 系統量化發現多個 scFM 「zero-shot」分數中有 30–60% 來自 leakage 增益。<br>
+正確做法：選 evaluation dataset 時主動避開 pre-train 已用過的 atlas；或在自家 lab 收集的新資料上做 held-out 評估。論文中要明確 declare 哪些 dataset 在 pre-train 與 eval 都出現過。</div>
+<div data-lang="en"><strong>Pitfall 2: Ignoring training-data leakage (Tabula Sapiens recurrence)</strong><br>
+Why wrong: scGPT, Geneformer, UCE all pre-train on CellxGene Census or Tabula Sapiens. If you then use a Tabula Sapiens subset as your evaluation set, leakage inflates the benchmark. Kedzierska et al. 2024 (bioRxiv) quantified that 30–60% of some scFMs' "zero-shot" gains come from leakage.<br>
+Fix: actively avoid atlases already in pre-training when choosing eval sets, or evaluate on freshly collected in-lab data as a held-out test. Papers should explicitly declare which datasets appear in both pre-training and evaluation.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：直接拿 mouse 預訓練 model 跑 human</strong><br>
+為什麼錯：除了 UCE 是明確 cross-species 設計，其他 scFM（scGPT, Geneformer）的 token vocabulary 與 attention 都受 species-specific gene set 影響。跨物種直接套用會出現「homolog 對齊錯誤、表達 magnitude 校正失敗」，下游 annotation 偏差可達 20%+。<br>
+正確做法：跨物種任務優先選 UCE；若必須用 scGPT / Geneformer，需要透過 ortholog mapping（如 biomaRt）將 mouse gene 映射到 human equivalent，並重新做 batch correction 與 sanity check。</div>
+<div data-lang="en"><strong>Pitfall 3: Using a mouse pre-trained model on human directly</strong><br>
+Why wrong: only UCE is explicitly cross-species; the others (scGPT, Geneformer) have token vocabularies and attention shaped by species-specific gene sets. Direct cross-species transfer produces "wrong homolog alignment, broken expression-magnitude calibration", with downstream annotation drift &gt;20%.<br>
+Fix: prefer UCE for cross-species tasks. If you must use scGPT / Geneformer, map mouse genes to human orthologs (biomaRt), redo batch correction, and run sanity checks before trusting results.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：相信 perturbation 預測但不做 ablation</strong><br>
+為什麼錯：scGPT / Geneformer / GEARS 在 Perturb-seq benchmark 上看起來表現亮眼，但若把 attention 隨機 shuffle、或把預訓練權重 random init，分數有時只下降 5–10%——意味著「模型主要靠 cell-type prior」而非真正學到 perturbation mechanics（Roohani et al. 2024 NMI 提及這個爭議）。<br>
+正確做法：發表 perturbation 預測結果前必做 ablation：(a) random shuffle attention、(b) 用 random init backbone fine-tune、(c) 與 simple baseline（線性模型 + DE genes）對比。差異若 &lt; 5%，請保守 claim。</div>
+<div data-lang="en"><strong>Pitfall 4: Trusting perturbation predictions without ablation</strong><br>
+Why wrong: scGPT / Geneformer / GEARS look strong on Perturb-seq benchmarks, but shuffling attention or random-initialising pre-trained weights can drop scores by only 5–10% — implying the model leans on cell-type priors rather than true perturbation mechanics (Roohani et al. 2024 NMI discusses this controversy).<br>
+Fix: before publishing perturbation results, run ablations: (a) shuffle attention, (b) fine-tune from random-initialised backbone, (c) compare to a simple baseline (linear model + DE genes). If the gap is &lt;5%, temper your claims.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：UMAP 好看就以為 embedding 好</strong><br>
+為什麼錯：UMAP 是 local-structure preserving 的非線性投影，視覺上的「清楚分群」並不等於 embedding 在量化指標（silhouette score、ARI、ASW、kBET）上真的優秀。Chari et al. 2023 (<em>Nat Comm</em>) 已警告 UMAP/t-SNE 容易 over-cluster；scFM embedding 在 UMAP 上的「美觀」可能只是 hyperparameter 調出來的結果。<br>
+正確做法：報告 embedding 品質時同時給 quantitative metrics（scIB 整套：silhouette、ARI、NMI、kBET、graph connectivity），並把 UMAP 視為視覺輔助而非 evidence。</div>
+<div data-lang="en"><strong>Pitfall 5: Believing a pretty UMAP means a good embedding</strong><br>
+Why wrong: UMAP is a local-structure-preserving non-linear projection; visually clean clusters don't mean the embedding is good on quantitative metrics (silhouette, ARI, ASW, kBET). Chari et al. 2023 (<em>Nat Comm</em>) already warned that UMAP/t-SNE over-cluster easily; an scFM's pretty UMAP can be just a hyperparameter artefact.<br>
+Fix: report embedding quality with quantitative metrics (the full scIB suite: silhouette, ARI, NMI, kBET, graph connectivity) and treat UMAP as visual aid, not evidence.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：gene token、masked LM、leakage、跨物種轉移" data-en="Advanced: gene tokens, masked LM, leakage, cross-species transfer">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 Gene token vocabulary 設計、masked LM 在單細胞的對應、leakage 警告、cross-species 限制" data-en="🔬 Gene token vocabulary design, masked LM in single-cell, leakage warnings, cross-species limits">🔬 Gene token vocabulary 設計、masked LM 在單細胞的對應、leakage 警告、cross-species 限制</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① Gene token vocabulary 的兩條路。</strong>NLP 的 token 是「字 / sub-word」，但細胞沒有自然的 token 概念。兩種主流設計：<em>(a) Geneformer 的 rank-based token</em>——每個 cell 表示成「依表達量遞減排列的基因 list」，token 是基因 ID，位置編碼 = rank；好處是不存原始 magnitude，對 normalization 敏感度低；壞處是失去 magnitude 資訊。<em>(b) scGPT 的 value-binned token</em>——每個 (gene, value_bin) pair 是一個 token，保留 magnitude 但 vocab 變大（典型 ~20k genes × 50 bins ≈ 1M tokens），需要 hash trick 或 factorized embedding。CellPLM 折衷：用 continuous value embedding + gene embedding 相加。</p>
+<p><strong>② Masked language modeling 在單細胞的對應。</strong>NLP 是 mask 一些 word 預測；scFM 的對應：<em>scGPT 做 masked value prediction</em>（隨機 mask 一部分基因的 expression bin，預測 bin 值）；<em>Geneformer 做 masked gene prediction</em>（mask 部分 rank position 的 gene token）；<em>scFoundation 做 read-depth-aware MAE</em>（同時 mask + 預測 read depth）。三種 objective 對 embedding 幾何的 shape 不同：scGPT embedding 對 expression magnitude 敏感，Geneformer 對 gene composition 敏感。下游任務該選哪個取決於你要保留哪種訊號。</p>
+<p><strong>③ Kedzierska 2024 (bioRxiv) 的 leakage 警告——數字版本。</strong>該研究系統檢查 scGPT、Geneformer、UCE 的預訓練 metadata，發現：(a) Tabula Sapiens 出現在 3/3 model 的 pre-training（直接 leakage 風險）；(b) 在 Tabula Muris 的 hold-out split 上，scGPT zero-shot Macro F1 報告 0.78，但去除已見過的 donor / tissue overlap 後降到 0.62；(c) 某些 disease atlas（COVID、cancer）也以混合方式進入 pre-training，使「疾病樣本 zero-shot」評估不可信。建議：論文 reporting 應列出 pre-training corpus 完整 dataset ID + 在 evaluation 中做明確 leakage check（如 cell-id intersection）。</p>
+<p><strong>④ Cross-species transferability。</strong>UCE 透過 "protein embedding + cross-species attention" 學跨物種 invariant 表示，但這只在「ortholog 對齊得好 + 演化保守通路」時 work。Rosen et al. 自己也承認在 mouse vs zebrafish 這類更遠的物種對上效能下降。實務建議：(a) 跨物種距離越遠，越依賴 manual ortholog mapping；(b) developmental stage matters——同物種不同 stage 的 transfer 也未必 trivial；(c) 對 evolutionary novel cell types（如某些 immune subsets），cross-species transfer 可能完全失敗。</p>
+<p><strong>⑤ 進階參考。</strong>Cui et al. 2024 <em>Nat Methods</em> (scGPT) · Theodoris et al. 2023 <em>Nature</em> (Geneformer) · Hao et al. 2024 <em>Nat Methods</em> (scFoundation) · Rosen et al. 2023 bioRxiv (UCE) · Wen et al. 2024 ICLR (CellPLM) · Kedzierska et al. 2024 bioRxiv (leakage) · Heumos et al. 2024 <em>Genome Biol</em> (scIB benchmark) · Chari et al. 2023 <em>Nat Comm</em> (UMAP critique) · Roohani et al. 2024 <em>Nat Mach Intell</em> (GEARS) · Aibar et al. 2017 <em>Nat Methods</em> (SCENIC).</p>
+</div>
+<div data-lang="en">
+<p><strong>① Two paths for gene token vocabulary.</strong> NLP tokens are words / sub-words, but cells have no natural token. Two mainstream designs: <em>(a) Geneformer's rank-based tokens</em> — each cell as a "gene list sorted by descending expression", tokens = gene IDs, position embedding = rank. Pro: no raw magnitude stored, robust to normalization. Con: discards magnitude. <em>(b) scGPT's value-binned tokens</em> — each (gene, value_bin) pair is a token, preserving magnitude but blowing up vocab (~20k genes × 50 bins ≈ 1M tokens), requiring hash tricks or factorised embeddings. CellPLM compromises with continuous value embeddings added to gene embeddings.</p>
+<p><strong>② Masked language modeling in single cell.</strong> NLP masks words to predict; scFMs' equivalents: <em>scGPT does masked value prediction</em> (mask expression bins, predict them); <em>Geneformer does masked gene prediction</em> (mask gene tokens at rank positions); <em>scFoundation does read-depth-aware MAE</em> (mask + predict read depth). The three objectives sculpt embeddings differently — scGPT is magnitude-sensitive, Geneformer is composition-sensitive. The right choice depends on which signal you need to preserve downstream.</p>
+<p><strong>③ Kedzierska 2024 (bioRxiv) leakage warnings — by the numbers.</strong> The study audited pre-training metadata for scGPT, Geneformer, UCE: (a) Tabula Sapiens appears in 3/3 models' pre-training (direct leakage risk); (b) on a Tabula Muris hold-out split, scGPT zero-shot Macro F1 reported as 0.78 drops to 0.62 once seen donor/tissue overlaps are removed; (c) some disease atlases (COVID, cancer) also leaked into pre-training, undermining "disease-sample zero-shot" claims. Recommendation: papers should list full pre-training dataset IDs and run explicit leakage checks (e.g., cell-id intersections) in evaluation.</p>
+<p><strong>④ Cross-species transferability.</strong> UCE uses "protein embeddings + cross-species attention" to learn species-invariant representations, but this only works when orthologs align well and pathways are evolutionarily conserved. Rosen et al. concede performance drops on more distant pairs like mouse vs zebrafish. Practical advice: (a) the farther the species, the more you need manual ortholog mapping; (b) developmental stage matters — same-species cross-stage transfer is not trivial either; (c) for evolutionarily novel cell types (e.g., certain immune subsets), cross-species transfer can fail outright.</p>
+<p><strong>⑤ Key references.</strong> Cui et al. 2024 <em>Nat Methods</em> (scGPT) · Theodoris et al. 2023 <em>Nature</em> (Geneformer) · Hao et al. 2024 <em>Nat Methods</em> (scFoundation) · Rosen et al. 2023 bioRxiv (UCE) · Wen et al. 2024 ICLR (CellPLM) · Kedzierska et al. 2024 bioRxiv (leakage) · Heumos et al. 2024 <em>Genome Biol</em> (scIB benchmark) · Chari et al. 2023 <em>Nat Comm</em> (UMAP critique) · Roohani et al. 2024 <em>Nat Mach Intell</em> (GEARS) · Aibar et al. 2017 <em>Nat Methods</em> (SCENIC).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: scFM 真的能取代 Seurat 的可解釋性嗎？</h4>
+<p>scFM 的 embedding 是高維、黑箱的；Seurat / Scanpy 的 marker-based 註釋雖然 manual，但每一步都可解釋（CD3+ → T cell）。某 PI 主張未來 lab 直接學 scGPT，不再教 marker-based 流程；另一 PI 反對：「沒有 marker priors，學生看不懂 paper、也說不出生物意義」。<strong>請思考</strong>：在訓練學生時，可解釋性與效率該如何平衡？你會讓博士生先學哪個？scFM 與 marker-based 是替代還是互補？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Do scFMs really replace Seurat's interpretability?</h4>
+<p>scFM embeddings are high-dimensional and opaque; Seurat / Scanpy marker-based annotation is manual but interpretable at every step (CD3+ → T cell). One PI argues the future lab should learn scGPT directly and skip markers; another counters: "without marker priors students can't read papers or articulate biology." <strong>Consider</strong>: how do you balance interpretability and efficiency when training students? Which do PhDs learn first? Are scFMs a replacement or a complement to markers?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 學界該如何評估「zero-shot」claim？</h4>
+<p>多篇 scFM 論文報告 zero-shot Macro F1 0.8+，但 Kedzierska 2024 系統證明這些分數受 leakage 影響。某 reviewer 主張：所有 scFM 論文必須附「leakage audit table」列出 pre-train corpus 與 evaluation set 的 intersection；某 author 反對：「這太苛刻，且 corpus list 是商業秘密」。<strong>請思考</strong>：你會如何要求 reviewer / journal 強制 leakage disclosure？開源 vs 商業模型該用不同標準嗎？OpenProblems / scIB 該不該硬性要求 leakage-checked benchmark？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: How should the field evaluate "zero-shot" claims?</h4>
+<p>Many scFM papers report zero-shot Macro F1 of 0.8+, but Kedzierska 2024 showed leakage drives much of this. One reviewer argues every scFM paper must attach a leakage audit table listing pre-training-vs-evaluation intersections; an author pushes back: "too strict, and corpus lists are trade secrets." <strong>Consider</strong>: how would you require reviewers/journals to enforce leakage disclosure? Should open vs commercial models have different standards? Should OpenProblems / scIB mandate leakage-checked benchmarks?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: 1.7B 參數的 scFoundation 真的比 33M 參數的 scGPT 好嗎？</h4>
+<p>scFoundation 號稱最大 scFM，但 2025 多個 benchmark 顯示在多數任務上與 scGPT / Geneformer 差異 &lt; 5 個百分點。某團隊認為「scale 是必要的、未來會更顯」；某另一團隊認為「單細胞資料本身上限有限，scaling law 在生物學不一定成立」。<strong>請思考</strong>：scaling 在生物資料的回報率該如何衡量？什麼 task 才真正 benefit from scale？小 lab 在算力受限時，該選大模型 inference 還是小模型 fine-tune？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Is 1.7B-param scFoundation really better than 33M-param scGPT?</h4>
+<p>scFoundation claims the largest scFM, but 2025 benchmarks place it within 5 percentage points of scGPT / Geneformer on most tasks. One camp argues "scale is necessary and will pay off later"; another argues "single-cell data has finite ceiling and scaling laws may not hold in biology". <strong>Consider</strong>: how do you measure scaling ROI on biological data? Which tasks truly benefit from scale? With limited compute, should a small lab pick big-model inference or small-model fine-tune?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: scFM 的 in-silico perturbation 該算 hypothesis 還是 evidence？</h4>
+<p>Geneformer DCM 案例顯示 in-silico TF KO 能提示治療標靶，但後續仍需 iPSC 實驗驗證。某計算生物學家認為「in-silico 結果該獨立發表，加速 hypothesis 流通」；某實驗生物學家反對：「未驗證的 in-silico claim 會污染文獻、誤導後續研究」。<strong>請思考</strong>：in-silico-only 的 scFM perturbation 結果在 paper 中該怎麼定位？該不該強制 wet-lab validation？對 dry lab 與 wet lab 合作的 fair credit 又該如何安排？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Are scFM in-silico perturbations hypotheses or evidence?</h4>
+<p>The Geneformer DCM case shows in-silico TF KO can flag therapeutic targets, but iPSC validation is still needed. A computational biologist argues "in-silico results should publish independently to speed up hypothesis flow"; an experimentalist counters: "unvalidated in-silico claims pollute the literature and mislead follow-up work". <strong>Consider</strong>: how should in-silico-only scFM perturbation results be framed in papers? Should wet-lab validation be mandatory? How do you fairly credit dry-lab vs wet-lab contributors?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">1. 你想做 mouse liver 與 human liver scRNA-seq 跨物種整合（無共同基因集要求），最適合？</p>
+<p data-lang="en">1. You want to integrate mouse and human liver scRNA-seq across species (no shared-gene-set requirement). Best fit?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Seurat CCA</span><span data-lang="en">A. Seurat CCA</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. scVI</span><span data-lang="en">B. scVI</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. UCE（跨物種 zero-shot）</span><span data-lang="en">C. UCE (cross-species zero-shot)</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. PCA</span><span data-lang="en">D. PCA</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">2. 用 scFM 做 perturbation 預測（基因 KO → cell state 變化），最常被引用的代表？</p>
+<p data-lang="en">2. Which scFM is most commonly cited for perturbation prediction (gene KO → cell state change)?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. UCE</span><span data-lang="en">A. UCE</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Geneformer / scGPT</span><span data-lang="en">B. Geneformer / scGPT</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. PCA</span><span data-lang="en">C. PCA</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. Cellranger</span><span data-lang="en">D. Cellranger</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh">3. 下列哪一項<strong>不是</strong> scFM 的合理使用態度？</p>
+<p data-lang="en">3. Which is NOT a reasonable attitude toward scFMs?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 對稀有細胞 / 病態細胞要 cross-validate</span><span data-lang="en">A. Cross-validate on rare / dysregulated cells</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 與 marker-based 註釋並用</span><span data-lang="en">B. Use alongside marker-based annotation</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 注意 leakage 與 benchmark 設計</span><span data-lang="en">C. Watch out for leakage and benchmark design</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 完全取代 Seurat / Scanpy 流程</span><span data-lang="en">D. Replace Seurat / Scanpy entirely</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你是博士生，用 scGPT 對某罕見肝癌患者 scRNA-seq（4500 cells）做 zero-shot annotation。模型給出 12 種 cell type，其中一個 cluster 被標為 "hepatic progenitor"，但你的 PI 質疑這個 label 不可靠。你檢查發現：(a) scGPT pre-train corpus 包含 Tabula Sapiens（含 healthy liver），但不含 HCC disease atlas；(b) 該 cluster 的 marker 表達不典型（AFP+ 但 KRT19−）；(c) 樣本量小於 5000。根據 Kedzierska 2024 與 Theis lab benchmark，最該採取的下一步？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. As a PhD student, you ran scGPT zero-shot annotation on a rare HCC patient's scRNA-seq (4500 cells). The model produced 12 cell types, including a "hepatic progenitor" cluster, but your PI doubts the label. You discover: (a) scGPT's pre-training corpus includes Tabula Sapiens (healthy liver only), not any HCC atlas; (b) the cluster's marker expression is atypical (AFP+ but KRT19−); (c) sample size is below 5000. Per Kedzierska 2024 and the Theis lab benchmark, what should you do next?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 直接相信 scGPT 的 label，寫進論文</span><span data-lang="en">A. Trust the scGPT label and write it into the paper</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 把樣本送回去定序更多 cells（&gt; 50k）以提升 scFM 表現</span><span data-lang="en">B. Send the sample for deeper sequencing to &gt;50k cells to boost the scFM</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 改用更大的模型 scFoundation 1.7B 重做 annotation</span><span data-lang="en">C. Switch to the bigger scFoundation 1.7B model</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 把 zero-shot label 視為 prior，並用 Seurat marker-based + SingleR 雙重 cross-validate；若三者不一致則回到 manual review 與該領域 immunologist / hepatologist 討論</span><span data-lang="en">D. Treat the zero-shot label as a prior; cross-validate with Seurat marker-based + SingleR; if all three disagree, go back to manual review with a domain immunologist / hepatologist</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 Geneformer 與 scGPT 的 token 設計差異，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. Regarding the token design difference between Geneformer and scGPT, which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 兩者完全相同，差別只在參數量</span><span data-lang="en">A. They are identical, differing only in parameter count</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Geneformer 用文字 token（如「CD3」），scGPT 用數字 token</span><span data-lang="en">B. Geneformer uses word tokens ("CD3"), scGPT uses numeric tokens</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. Geneformer 用 rank-based token（依表達量排序的 gene list，不存原始 magnitude），scGPT 用 value-binned token（(gene, expression bin) pair，保留 magnitude）。對 normalization 敏感度與 inductive bias 因此不同</span><span data-lang="en">C. Geneformer uses rank-based tokens (gene list sorted by expression, no raw magnitude stored); scGPT uses value-binned tokens ((gene, expression bin) pairs that preserve magnitude). They differ in normalization sensitivity and inductive bias</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. Geneformer 只能用於 mouse；scGPT 只能用於 human</span><span data-lang="en">D. Geneformer is mouse-only; scGPT is human-only</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="genomic-fm.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Prev">← 上一步</span><span class="nav-title" data-zh="Step 12: 基因組 Foundation 模型" data-en="Step 12: Genomic Foundation Models">Step 12: 基因組 Foundation 模型</span></a>
+<a href="biomedical-llm.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 14: 生醫文本 LLM" data-en="Step 14: Biomedical Text LLMs">Step 14: 生醫文本 LLM</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// scFM task selector (mock leaderboard)
+const SCF={
+  ann:{scores:{scGPT:92,Geneformer:88,scFoundation:90,UCE:86,Seurat:84},tip:{zh:'Annotation：scGPT 與 scFoundation 通常領先；UCE 在跨物種上獨領風騷。',en:'Annotation: scGPT and scFoundation often lead; UCE dominates cross-species.'}},
+  int:{scores:{scGPT:90,Geneformer:80,scFoundation:88,UCE:91,Seurat:78},tip:{zh:'Integration：UCE 與 scGPT 強；跨物種 UCE 第一。',en:'Integration: UCE and scGPT shine; UCE first for cross-species.'}},
+  pert:{scores:{scGPT:85,Geneformer:90,scFoundation:84,UCE:70,Seurat:60},tip:{zh:'Perturbation：Geneformer 是經典代表，scGPT 緊跟在後。',en:'Perturbation: Geneformer is the classical pick; scGPT trails closely.'}},
+  grn:{scores:{scGPT:80,Geneformer:90,scFoundation:78,UCE:70,Seurat:65},tip:{zh:'GRN：Geneformer 的 attention-derived 網絡是其旗艦能力。',en:'GRN: Geneformer\'s attention-derived networks are its flagship capability.'}}
+};
+let SCUR='ann';
+function pickScf(b,k){b.parentElement.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');SCUR=k;drawScf();}
+function drawScf(){
+  const svg=document.getElementById('scfSvg');const L=window.I18n?I18n.get():'en';
+  const s=SCF[SCUR].scores;const names=Object.keys(s);const vals=Object.values(s);
+  const w=460,h=160,x0=80;const bw=(w-x0-20)/names.length;
+  let html=`<text x="10" y="14" font-size="11" fill="var(--c-ink-muted)">mock benchmark score</text>`;
+  names.forEach((n,i)=>{
+    const v=vals[i];const bh=v*1.4;const bx=x0+i*bw+4;const by=h+30-bh;
+    const cl=n==='Seurat'?'var(--c-ink-muted)':'var(--c-accent)';
+    html+=`<rect x="${bx}" y="${by}" width="${bw-8}" height="${bh}" fill="${cl}" rx="4"/>`;
+    html+=`<text x="${bx+(bw-8)/2}" y="${by-5}" text-anchor="middle" font-size="11" fill="var(--c-ink)">${v}</text>`;
+    html+=`<text x="${bx+(bw-8)/2}" y="${h+45}" text-anchor="middle" font-size="10" fill="var(--c-ink-muted)">${n}</text>`;
+  });
+  svg.innerHTML=html;
+  document.getElementById('scfTip').textContent=SCF[SCUR].tip[L];
+}
+document.addEventListener('langchange',drawScf);
+document.addEventListener('DOMContentLoaded',drawScf);
+
+// Quiz
+const QF={zh:{q1_y:'UCE 專為跨物種 zero-shot embedding 而設計。',q2_y:'Geneformer 與 scGPT 都常被引用於 perturbation 預測。',q3_y:'完全取代 Seurat / Scanpy 不切實際；scFM 是補充工具。',q4_y:'根據 Kedzierska 2024 與 Theis lab benchmark：(a) HCC 樣本不在 pre-train corpus 中、(b) marker 表達不典型、(c) 樣本量 &lt; 5000——三者都指向 zero-shot 不可信。直接相信（A）或盲信更大模型（B、C）都危險。正解是把 zero-shot 當 prior，用 Seurat marker-based + SingleR 等獨立方法 cross-validate，並請教領域專家。',q5_y:'Geneformer 的 token 是 rank-based（依表達量排序的 gene list，token = gene ID，position = rank），不存原始 magnitude；scGPT 的 token 是 value-binned（每個 (gene, expression bin) 是一個 token），保留 magnitude 但 vocab 大。兩者對 normalization 的敏感度與下游任務的 inductive bias 因此不同——前者擅長 composition-sensitive 任務（GRN、perturbation），後者擅長 magnitude-sensitive 任務（read depth aware annotation）。'},en:{q1_y:'UCE is designed precisely for cross-species zero-shot embedding.',q2_y:'Geneformer and scGPT are both cited heavily for perturbation prediction.',q3_y:'Replacing Seurat / Scanpy outright is unrealistic; scFMs complement them.',q4_y:'Per Kedzierska 2024 and the Theis lab benchmark: (a) HCC is not in pre-training, (b) marker expression is atypical, (c) sample size &lt; 5000 — all three point to unreliable zero-shot. Trusting blindly (A) or chasing bigger models (B, C) is dangerous. The right call: treat zero-shot as a prior, cross-validate with Seurat marker-based + SingleR, and consult a domain expert.',q5_y:'Geneformer uses rank-based tokens (gene list sorted by expression, token = gene ID, position = rank), discarding raw magnitude; scGPT uses value-binned tokens (each (gene, expression bin) is one token), preserving magnitude but blowing up vocab. The two differ in normalization sensitivity and inductive bias — Geneformer is composition-sensitive (GRN, perturbation), scGPT is magnitude-sensitive (read-depth-aware annotation).'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

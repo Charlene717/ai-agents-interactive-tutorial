@@ -1,0 +1,444 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 7: Academic Writing AI — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html" class="active">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 7 / 20</div>
+<h1 data-zh="學術寫作 AI" data-en="Academic Writing AI">學術寫作 AI</h1>
+<p class="subtitle" data-lang="zh">從 outline 到 cover letter，AI 能把寫作時間壓到 1/3——但前提是你懂期刊政策、會揭露、會驗證引用。</p>
+<p class="subtitle" data-lang="en">From outline to cover letter, AI can shrink writing time to 1/3 — provided you know journal policy, disclose properly, and verify every citation.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="學術寫作 AI 必懂十詞" data-en="Ten essential terms for academic-writing AI">學術寫作 AI 必懂十詞</h2>
+<div data-lang="zh"><p>這 10 個詞貫穿投稿流程。讀過一次，後面 disclosure、authorship、journal policy 的對話就會輕鬆。</p></div>
+<div data-lang="en"><p>These ten words pervade the submission process. Skim once and the disclosure / authorship / journal-policy discussion below flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📄</div><h4>Manuscript</h4>
+<div data-lang="zh"><p>送 peer review 的論文稿，遵循 IMRaD 結構（Introduction / Methods / Results / Discussion）。臨床研究還要加 limitations、conclusions、registration ID（NCT、PROSPERO）。</p></div>
+<div data-lang="en"><p>The peer-reviewed paper draft, structured as IMRaD (Introduction / Methods / Results / Discussion). Clinical work adds limitations, conclusions, and registration ID (NCT, PROSPERO).</p></div>
+</div>
+<div class="card"><div class="card-icon">✉️</div><h4>Cover Letter</h4>
+<div data-lang="zh"><p>附隨投稿的給編輯信，1–2 頁。重點：研究 novelty、為何適合該期刊、是否有 conflict、推薦/排除 reviewers、AI 使用揭露。Lancet 與 NEJM 對 cover letter 結構有明確要求。</p></div>
+<div data-lang="en"><p>The letter to the editor accompanying a submission, 1–2 pages. Key items: novelty, journal fit, conflicts, suggested/excluded reviewers, AI-use disclosure. <em>Lancet</em> and NEJM have explicit cover-letter formats.</p></div>
+</div>
+<div class="card"><div class="card-icon">💬</div><h4>Rebuttal</h4>
+<div data-lang="zh"><p>對 reviewer comments 的逐點回覆。學界共識：禮貌、point-by-point、每點先 quote、回應、引用 revision 文中對應 line/page。<em>Annals of Internal Medicine</em> 與 BMJ 把 rebuttal 視為 transparency 的核心。</p></div>
+<div data-lang="en"><p>Point-by-point reply to reviewer comments. Consensus norms: polite, point-by-point, each item quotes the comment then responds and points to the revised line/page. <em>Annals of Internal Medicine</em> and BMJ treat rebuttals as a transparency cornerstone.</p></div>
+</div>
+<div class="card"><div class="card-icon">📰</div><h4>Editorial</h4>
+<div data-lang="zh"><p>由期刊編輯撰寫、不經 peer review 的評論文章；常出現於 invited commentary、accompanying editorial、editor's choice。位階上是 expert opinion，不是 primary research。</p></div>
+<div data-lang="en"><p>An editor-authored commentary not subject to peer review — invited commentaries, accompanying editorials, editor's choice. Counts as expert opinion, not primary research.</p></div>
+</div>
+<div class="card"><div class="card-icon">📋</div><h4>IMRaD</h4>
+<div data-lang="zh"><p>Introduction / Methods / Results / and Discussion——20 世紀以來的科學寫作標準結構，現行 PRISMA 2020 / STROBE / CONSORT 等規範皆以此為骨幹。</p></div>
+<div data-lang="en"><p>Introduction / Methods / Results / and Discussion — the standard scientific-writing structure since the 20th century. PRISMA 2020 / STROBE / CONSORT all build on it.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚠️</div><h4>Limitations</h4>
+<div data-lang="zh"><p>論文 Discussion 後段必要區塊，明列研究的 internal / external validity 限制。AMA Manual of Style 與 ICMJE 都強調「unexpressed limitation 視為作者誠信問題」。</p></div>
+<div data-lang="en"><p>A mandatory subsection late in the Discussion, listing internal / external validity limits. AMA Manual of Style and ICMJE both treat "unstated limitation" as an integrity issue.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔐</div><h4>Disclosure</h4>
+<div data-lang="zh"><p>揭露 conflict of interest、funding、author contributions、AI 工具使用。ICMJE Disclosure Form 是大多數頂級期刊的標準。AI 揭露要寫工具名稱、版本、使用範圍。</p></div>
+<div data-lang="en"><p>Declaration of conflicts of interest, funding, author contributions, AI use. The ICMJE Disclosure Form is the de facto standard at most top journals. AI disclosure must list tool name, version, and scope of use.</p></div>
+</div>
+<div class="card"><div class="card-icon">👥</div><h4>Authorship</h4>
+<div data-lang="zh"><p>ICMJE 4 criteria：(1) substantial contribution、(2) drafting/revising、(3) final approval、(4) accountability。AI <strong>不可</strong>成為 author，因為它不能負責。CRediT taxonomy 用於描述各 author 角色。</p></div>
+<div data-lang="en"><p>ICMJE's 4 criteria: (1) substantial contribution, (2) drafting/revising, (3) final approval, (4) accountability. AI <strong>cannot</strong> be an author — it can't take responsibility. CRediT taxonomy describes each author's role.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏷️</div><h4>CRediT</h4>
+<div data-lang="zh"><p>Contributor Roles Taxonomy（CASRAI 2014，ANSI/NISO Z39.104-2022）：14 個 role（Conceptualization、Methodology、Software、…）。多數期刊已要求 CRediT 揭露，可顯示各 author 在不同 role 的貢獻。</p></div>
+<div data-lang="en"><p>Contributor Roles Taxonomy (CASRAI 2014, ANSI/NISO Z39.104-2022): 14 roles (Conceptualization, Methodology, Software, …). Most journals now require CRediT disclosure, mapping each author to their roles.</p></div>
+</div>
+<div class="card"><div class="card-icon">🚫</div><h4>Predatory Journal</h4>
+<div data-lang="zh"><p>不做嚴格 peer review、收高額 APC 的低品質期刊。Beall's List（archived）與 Cabells Predatory Reports 是主要識別資源。AI 寫作普及後，predatory journal 與 paper mill 結合風險升高，ICMJE 2024 增列警示條款。</p></div>
+<div data-lang="en"><p>Low-quality journals that skip rigorous peer review and charge high APCs. Beall's List (archived) and Cabells Predatory Reports are the main identifiers. With AI-assisted writing booming, predatory-journal / paper-mill risk has risen — ICMJE 2024 added warnings.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="2026 年的學術寫作 AI 生態" data-en="The 2026 academic-writing AI stack">2026 年的學術寫作 AI 生態</h2>
+<div data-lang="zh">
+<p>2026 年，寫一篇 manuscript 已經不是「打開 Word 從第一個字開始打」。多數研究者會疊用三類工具：(1) <strong>專業學術寫作 AI</strong>（Paperpal、Writefull——in-context suggestions、journal-style 校稿）；(2) <strong>通用 LLM</strong>（Claude、GPT 用於 outline、draft、rebuttal）；(3) <strong>輕量語法工具</strong>（Grammarly 用於最後 polish）。各有專長，混用最佳。</p>
+<p>但工具強大不代表用法自由。<strong>Nature 禁止 AI 生成的圖像</strong>，Science 禁止未經同意的 AI 文字產出，ICMJE 要求在 Methods + Acknowledgments + Cover letter 三處揭露 AI 使用情形。2026 年起，多家 journal 要求附「AI Use Statement」明確列出工具、版本、用於哪一段。這頁教你整套流程與揭露範本。</p>
+</div>
+<div data-lang="en">
+<p>In 2026, writing a manuscript isn't "open Word, type word one". Most researchers stack three classes of tools: (1) <strong>academic-specific writing AIs</strong> (Paperpal, Writefull — in-context suggestions, journal-style polishing); (2) <strong>general LLMs</strong> (Claude, GPT for outlines, drafts, rebuttals); (3) <strong>lightweight grammar</strong> (Grammarly for the last polish). Each owns a niche.</p>
+<p>Power doesn't mean free rein. <strong>Nature bans AI-generated images</strong>; Science bans unauthorized AI text; ICMJE requires disclosure in Methods + Acknowledgments + Cover letter. From 2026, many journals require an explicit "AI Use Statement" listing tool, version, and where used. This page gives you the full flow plus disclosure templates.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>AI 是 <strong>copilot</strong>，不是 author。它可以加速 outline、改寫、grammar、translation，但<strong>科學主張、引用驗證、結論判斷必須由你負責</strong>。揭露是底線，verification 是責任。</span>
+<span data-lang="en"><strong>Core mindset:</strong> AI is a <strong>copilot</strong>, not an author. It can speed up outline, rewrite, grammar, translation — but <strong>scientific claims, citation verification, and conclusions are yours</strong>. Disclose; verify; own it.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工具分類" data-en="TOOLS">工具分類</div>
+<h2 data-zh="四類學術寫作 AI" data-en="Four classes of academic-writing AI">四類學術寫作 AI</h2>
+<div class="card-grid cols-2">
+<div class="card"><div class="card-icon">📝</div><h4>Paperpal / Writefull</h4>
+<div data-lang="zh"><p>專為學術英文設計：journal-style 校稿、in-context suggestions、提供「這句話在 PubMed corpus 中其他人怎麼寫」。Paperpal 整合 MS Word；Writefull 整合 Overleaf。</p></div>
+<div data-lang="en"><p>Built for academic English: journal-style polishing, in-context suggestions, "how do other PubMed papers phrase this?". Paperpal integrates with Word; Writefull with Overleaf.</p></div>
+</div>
+<div class="card"><div class="card-icon">💬</div><h4>Claude / GPT / Gemini</h4>
+<div data-lang="zh"><p>通用 LLM，從 outline、draft、rebuttal、cover letter 全包。對「需要推理、有上下文判斷」的寫作任務最強。</p></div>
+<div data-lang="en"><p>General LLMs cover outline, drafting, rebuttal, cover letter end-to-end. Best for reasoning-laden, context-aware writing.</p></div>
+</div>
+<div class="card"><div class="card-icon">✍️</div><h4>Grammarly</h4>
+<div data-lang="zh"><p>通用語法、不專為學術。適合「最後一道 polish」，但別期待它懂 statistical idioms 或 methods 段。</p></div>
+<div data-lang="en"><p>General grammar, not academic-specific. Good for final polish; not aware of statistical idioms or methods conventions.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔬</div><h4>Trinka / Curie</h4>
+<div data-lang="zh"><p>學術英文 + 期刊風格檢查（IMRAD、PRISMA、ARRIVE）；適合 ESL 作者的 manuscript pre-submission 全文檢查。</p></div>
+<div data-lang="en"><p>Academic English + journal-style checks (IMRAD, PRISMA, ARRIVE). Great for ESL authors doing full-MS pre-submission review.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="寫作工作流：8 步驟" data-en="Writing workflow: 8 steps">寫作工作流：8 步驟</h2>
+<div data-lang="zh"><p>從 idea 到 submit，點擊任一步驟看推薦工具與 prompt 範例。</p></div>
+<div data-lang="en"><p>From idea to submit — click any step for tool recommendations and a prompt template.</p></div>
+<div class="interactive-panel">
+<div id="flowSteps" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center"></div>
+<div id="flowDetail" style="padding:14px;background:var(--c-bg-alt);border-left:4px solid var(--c-accent);border-radius:8px;min-height:160px">
+  <div data-lang="zh" style="color:var(--c-ink-muted)">點擊上方任一步驟，查看推薦工具與 prompt 範例。</div>
+  <div data-lang="en" style="color:var(--c-ink-muted)">Click any step above for tool + prompt.</div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="Prompt 範例" data-en="PROMPT TEMPLATES">Prompt 範例</div>
+<h2 data-zh="三個寫作場景的 prompt 模板" data-en="Three prompt templates">三個寫作場景的 prompt 模板</h2>
+<div class="code-tabs">
+<div class="code-tab-btns">
+  <button class="code-tab-btn active" onclick="switchTab(this,'wr1')">Outline</button>
+  <button class="code-tab-btn" onclick="switchTab(this,'wr2')">Rebuttal</button>
+  <button class="code-tab-btn" onclick="switchTab(this,'wr3')">AI Disclosure</button>
+</div>
+<div class="code-tab-content active" id="wr1"><pre><span class="kw">Role:</span> 你是有 10 年 high-impact 期刊投稿經驗的臨床研究者。
+<span class="kw">Context:</span> 我有一個 prospective cohort 研究（N=4,200，T2D 5 年追蹤），
+發現 GLP-1 user CVD 死亡率 ↓ 28%（HR 0.72, 95% CI 0.58–0.89）。
+擬投 JAMA Internal Medicine。
+<span class="kw">Task:</span> 給我 IMRAD 4 段 outline：
+- Intro：3 段 logic chain
+- Methods：列 7 個必含的 sub-section
+- Results：列 4 個主表 + 3 個 figure 的候選
+- Discussion：3 段 + limitation 5 點
+<span class="kw">Format:</span> Markdown，每 sub-section 1–2 句說明該寫什麼。
+<span class="kw">Constraint:</span> 不要寫實際內容；只要結構。不引用任何 PMID。</pre></div>
+<div class="code-tab-content" id="wr2"><pre><span class="kw">Role:</span> Senior peer-reviewer + co-author。
+<span class="kw">Context:</span> 我的 manuscript 被 Lancet 給 major revision。
+Reviewer 2 第 3 點質疑「為何不用 inverse-probability weighting」。
+我們用了 propensity score matching 是因為 covariate 數量大且 well-balanced
+(SMD&lt;0.1)。
+<span class="kw">Task:</span> 撰寫禮貌但堅定的回覆，包含：
+1) 致謝
+2) 為何選擇 PSM（2–3 個技術理由）
+3) 我們新增的 sensitivity analysis：IPW &amp; doubly-robust
+4) 結果一致性
+<span class="kw">Format:</span> 英文，&lt;= 250 字，附 1 個 sensitivity analysis 結果表。
+<span class="kw">Constraint:</span> 不要 dismissive 語氣。標 [verify number] 在所有
+量化結果處。</pre></div>
+<div class="code-tab-content" id="wr3"><pre><span class="comment"># Methods (suggested wording)</span>
+<span class="kw">Methods § Use of AI:</span>
+We used Claude Opus 4.6 (Anthropic, accessed 2026-04-15) and
+Paperpal (v 14) to assist with language polishing of the
+Discussion and Limitations sections. ChatGPT (GPT-5.5 Pro,
+2026-03 release) was used to brainstorm Figure 3 layout.
+All scientific claims, statistical analyses, and citations
+were generated, verified, and approved by the human authors.
+No AI-generated images were used.
+
+<span class="comment"># Acknowledgments (suggested wording)</span>
+The authors acknowledge the use of generative AI tools as
+described in the Methods. No AI tool is listed as an author.
+
+<span class="comment"># Cover letter (suggested wording — short form)</span>
+<span class="kw">中文版：</span>本研究於語言潤飾與 figure 構思階段使用了 Claude Opus 4.6
+與 Paperpal，所有科學主張與統計結果均由作者驗證並負責。
+未使用任何 AI 生成之圖像。</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="期刊政策" data-en="JOURNAL POLICY">期刊政策</div>
+<h2 data-zh="2025–2026 主要期刊 AI 政策" data-en="Major journal AI policies 2025–2026">2025–2026 主要期刊 AI 政策</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="期刊" data-en="Journal">期刊</th><th data-zh="AI 文字" data-en="AI Text">AI 文字</th><th data-zh="AI 圖像" data-en="AI Images">AI 圖像</th><th data-zh="揭露要求" data-en="Disclosure">揭露要求</th></tr></thead>
+<tbody>
+<tr><td>Nature</td><td data-zh="允許輔助，作者負責" data-en="Allowed as assist; authors responsible">允許輔助，作者負責</td><td data-zh="嚴格禁止" data-en="Strictly banned">嚴格禁止</td><td data-zh="Methods + 致謝" data-en="Methods + Acks">Methods + 致謝</td></tr>
+<tr><td>Science</td><td data-zh="未經編輯同意禁止" data-en="Not without editor approval">未經編輯同意禁止</td><td data-zh="嚴格禁止" data-en="Banned">嚴格禁止</td><td data-zh="必須揭露 + cover letter" data-en="Disclose + cover letter">必須揭露 + cover letter</td></tr>
+<tr><td>NEJM</td><td data-zh="允許 polish，禁原創段落" data-en="Polish allowed; original passages no">允許 polish，禁原創段落</td><td data-zh="禁止" data-en="Banned">禁止</td><td data-zh="Methods 明列工具版本" data-en="Methods: tool + version">Methods 明列工具版本</td></tr>
+<tr><td>JAMA</td><td data-zh="允許輔助" data-en="Allowed as assist">允許輔助</td><td data-zh="禁止" data-en="Banned">禁止</td><td data-zh="Acknowledgments" data-en="Acknowledgments">Acknowledgments</td></tr>
+<tr><td>Lancet</td><td data-zh="允許輔助" data-en="Allowed as assist">允許輔助</td><td data-zh="僅 schematic" data-en="Schematic only">僅 schematic</td><td data-zh="明確 statement section" data-en="Dedicated statement">明確 statement section</td></tr>
+<tr><td>ICMJE</td><td data-zh="AI 不可作為作者；輔助允許" data-en="No AI authorship; assistance ok">AI 不可作為作者；輔助允許</td><td data-zh="原則禁止" data-en="Generally banned">原則禁止</td><td data-zh="3 處揭露" data-en="3-spot disclosure">3 處揭露</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>常見投稿地雷：</strong><ul style="margin:6px 0;padding-left:18px;line-height:1.7">
+<li>用 AI 生成 figure（schematic 也要看期刊；Nature 全禁）→ desk reject。</li>
+<li>未揭露 AI 使用 → ICMJE / COPE 視為 misconduct，可撤稿。</li>
+<li>AI 編造的 PMID 未驗證直接放 reference list → 退稿 + 信譽損失。</li>
+<li>讓 AI 編寫 rebuttal 而未仔細審讀 → 內容前後矛盾被 reviewer 抓到。</li>
+<li>用未經 BAA 的 chatGPT 處理含 PHI 的 case description → IRB / 合規問題。</li>
+</ul></span>
+<span data-lang="en"><strong>Submission landmines:</strong><ul style="margin:6px 0;padding-left:18px;line-height:1.7">
+<li>AI-generated figures (even schematics — Nature bans all) → desk reject.</li>
+<li>Failure to disclose AI use → ICMJE / COPE consider it misconduct; retraction possible.</li>
+<li>Fabricated PMIDs slipping into the reference list → desk reject + reputational hit.</li>
+<li>AI-drafted rebuttal pushed out unread → reviewers catch internal contradictions.</li>
+<li>Putting PHI in non-BAA ChatGPT → IRB / compliance trouble.</li>
+</ul></span>
+</div></div>
+</section>
+
+<!-- ===== Real-world case studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個真實的學術寫作 AI 故事" data-en="Two real academic-writing AI stories">兩個真實的學術寫作 AI 故事</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🔬</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：PI 用 Claude 把 Nature reject 信轉成 4 種改進方向被 <em>Cell</em> 接受</h4>
+<p>2025 年某 PI 的 manuscript 被 <em>Nature</em> 拒稿，editor 提到「novelty 不夠 broad、mechanistic depth 不足、與 cancer biology 連結弱」。傳統做法是直接修改投別家。他改用 Claude Opus 4.6 做了三件事：(1) 把 reject 信 + Reviewer 1/2/3 comments + 原稿全文丟給 Claude，請 extended thinking 模式產出 <strong>4 種不同 angle 的「重新架構」方案</strong>——一種強化 cancer 連結、一種增添 single-cell sequencing、一種轉向 immunology framing、一種強調 translational potential；(2) 每方案估算 additional experiments 與時程；(3) 對每方案搜尋類似已發表論文（<em>Nature</em> vs <em>Cell</em> vs <em>Nat Cancer</em>），看哪本期刊風格對應最好。最後他與 PI 選了「強化 cancer + 加 single-cell 補充」方案，補了 3 個月實驗，投 <em>Cell</em>，2 次 revision 接受。<strong>關鍵</strong>：AI 沒做科學決策——所有 angle 仍由 PI 主導。它做的是「幫人類列出可能性」並做 trade-off 分析。整個 brainstorm 過程 1 小時；如果靠手寫，可能要 1 週 lab meeting。揭露上：在 cover letter 寫了「使用 Claude 協助 brainstorm revision strategy，所有科學決策由作者負責」。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: A PI used Claude to turn a <em>Nature</em> reject into 4 directions, then landed in <em>Cell</em></h4>
+<p>In 2025 a PI's manuscript was rejected by <em>Nature</em> — editor cited "insufficient novelty breadth, mechanistic depth weak, cancer biology link soft." Standard move: edit and submit elsewhere. Instead he fed Claude Opus 4.6 (extended thinking) the reject letter + all 3 reviewer comments + the full draft, then asked: (1) produce <strong>4 distinct "rearchitecture" angles</strong> — one strengthens the cancer link, one adds single-cell sequencing, one reframes around immunology, one emphasizes translational impact; (2) estimate additional experiments and timeline per angle; (3) for each angle, search for analogous accepted papers (<em>Nature</em> vs <em>Cell</em> vs <em>Nat Cancer</em>) to identify journal fit. With the PI he chose "cancer link + single-cell supplement," ran 3 months of experiments, submitted to <em>Cell</em>, accepted after 2 revisions. <strong>Key</strong>: AI made no scientific decision — the PI owned all of them. AI listed possibilities and surfaced trade-offs. The brainstorm took 1 hour; manually it might cost a week of lab meetings. Disclosure: cover letter stated "Claude was used to assist brainstorming the revision strategy; all scientific decisions remain authors'."</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🌐</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：ESL 博士用 Paperpal 把 <em>EJI</em> 投稿語言評分從 C 拉到 A</h4>
+<p>某非英語母語博士第一稿投 <em>European Journal of Immunology</em>，editor desk reject 時附 internal language score「C – significant ESL features impeding scientific clarity」。這是常見 ESL 痛點：邏輯沒錯、實驗紮實，但語言被打折扣。他用 <strong>Paperpal</strong>（v 14，整合 MS Word）做了三輪 polish：(1) 第一輪 grammar + flow，標出 1,200 個 suggestion，他 accept 約 70%；(2) 第二輪「journal style match」針對 <em>EJI</em> 風格做進階建議（如 "ELISA was performed" → "ELISA was carried out as previously described"）；(3) 第三輪「sentence variety」破除過多 "X showed Y" 結構。Submit 後 editor 評語改為「A – clarity excellent」，paper 進入 peer review，最後接受。<strong>關鍵限制</strong>：Paperpal <strong>不會幫你解決科學問題</strong>——若你的 logic chain 弱、figure 不夠清楚，再 polish 也無解。他在 Methods 揭露「使用 Paperpal v14 進行語言潤飾；所有科學主張由作者驗證」。這個案例後來被 <em>EJI</em> editor 在 webinar 中引用作為「ESL 作者善用 AI 工具」的正面案例。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: An ESL PhD pulled an <em>EJI</em> language score from C to A using Paperpal</h4>
+<p>A non-native-English PhD candidate's first submission to <em>European Journal of Immunology</em> got desk-rejected with internal language score "C — significant ESL features impeding scientific clarity." A classic ESL pain point: logic and experiments are sound, but language drags. He used <strong>Paperpal</strong> (v 14, integrated with MS Word) across three polishing rounds: (1) grammar + flow — 1,200 suggestions, ~70% accepted; (2) journal-style match for <em>EJI</em>'s house style ("ELISA was performed" → "ELISA was carried out as previously described"); (3) sentence variety — break monotonous "X showed Y." Resubmitted; editor's note flipped to "A — clarity excellent." Paper entered peer review and was accepted. <strong>Hard limit</strong>: Paperpal <strong>cannot rescue weak science</strong> — if logic or figures are unclear, no polish saves you. Methods disclosed "Paperpal v14 was used for language polishing; all scientific claims verified by authors." The <em>EJI</em> editor later cited this in a webinar as a positive example of "ESL authors leveraging AI tools."</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls (structured) ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="學術寫作 AI 最常踩的五個坑" data-en="Five common pitfalls in academic writing with AI">學術寫作 AI 最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：AI 改寫後不仔細審讀，改變原意</strong><br>
+為什麼錯：LLM 在 polish 時偶爾「改寫」科學斷言——「associated with」變「causes」、「modest effect」變「strong effect」、「only in subgroup」被刪除。這在數頁的 manuscript 中很難一次抓到。<br>
+正確做法：每段 AI polish 後逐句對比原文，特別注意 quantitative qualifier（「只」、「主要」、「在 X 條件下」）、causal claim（「associated with」vs「causes」）、negation（「does not」vs「does」）。建議用 git diff 或 Word track changes 視覺對比。</div>
+<div data-lang="en"><strong>Pitfall 1: AI polish silently changes meaning if not reviewed</strong><br>
+Why wrong: LLMs occasionally "rewrite" scientific claims while polishing — "associated with" → "causes," "modest effect" → "strong effect," "only in subgroup" deleted. Easy to miss across many pages.<br>
+Fix: after every polished section, sentence-by-sentence diff against the original. Watch quantitative qualifiers ("only," "primarily," "under X conditions"), causal claims ("associated with" vs "causes"), and negations ("does not" vs "does"). Use git diff or Word track changes for visual diff.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：AI 生成假引用未驗證直接放 reference list</strong><br>
+為什麼錯：寫 Discussion 時很容易讓 AI「順手」加幾個 reference 支持論點，這些 reference 約 30–40% 是 hallucinated。一旦 reviewer 查不到，等於 misconduct。<br>
+正確做法：所有 AI 提到的 reference 必須回 PubMed/DOI 驗證；建議在 Zotero/Mendeley 中對每個 reference 標記「source = manual / AI suggested + verified」。沒驗證的 reference 絕不進稿。</div>
+<div data-lang="en"><strong>Pitfall 2: Letting AI-generated citations slip into the reference list without verification</strong><br>
+Why wrong: while drafting the Discussion it's tempting to let the AI "casually" add supporting references — ~30–40% will be hallucinated. Once a reviewer can't find them, it's misconduct.<br>
+Fix: every AI-mentioned reference must be checked against PubMed/DOI. In Zotero/Mendeley, tag each as "source = manual / AI suggested + verified." No unverified reference enters the draft.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：投稿後才揭露 AI 使用、或完全未揭露</strong><br>
+為什麼錯：ICMJE 與大多數頂級期刊（Nature、Science、JAMA、Lancet）要求 AI 揭露<strong>在投稿時即明示</strong>於 Methods + Acknowledgments + Cover letter 三處。事後補揭露被視為 misconduct，可導致撤稿、列入 COPE 案例。<br>
+正確做法：投稿前在 Methods 寫「使用 Claude/GPT 的版本、用於哪一段、誰負責驗證」；Acknowledgments 致謝（標明不是 author）；Cover letter 明確告知 editor。3 處標準化，不要省。</div>
+<div data-lang="en"><strong>Pitfall 3: Disclosing AI use after submission, or not at all</strong><br>
+Why wrong: ICMJE and most top journals (Nature, Science, JAMA, Lancet) require AI disclosure <strong>upfront</strong> in Methods + Acknowledgments + Cover letter. Retrofitted disclosure is treated as misconduct — possible retraction, COPE case.<br>
+Fix: before submission, write into Methods "Claude/GPT version, sections used, verification owner"; into Acknowledgments (noting AI is not an author); into the Cover letter as an explicit statement to the editor. Three places, always.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：用 AI 做 peer review（嚴重違規）</strong><br>
+為什麼錯：把 confidential manuscript 上傳到任何 cloud LLM（包含 ChatGPT、Claude.ai）已違反<strong>多數期刊的 reviewer agreement</strong>——稿件是 confidential、未發表，AI 訓練可能用到該資料。NEJM、JAMA、Nature 2024 起明文禁 reviewer 用 cloud AI 處理 manuscript。<br>
+正確做法：peer review 必須親自讀；若需 AI 協助語言檢查可用 on-prem / local model（如 Ollama + Llama 3）；任何 cloud AI use 必須事前獲得 editor 同意（多數情況不會被同意）。</div>
+<div data-lang="en"><strong>Pitfall 4: Using AI to do peer review (serious violation)</strong><br>
+Why wrong: uploading a confidential manuscript to any cloud LLM (ChatGPT, Claude.ai) violates most journals' <strong>reviewer agreement</strong> — the manuscript is confidential and unpublished, and AI training may absorb it. NEJM, JAMA, and Nature explicitly banned cloud-AI in reviewing from 2024.<br>
+Fix: read it yourself. If language assistance is needed, use on-prem / local models (Ollama + Llama 3). Any cloud-AI use requires editor pre-approval (typically denied).</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：用 AI 生成 figure caption 含過度解釋</strong><br>
+為什麼錯：AI 在 figure caption 時喜歡「補充說明」——把不在 figure 中顯示的 mechanistic claim、causal interpretation 寫進去。Caption 應該<strong>只描述 figure 顯示的內容</strong>，解釋與推論放在 main text。<br>
+正確做法：caption 用最簡 prompt（「Describe only what is shown in this figure. Do not add interpretation.」），生成後對照 figure 確認每句都「直接可見」。Discussion 才是放 mechanistic claim 的地方。</div>
+<div data-lang="en"><strong>Pitfall 5: AI-generated figure captions slip in over-interpretation</strong><br>
+Why wrong: AI captions tend to "elaborate" — adding mechanistic claims and causal interpretations not visible in the figure. Captions should <strong>describe only what is shown</strong>; interpretation belongs in main text.<br>
+Fix: caption with a minimal prompt ("Describe only what is shown. Do not add interpretation."), then verify every sentence is directly visible in the figure. Mechanistic claims stay in the Discussion.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：AI-modified content detection、ICMJE 2025、Nature 圖像禁令的法律邏輯" data-en="Advanced: AI-modified content detection, ICMJE 2025, the legal logic of Nature's image ban">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 AI-text detection、ICMJE 2025 揭露標準、Nature 圖像禁令的著作權邏輯" data-en="🔬 AI-text detection, ICMJE 2025 disclosure, the copyright logic behind Nature's image ban">🔬 AI-text detection、ICMJE 2025 揭露標準、Nature 圖像禁令的著作權邏輯</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① AI-modified content detection（Liang 2024, arXiv）。</strong>Liang 等人在 2024 年針對 arXiv 學術論文做大規模分析，發現 2023 年起 abstract 中 LLM 風格詞彙比例（「intricate」「pivotal」「meticulous」「underscore」「delve」）顯著上升——這成為可量化的「LLM-influence 指標」。Nature 2024 報導指出，期刊 editor 開始用此類 detector 篩查嚴重未揭露的稿件。<strong>對研究者意義</strong>：(a) 不要刻意「避用」這些詞——這只會讓你寫得更彆扭；(b) 重要的是<strong>科學內容自己驗證、引用自己驗證、揭露揭露揭露</strong>；(c) detection 工具 false positive 率高，光靠 detector 不足為 misconduct 證據。期刊真正在意的是「verifiable misconduct」（假引用、未揭露的整段 AI 生成）。</p>
+<p><strong>② ChatGPT 跨期刊偵測證據。</strong>Mosaic of Investigation 2024 對 30 個期刊 5 萬份稿件做 LLM-style detection，發現 OA / mega-journal 中疑似比例 8–15%；頂級期刊（NEJM、JAMA、Lancet、Nature、Science）約 2–4%——差距巨大，反映 peer review 與 editorial scrutiny 強度不同。對研究者啟示：頂級期刊對 AI 揭露執法嚴格；OA 期刊執法弱但風險不小於頂刊。</p>
+<p><strong>③ ICMJE 2025 揭露範本標準化。</strong>2024 年底 ICMJE 公告 2025 年起標準化 AI Disclosure Statement 範本，要求列出：(a) tool name + version + access date；(b) sections used (Methods / Discussion / Cover letter / Figures…)；(c) prompts (highlight only) 或可上傳 supplement；(d) verification responsibility owner。多數頂級期刊已採用此範本。範本目的不是「制裁 AI 使用」而是讓 readers 知道「這段是怎麼產生的」。</p>
+<p><strong>④ Nature 圖像禁令背後的著作權法律邏輯。</strong>Nature 2023 起禁 AI 生成圖像（含 schematic）。背後邏輯有三層：(a) <strong>著作權不確定</strong>——US Copyright Office 2023 裁定 AI 生成圖像無人類作者、不受著作權保護，意味著該圖無法被期刊主張獨家權利；(b) <strong>訓練資料來源不明</strong>——AI 模型可能用了未授權的 copyrighted 圖像訓練，輸出可能侵權（getty Images v. Stability AI 訴訟仍在進行）；(c) <strong>真實性無法保證</strong>——AI 圖像可能「合成」不存在的 anatomical structure 或 microscopy artifact，與 BMJ 與 Nature 對 image manipulation 的零容忍政策衝突。對研究者：mechanism schematic 用 BioRender、Illustrator、Inkscape；blot / micrograph 永遠不用 AI 生成；甚至 cell-painting 風格的「illustrative」AI 圖也禁。</p>
+<p><strong>⑤ 進階參考。</strong>Liang 2024 (LLM-modified content in arXiv, arXiv:2403.07183) · Mosaic Investigation 2024 (Nature news) · ICMJE 2024 (Recommendations updated for AI) · Nature 2023 editorial (Tools such as ChatGPT threaten transparent science) · Wagner 2023 (predatory publishing + AI, JMIR) · NEJM 2024 (use of AI in peer review banned) · US Copyright Office 2023 (Zarya of the Dawn ruling).</p>
+</div>
+<div data-lang="en">
+<p><strong>① AI-modified content detection (Liang 2024, arXiv).</strong> Liang et al. 2024 mass-analyzed arXiv abstracts and showed that since 2023, the prevalence of LLM-stylistic words ("intricate," "pivotal," "meticulous," "underscore," "delve") jumped sharply — yielding a quantifiable "LLM-influence index." Nature (2024) reports editors using such detectors to flag severely undisclosed manuscripts. <strong>For researchers</strong>: (a) don't artificially avoid these words — it just makes you write worse; (b) what matters is <strong>self-verifying content, self-verifying citations, and disclose, disclose, disclose</strong>; (c) detector false-positive rates are high — they alone are insufficient evidence of misconduct. Journals care about "verifiable misconduct" (fake citations, undisclosed whole-section AI generation).</p>
+<p><strong>② Cross-journal ChatGPT detection.</strong> Mosaic Investigation 2024 ran LLM-style detection on 50,000 manuscripts across 30 journals — 8–15% suspicious in OA/mega-journals; only 2–4% in top venues (NEJM, JAMA, Lancet, Nature, Science). Huge gap reflecting peer-review/editorial scrutiny. Implication: top journals enforce AI disclosure strictly; OA enforcement is weak but risk remains.</p>
+<p><strong>③ ICMJE 2025 disclosure template standardized.</strong> Late 2024 ICMJE announced a standardized AI Disclosure Statement template for 2025 onward, requiring: (a) tool name + version + access date; (b) sections used (Methods / Discussion / Cover letter / Figures); (c) prompts (highlights) or supplement-uploaded; (d) verification owner. Most top journals adopted it. The goal isn't to "sanction AI use" but to let readers see how each section was produced.</p>
+<p><strong>④ Nature image ban — the copyright logic.</strong> Nature has banned AI-generated images (including schematics) since 2023. The three-layer rationale: (a) <strong>copyright uncertainty</strong> — the US Copyright Office (2023) ruled AI-generated images lack a human author and are not copyrightable, meaning the journal cannot assert exclusive rights; (b) <strong>opaque training data</strong> — AI models may have trained on unlicensed copyrighted images and could infringe (Getty Images v. Stability AI is ongoing); (c) <strong>authenticity unverifiable</strong> — AI can "synthesize" nonexistent anatomical structures or microscopy artifacts, conflicting with BMJ and Nature's zero-tolerance image-manipulation policy. For researchers: mechanism schematics → BioRender, Illustrator, Inkscape; blots/micrographs → never AI; even "illustrative" cell-painting-style AI images are banned.</p>
+<p><strong>⑤ Key references.</strong> Liang 2024 (LLM-modified content in arXiv, arXiv:2403.07183) · Mosaic Investigation 2024 (Nature news) · ICMJE 2024 (Recommendations updated for AI) · Nature 2023 editorial ("Tools such as ChatGPT threaten transparent science") · Wagner 2023 (predatory publishing + AI, JMIR) · NEJM 2024 (AI in peer review banned) · US Copyright Office 2023 (Zarya of the Dawn ruling).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: Cover letter 用 AI 寫到什麼程度是「協助」、什麼程度是「代筆」？</h4>
+<p>用 Claude 起 cover letter 草稿 → 人類大幅改寫 → 投稿。算 AI 協助還是 AI 代筆？若 prompt 詳細到「依此 outline 寫」、AI 寫完後只改幾個字、人類本質上只「監督」呢？<strong>請思考</strong>：你會在哪個比例 / 什麼類型的修改下覺得「這仍是我的 cover letter」？該設立 quantitative threshold 嗎？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Where is the line between AI "assistance" and AI "ghostwriting" in cover letters?</h4>
+<p>Claude drafts a cover letter → human heavily rewrites → submit. Assistance or ghostwriting? What if the prompt is so detailed ("write according to this outline") that the human only "supervises" minor edits? <strong>Consider</strong>: at what ratio / what kind of edits does it remain "your" cover letter? Should there be a quantitative threshold?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 同儕評審能用 AI 嗎？</h4>
+<p>NEJM、JAMA、Nature 2024 禁 reviewer 用 cloud AI 處理 manuscript（保密問題）。但 reviewer 也是研究者、可能想用 on-prem AI 協助語言檢查與整理 comment 結構。<strong>請思考</strong>：你能接受 reviewer 用 on-prem Llama 處理你的 manuscript 嗎？若同儕公開揭露「使用本地 AI 整理 comments」呢？2026 年期刊該如何制定新的 reviewer policy？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: Can peer reviewers use AI?</h4>
+<p>NEJM, JAMA, and Nature banned cloud-AI in reviewing from 2024 (confidentiality). But reviewers are also researchers who may want on-prem AI for language checks and structuring comments. <strong>Consider</strong>: would you accept a reviewer using on-prem Llama on your manuscript? What if they openly disclose "used local AI to structure comments"? How should journals draft 2026 reviewer policy?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: 對 ESL 作者，AI 揭露是否反而「劣勢」？</h4>
+<p>ESL 作者依靠 AI polish 才能在頂級期刊競爭，但揭露 AI 使用後，部分 reviewer 仍會 conscious / unconscious 帶 bias。某 ESL 研究者抱怨：「揭露之後 reviewer 質疑 originality；不揭露又是 misconduct。<strong>整套規則對 native English speaker 隱性偏好</strong>。」<strong>請思考</strong>：你同意這個批評嗎？若不同意，你會給 ESL 同儕什麼建議？期刊該如何 mitigate language bias？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Does AI disclosure put ESL authors at a disadvantage?</h4>
+<p>ESL authors lean on AI polish to compete at top journals. But once disclosed, some reviewers carry conscious / unconscious bias. An ESL researcher: "Disclose and reviewers question originality; don't disclose and it's misconduct. <strong>The whole system has an implicit bias toward native English speakers</strong>." <strong>Consider</strong>: do you agree? If not, what advice for ESL peers? How should journals mitigate language bias?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: AI 圖像禁令會在 2030 年仍然存在嗎？</h4>
+<p>Nature 2023 禁 AI 圖像，邏輯包含著作權、訓練資料、真實性三個 layer。但若 2027 年 AI 圖像模型可以 watermark + 提供完整 audit trail（如 C2PA standard），這些禁忌是否會鬆綁？某 PI 預測「2028 年起 mechanism schematic 將允許 AI 生成 + 揭露」；另一個 PI 認為「圖像就是 evidence，AI 永遠不該碰」。<strong>請思考</strong>：你的立場是？哪些技術前提需要先到位？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Will the AI-image ban still hold in 2030?</h4>
+<p>Nature's 2023 ban rests on copyright, training data, and authenticity. If 2027 AI image models offer watermarking + full audit trail (e.g., C2PA), do these prohibitions loosen? One PI predicts "from 2028 mechanism schematics will be allowed with disclosure"; another says "images are evidence — AI must never touch them." <strong>Consider</strong>: where do you stand? Which technical prerequisites must mature first?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">1. ICMJE 2024–2026 立場：AI 可以列為 author 嗎？</p>
+<p data-lang="en">1. ICMJE 2024–2026 position: can AI be listed as an author?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 可以，列為通訊作者</span><span data-lang="en">A. Yes, as corresponding author</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 不可以，AI 無法負責、不能列為 author，但允許輔助使用並揭露</span><span data-lang="en">B. No — AI cannot take responsibility; assistance with disclosure is OK</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 可以，列在 acknowledgments</span><span data-lang="en">C. Yes, in acknowledgments</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 視期刊而定</span><span data-lang="en">D. Depends on the journal</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">2. 你想用 AI 生成一張 mechanism schematic 投 Nature。建議？</p>
+<p data-lang="en">2. You want AI to generate a mechanism schematic for Nature. Advice?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 直接用，把工具寫在 Methods</span><span data-lang="en">A. Use it as-is, list the tool in Methods</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 改用照片即可</span><span data-lang="en">B. Use a photo instead</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. Nature 全面禁 AI 圖像，須改用 BioRender / Illustrator 等人類製作</span><span data-lang="en">C. Nature bans all AI images — use human-made tools like BioRender / Illustrator</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 不用揭露，schematic 不算</span><span data-lang="en">D. No disclosure needed for schematics</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="0">
+<p data-lang="zh">3. 你用 Claude 寫了 Discussion 段落，最該揭露的三處？</p>
+<p data-lang="en">3. You used Claude for the Discussion. Where should you disclose?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Methods + Acknowledgments + Cover letter</span><span data-lang="en">A. Methods + Acknowledgments + Cover letter</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 只在 Abstract 註明</span><span data-lang="en">B. Just a note in the Abstract</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 完全不用揭露</span><span data-lang="en">C. No disclosure needed</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 寫在 Supplement 即可</span><span data-lang="en">D. Hide it in the Supplement</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你受邀為 <em>JAMA</em> 審稿一篇 RCT。你的英文不錯但偶爾不確定特定 statistical idiom；你的同事建議：「我都把 manuscript 上傳到 ChatGPT 請它幫我整理 comments，省時又有結構。」你想了想，覺得這方便但可能違規。下列哪個做法最符合 2024–2026 期刊 reviewer policy？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. You're reviewing an RCT for <em>JAMA</em>. Your English is good but you occasionally hesitate on specific statistical idioms. A colleague suggests: "I upload manuscripts to ChatGPT to structure comments — fast and well-organized." You're tempted but suspect it violates policy. Which approach best matches 2024–2026 reviewer policy?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 直接上傳到 ChatGPT，現代 reviewer 都這樣做</span><span data-lang="en">A. Upload to ChatGPT — every modern reviewer does it</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 上傳但要求 ChatGPT 不記憶</span><span data-lang="en">B. Upload but ask ChatGPT not to remember</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 只把 abstract 上傳</span><span data-lang="en">C. Upload only the abstract</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 親自閱讀整篇 manuscript；若需要語言協助，使用 on-prem / local LLM（如 Ollama + Llama 3）；任何 cloud-AI use 需事前獲 editor 同意；揭露所用工具</span><span data-lang="en">D. Read it yourself; if language help is needed, use on-prem / local LLM (e.g., Ollama + Llama 3); any cloud-AI use requires editor pre-approval; disclose tools used</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 Nature 自 2023 起禁 AI 生成圖像的核心法律邏輯，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. The core legal logic behind Nature's 2023 ban on AI-generated images — which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 因為 AI 圖比較醜</span><span data-lang="en">A. Because AI images look ugly</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 因為 reviewer 看不出來</span><span data-lang="en">B. Because reviewers can't tell</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 三層邏輯：(a) US Copyright Office 2023 裁定 AI 圖無人類作者、不受著作權保護，期刊難以主張獨家權利；(b) 訓練資料可能含未授權圖像（Getty v. Stability AI 訴訟）；(c) AI 可合成不存在的 anatomical / microscopy artifact，與期刊 image-manipulation 零容忍政策衝突</span><span data-lang="en">C. Three layers: (a) US Copyright Office 2023 ruled AI images have no human author and lack copyright, so journals cannot assert exclusivity; (b) training data may include unlicensed copyrighted images (Getty v. Stability AI litigation); (c) AI can synthesize nonexistent anatomical/microscopy artifacts, conflicting with journals' zero-tolerance image-manipulation policy</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 純粹是 editor 個人偏好</span><span data-lang="en">D. Purely editor personal preference</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="literature.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 6: 文獻探索 AI" data-en="Step 6: Literature Discovery AI">Step 6: 文獻探索 AI</span></a>
+<a href="coding.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 8: 編程輔助 AI" data-en="Step 8: AI-Assisted Coding">Step 8: 編程輔助 AI</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Workflow steps
+const STEPS=[
+  {n:'1',zh:'構想',en:'Idea',tool:'Claude / GPT',zhdesc:'用 Claude 做 brainstorm：「列出 5 個從 X 領域延伸的研究問題，含 feasibility 評估」。',endesc:'Brainstorm with Claude: "List 5 research questions extending field X, with feasibility notes".'},
+  {n:'2',zh:'Outline',en:'Outline',tool:'Claude / GPT',zhdesc:'要求模型給 IMRAD 4 段結構，每段 1–2 句說明該寫什麼。不要產生實際內容。',endesc:'Ask the model for an IMRAD 4-section skeleton, 1–2 sentence guidance per subsection. No actual content yet.'},
+  {n:'3',zh:'Draft',en:'Draft',tool:'Claude / GPT (with RAG)',zhdesc:'每段獨立 draft，並提供 results、preliminary stats 給模型 grounding。Constraint：不准引用未經驗證的 PMID。',endesc:'Draft section by section; ground the model with your results + stats. Constrain: no unverified PMIDs.'},
+  {n:'4',zh:'Cite',en:'Cite',tool:'PubMed / Elicit + Entrez verify',zhdesc:'從 Elicit 或 PubMed 撈出候選 → 全部回 NCBI Entrez 驗證 → 整理進 Zotero。',endesc:'Pull candidates from Elicit / PubMed → verify each via NCBI Entrez → curate in Zotero.'},
+  {n:'5',zh:'Revise',en:'Revise',tool:'Claude (extended thinking)',zhdesc:'請模型 critique 你的 draft：邏輯、claim-evidence 一致性、limitation 是否完整。',endesc:'Have the model critique your draft: logic, claim-evidence consistency, completeness of limitations.'},
+  {n:'6',zh:'Polish',en:'Polish',tool:'Paperpal / Writefull / Grammarly',zhdesc:'語言層 polish，並用 journal-style check（IMRAD、PRISMA、ARRIVE）對齊期刊規範。',endesc:'Language polish + journal-style checks (IMRAD / PRISMA / ARRIVE).'},
+  {n:'7',zh:'Declare',en:'Declare',tool:'Manual + template',zhdesc:'在 Methods、Acknowledgments、Cover letter 三處揭露 AI 工具、版本、使用範圍。',endesc:'Disclose AI tools, versions, and scope in Methods, Acknowledgments, and Cover letter.'},
+  {n:'8',zh:'Submit',en:'Submit',tool:'Editorial portal',zhdesc:'最後一輪 self-check：所有 PMID 驗證、所有 number 對得上、所有 disclosure 完備。',endesc:'Final self-check: all PMIDs verified, all numbers reconcile, all disclosures in place.'}
+];
+function renderFlow(){
+  const L=window.I18n?I18n.get():'en';
+  const wrap=document.getElementById('flowSteps');wrap.innerHTML='';
+  STEPS.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.style.cssText='padding:8px 12px;border:1px solid var(--c-border);background:var(--c-bg-alt);color:var(--c-ink);border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:600;display:flex;flex-direction:column;align-items:center;min-width:72px;transition:all .15s';
+    b.innerHTML=`<span style="font-size:.7rem;color:var(--c-accent)">STEP ${s.n}</span><span>${L==='zh'?s.zh:s.en}</span>`;
+    b.onclick=()=>showFlow(s);
+    wrap.appendChild(b);
+    if(i<STEPS.length-1){const arr=document.createElement('span');arr.textContent='→';arr.style.color='var(--c-ink-muted)';wrap.appendChild(arr);}
+  });
+}
+function showFlow(s){
+  const L=window.I18n?I18n.get():'en';
+  document.getElementById('flowDetail').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:.78rem;color:var(--c-accent);font-weight:700;letter-spacing:.5px">STEP ${s.n} · ${L==='zh'?s.zh:s.en}</span><span style="font-family:var(--font-mono);font-size:.82rem;color:var(--c-highlight)">${s.tool}</span></div><div style="color:var(--c-ink)">${L==='zh'?s.zhdesc:s.endesc}</div>`;
+}
+document.addEventListener('langchange',renderFlow);
+document.addEventListener('DOMContentLoaded',renderFlow);
+
+// Quiz
+const QF={zh:{q1_y:'ICMJE 明定 AI 不能列為作者，因為它不能對研究負責；但允許 assistive 使用並揭露。其他選項：corresponding author（A）等同列為 author，acknowledgments（C）也不對（應致謝但不是 author），「視期刊而定」（D）忽略 ICMJE 國際共識。',q2_y:'Nature 從 2023 起全面禁 AI 圖像（含 schematic）。請改用 BioRender / Illustrator 等人類製作。直接用（A）違反政策、改用照片（B）解錯題目、不揭露（D）違反 ICMJE。',q3_y:'ICMJE 標準是 Methods（如何用）+ Acknowledgments（致謝）+ Cover letter（明示）三處同時揭露。只 abstract（B）、不揭露（C）、藏 supplement（D）都違反 transparency 規範。',q4_y:'NEJM/JAMA/Nature 2024 明文禁 reviewer 用 cloud AI 處理 manuscript（confidentiality + 訓練資料風險）。正確做法是親自讀，僅在語言協助時用 on-prem / local LLM，並對 cloud-AI use 取得 editor 事前同意。直接上傳（A）、要求不記憶（B）、只傳 abstract（C）都違規。',q5_y:'三層邏輯：著作權不確定（US Copyright Office 2023）、訓練資料來源（Getty v. Stability AI）、真實性無法保證（image-manipulation 零容忍）。其他選項過度簡化或誤解 Nature 的政策邏輯。'},en:{q1_y:'ICMJE explicitly bars AI authorship: AI can\'t take responsibility. Assistive use with disclosure is OK. Other choices: corresponding author (A) is still authorship; acknowledgments (C) credit but not authorship; "depends on journal" (D) ignores ICMJE\'s international standard.',q2_y:'Nature has banned AI images (including schematics) since 2023. Use human-made tools (BioRender / Illustrator). Using as-is (A) violates policy; switching to photos (B) misses the question; no disclosure (D) violates ICMJE.',q3_y:'ICMJE standard: disclose in Methods (how used) + Acknowledgments + Cover letter — all three. Abstract-only (B), no disclosure (C), hiding in supplement (D) all violate transparency.',q4_y:'NEJM/JAMA/Nature 2024 explicitly banned cloud AI in reviewing (confidentiality + training-data risk). Correct: read it yourself, use on-prem/local LLM only for language assistance, and obtain editor pre-approval for any cloud-AI use. Direct upload (A), "ask not to remember" (B), and abstract-only upload (C) all violate policy.',q5_y:'Three layers: copyright uncertainty (US Copyright Office 2023), training-data provenance (Getty v. Stability AI), and unverifiable authenticity (image-manipulation zero-tolerance). The other choices oversimplify or misread Nature\'s policy logic.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

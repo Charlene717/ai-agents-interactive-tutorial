@@ -1,0 +1,457 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 19: Research Ethics &amp; Journal Policies — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html" class="active">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 19 / 20</div>
+<h1 data-zh="學術倫理與期刊政策" data-en="Research Ethics &amp; Journal Policies">學術倫理與期刊政策</h1>
+<p class="subtitle" data-lang="zh">ICMJE、Nature、Science、Cell——四套規則四個語氣，但有一條鐵律：人類作者負全責。</p>
+<p class="subtitle" data-lang="en">ICMJE, Nature, Science, Cell — four rulesets, four tones, one iron rule: human authors bear full responsibility.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="學術倫理必懂十二詞" data-en="Twelve terms for research ethics">學術倫理必懂十二詞</h2>
+<div data-lang="zh"><p>從 ICMJE / CRediT 到撤稿 / predatory journal，這 12 個詞建立學術倫理的共同詞彙。在 AI 加入後，每個詞都被重新定義一次。</p></div>
+<div data-lang="en"><p>From ICMJE / CRediT to retraction / predatory journals, these 12 terms form the shared vocabulary of research ethics. With AI, each one has been redefined.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📜</div><h4>ICMJE</h4>
+<div data-lang="zh"><p>International Committee of Medical Journal Editors。1978 創立，制定全球臨床醫學期刊作者署名、揭露、利益衝突標準。2023/8 公佈 AI 使用三鐵律；2025 修訂揭露範本更明確。</p></div>
+<div data-lang="en"><p>International Committee of Medical Journal Editors. Founded 1978, sets global standards for authorship, disclosure, and conflicts of interest in clinical medicine journals. Published the three AI rules in Aug 2023; refined disclosure templates in 2025.</p></div>
+</div>
+<div class="card"><div class="card-icon">✍️</div><h4>Authorship</h4>
+<div data-lang="zh"><p>ICMJE 四標準：(1) 實質貢獻概念 / 設計 / 取得分析資料；(2) 草擬或實質修改；(3) 同意最終版本；(4) 對所有面向負責。AI 不能滿足 (4) → 不可掛名。</p></div>
+<div data-lang="en"><p>The ICMJE four criteria: (1) substantial contributions to conception / design / acquisition or analysis; (2) drafting or substantial revising; (3) final approval; (4) accountability for all aspects. AI cannot satisfy (4) → cannot be an author.</p></div>
+</div>
+<div class="card"><div class="card-icon">🙏</div><h4>Acknowledgments</h4>
+<div data-lang="zh"><p>致謝段落。對未達 authorship 標準但有貢獻的個人 / AI / 機構列名。ICMJE 2023 起要求 AI 工具與用途列在 Acknowledgments + Methods 雙處。</p></div>
+<div data-lang="en"><p>Acknowledgements section. Lists individuals / AI / institutions that contributed but don't meet authorship criteria. ICMJE since 2023 requires AI tools and their use listed in both Acknowledgments and Methods.</p></div>
+</div>
+<div class="card"><div class="card-icon">📢</div><h4>Disclosure</h4>
+<div data-lang="zh"><p>主動揭露所有可能影響研究 / 報導的因素（資金、COI、AI 使用）。AI 揭露至少包含：model name + version + cutoff date + 用途 + 範例 prompt（如非僅 copy-editing）。</p></div>
+<div data-lang="en"><p>Proactive disclosure of all factors potentially affecting research / reporting (funding, COI, AI use). AI disclosure must include: model name + version + cutoff date + purpose + sample prompt (unless purely copy-editing).</p></div>
+</div>
+<div class="card"><div class="card-icon">🎭</div><h4>CRediT</h4>
+<div data-lang="zh"><p>Contributor Roles Taxonomy（NISO ANSI/NISO Z39.104-2022）。14 個標準化角色（Conceptualization、Methodology、Software、Validation 等）。AI 不可列在 CRediT 中——它不是 contributor。</p></div>
+<div data-lang="en"><p>Contributor Roles Taxonomy (NISO ANSI/NISO Z39.104-2022). 14 standardised roles (Conceptualization, Methodology, Software, Validation, etc.). AI cannot appear in CRediT — it isn't a contributor.</p></div>
+</div>
+<div class="card"><div class="card-icon">💼</div><h4>Conflict of Interest</h4>
+<div data-lang="zh"><p>財務、個人、學術上可能影響判斷的關係。AI 廠商 advisory board、stock options 都需揭露。LLM 不能簽 COI 是它不能當作者的核心理由。</p></div>
+<div data-lang="en"><p>Financial, personal, or academic relationships that could bias judgement. AI vendor advisory boards and stock options must be disclosed. The fact that LLMs cannot sign a COI statement is the central reason they cannot be authors.</p></div>
+</div>
+<div class="card"><div class="card-icon">📑</div><h4>Plagiarism</h4>
+<div data-lang="zh"><p>未經適當引用地使用他人文字 / idea。AI 改寫的「自我抄襲」與「unintended paraphrase plagiarism」是 2024+ 新興問題。iThenticate / Turnitin 已加入 AI-detected 檢測。</p></div>
+<div data-lang="en"><p>Using others' words or ideas without proper attribution. "Self-plagiarism" via AI rewriting and "unintended paraphrase plagiarism" are new 2024+ concerns. iThenticate / Turnitin now include AI-detection.</p></div>
+</div>
+<div class="card"><div class="card-icon">⛔</div><h4>Retraction</h4>
+<div data-lang="zh"><p>期刊正式撤稿。原因含 fabrication / falsification / plagiarism / AI 圖像未揭露。2024 Frontiers 撤回多篇 AI 圖像有 nonsense 文字的論文。Retraction Watch 追蹤所有公開撤稿。</p></div>
+<div data-lang="en"><p>Formal journal retraction. Reasons include fabrication / falsification / plagiarism / undisclosed AI images. Frontiers retracted multiple papers with nonsense-text AI images in 2024. Retraction Watch tracks all public retractions.</p></div>
+</div>
+<div class="card"><div class="card-icon">🚫</div><h4>Predatory Journal</h4>
+<div data-lang="zh"><p>收 APC 但無實質 peer review 的期刊。Beall's List → 2017 關閉 → 現有 Cabells Predatory Reports（付費）、DOAJ 白名單。AI 使年產假論文工廠論文激增——稱 "paper mill"。</p></div>
+<div data-lang="en"><p>Journals that charge APCs without real peer review. Beall's List → closed 2017 → now Cabells Predatory Reports (paid) and DOAJ whitelist. AI has accelerated paper-mill output massively.</p></div>
+</div>
+<div class="card"><div class="card-icon">👥</div><h4>Peer Review</h4>
+<div data-lang="zh"><p>由領域同儕審查稿件。ICMJE / COPE 規定：審稿人不可將 manuscript 內容輸入公開 AI 工具（資料外洩 + 違反 confidentiality）。Springer Nature 2024 明確禁止。</p></div>
+<div data-lang="en"><p>Domain experts review manuscripts. ICMJE / COPE rule: reviewers must not paste manuscript content into public AI tools (data leakage + confidentiality breach). Springer Nature 2024 explicitly prohibits this.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎲</div><h4>Data Fabrication</h4>
+<div data-lang="zh"><p>偽造不存在的資料。AI 使「合成 plausible 看似真實但虛假的 raw data」變得容易。Bik 2024 警告 AI 生成的 Western blot / IHC 影像偵測極困難。</p></div>
+<div data-lang="en"><p>Inventing data that doesn't exist. AI makes it easy to synthesise plausible-looking but fake raw data. Bik 2024 warned that AI-generated Western blot / IHC images are extremely hard to detect.</p></div>
+</div>
+<div class="card"><div class="card-icon">🖼️</div><h4>Image Manipulation</h4>
+<div data-lang="zh"><p>不當修改 image（splice、duplicate、enhance）。Cell Press / Nature 用 Proofig / Imagetwin 等 AI 工具偵測。AI 生成 (vs manipulated) 圖像在 2024 後成為新類別，多數頂刊禁止。</p></div>
+<div data-lang="en"><p>Improper image modification (splice, duplicate, enhance). Cell Press / Nature use AI tools like Proofig / Imagetwin for detection. AI-generated (vs manipulated) images became a new category post-2024 and are banned at most top journals.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 AI 政策變動如此頻繁？" data-en="Why are AI policies in flux?">為什麼 AI 政策變動如此頻繁？</h2>
+<div data-lang="zh">
+<p>2023–2026 期間，幾乎每家主流期刊都至少更新過兩次 AI 政策。最新（2025–2026）共識是 ICMJE 訂下的三條鐵律：(1) <strong>AI 不可掛名作者</strong>——因為它無法承擔內容責任、無法簽署 conflict of interest；(2) <strong>必須在 Methods 揭露所有 LLM 使用</strong>——包含模型版本、用途、prompt 範例（除非僅做拼字 / 文法 copy-editing）；(3) <strong>人類作者對所有內容（包括 AI 產出）負全責</strong>。</p>
+<p>但各刊細則差異顯著：Nature / Springer Nature 禁止 AI 生成的圖像與影片；Science 起初最嚴（未經編輯同意完全禁用），2024 略放寬；Cell Press 提供標準化揭露範本；ICMJE 是整套臨床醫學期刊通用底線。違規後果從更正、撤稿到列入學術不端記錄。</p>
+</div>
+<div data-lang="en">
+<p>From 2023 to 2026, almost every major journal updated its AI policy at least twice. The 2025–2026 consensus is the three ICMJE rules: (1) <strong>AI cannot be an author</strong> — it cannot take responsibility for content nor sign a conflict-of-interest statement; (2) <strong>Disclose all LLM use in Methods</strong> — including model version, purpose, sample prompts (unless purely copy-editing); (3) <strong>Human authors bear full responsibility for everything, including AI output.</strong></p>
+<p>Per-journal differences are real: Nature / Springer Nature bans AI-generated images and video; Science started strictest (a flat ban without editor approval) and relaxed slightly in 2024; Cell Press provides standardised disclosure templates; ICMJE is the floor for clinical medicine journals. Consequences range from corrections and retractions to formal misconduct records.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>「揭露 + 人類負責」是 2026 的雙鐵律。任何時候用 AI 改寫、生成草稿、做分析，先想：(a) 我要寫進 Methods 嗎？(b) 期刊禁止這個用法嗎？(c) 我能不能為這段話的每個字負責？任何一個「不確定」，先停下來查官方政策。</span>
+<span data-lang="en"><strong>Core mindset:</strong> "Disclose + human accountability" is the 2026 iron rule. Whenever you use AI to rewrite, draft, or analyse, ask: (a) Will I report this in Methods? (b) Does the journal forbid this use? (c) Can I stand behind every word? Any uncertainty → stop and read the official policy.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="三條鐵律" data-en="THREE PILLARS">三條鐵律</div>
+<h2 data-zh="一、ICMJE 2025 的三條鐵律" data-en="I. The Three ICMJE 2025 Rules">一、ICMJE 2025 的三條鐵律</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🚫</div><h4 data-zh="① AI 不可掛名作者" data-en="① AI cannot be an author">① AI 不可掛名作者</h4>
+<div data-lang="zh"><p>ChatGPT、Claude、Gemini 都不可列在 author list；它們無法承擔內容責任、無法簽 COI。</p></div>
+<div data-lang="en"><p>ChatGPT, Claude, Gemini cannot be listed as authors; they cannot take responsibility for content nor sign COI declarations.</p></div>
+</div>
+<div class="card"><div class="card-icon">📋</div><h4 data-zh="② Methods 必須揭露" data-en="② Disclose in Methods">② Methods 必須揭露</h4>
+<div data-lang="zh"><p>除非僅做拼字 / 文法 copy-editing，所有 LLM 使用都要在 Methods 揭露：模型版本、用途、prompt。</p></div>
+<div data-lang="en"><p>Unless purely copy-editing, all LLM use must be disclosed in Methods: model version, purpose, prompts.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚖️</div><h4 data-zh="③ 人類作者負全責" data-en="③ Humans bear full responsibility">③ 人類作者負全責</h4>
+<div data-lang="zh"><p>所有內容——包括 AI 產出——人類作者必須驗證、為其準確性與完整性負責。</p></div>
+<div data-lang="en"><p>All content — including AI-generated text — must be verified by human authors who are accountable for accuracy and integrity.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動查詢" data-en="INTERACTIVE">互動查詢</div>
+<h2 data-zh="二、期刊政策查詢器" data-en="II. Journal Policy Lookup">二、期刊政策查詢器</h2>
+<div data-lang="zh"><p>選擇期刊，看 2026 年 AI 使用規則與揭露格式。</p></div>
+<div data-lang="en"><p>Pick a journal to see 2026 AI rules and disclosure templates.</p></div>
+<div class="interactive-panel">
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="jr-btn active" data-jr="icmje" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-accent);background:var(--c-accent);color:#fff;cursor:pointer">ICMJE</button>
+    <button class="jr-btn" data-jr="nature" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer">Nature</button>
+    <button class="jr-btn" data-jr="science" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer">Science</button>
+    <button class="jr-btn" data-jr="cell" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer">Cell Press</button>
+  </div>
+  <div id="jrBox" style="padding:14px;background:var(--c-bg-alt);border-radius:8px"></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="揭露範本" data-en="DISCLOSURE TEMPLATES">揭露範本</div>
+<h2 data-zh="三、三種揭露格式" data-en="III. Three Disclosure Templates">三、三種揭露格式</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'e1')">Methods</button><button class="code-tab-btn" onclick="switchTab(this,'e2')">Acknowledgments</button><button class="code-tab-btn" onclick="switchTab(this,'e3')">Cover letter</button></div>
+<div class="code-tab-content active" id="e1"><pre><span class="comment"># Methods 章節 — 揭露範本（zh + en 兩版）</span>
+
+<span class="comment"># 繁體中文版</span>
+我們在研究流程中使用 Anthropic Claude Opus 4.6（2026 年 1 月版）
+協助 (1) Python 資料分析腳本除錯、(2) 草擬手稿引言段落的初稿。
+所有 AI 生成內容皆由通訊作者逐句審核並修改；引用文獻由作者手動
+於 PubMed 驗證。AI 未參與資料解讀、結論撰寫或統計分析決策。
+
+<span class="comment"># English version</span>
+We used Anthropic Claude Opus 4.6 (January 2026 version) during the
+research workflow to (1) debug Python data analysis scripts and (2)
+draft the initial Introduction paragraph. All AI-generated content
+was reviewed and revised sentence-by-sentence by the corresponding
+author; references were manually verified on PubMed. AI was not
+used for data interpretation, conclusion drafting, or statistical
+decisions.</pre></div>
+<div class="code-tab-content" id="e2"><pre><span class="comment"># Acknowledgments — 揭露範本</span>
+
+<span class="comment"># 繁體中文</span>
+我們感謝 Anthropic Claude Opus 4.6 在手稿英文改寫與
+程式碼除錯上的協助。所有實質性內容、解讀與結論皆由
+作者完成並負全責。
+
+<span class="comment"># English</span>
+We acknowledge the use of Anthropic Claude Opus 4.6 for English-
+language editing of the manuscript and for debugging analysis code.
+All substantive content, interpretation, and conclusions were
+produced by the authors, who bear full responsibility.</pre></div>
+<div class="code-tab-content" id="e3"><pre><span class="comment"># Cover letter — 投稿時的 AI 揭露段落</span>
+
+Dear Editor,
+
+We are submitting the manuscript titled <span class="str">"[Title]"</span> for
+consideration in [Journal].
+
+<span class="kw">AI Use Declaration:</span>
+During preparation of this manuscript, we used the following AI
+tools, in accordance with the journal's editorial policy:
+
+  Tool:          Anthropic Claude Opus 4.6 (Jan 2026)
+  Purpose:       (1) Python code debugging
+                 (2) Initial draft of Introduction (subsequently
+                     revised extensively by authors)
+                 (3) English copy-editing of the Methods section
+  Not used for:  Data analysis decisions, statistical inference,
+                 figure generation, reference selection
+  Responsibility: All authors verified the final text and take full
+                 responsibility for the content.
+
+We confirm that no AI is listed as an author and that all references
+were independently verified.
+
+Sincerely,
+[Corresponding author]</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="期刊對照" data-en="JOURNAL COMPARISON">期刊對照</div>
+<h2 data-zh="四、4 大期刊政策一覽" data-en="IV. Four-Journal Policy Cheat Sheet">四、4 大期刊政策一覽</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="期刊" data-en="Publisher">期刊</th><th data-zh="文字 AI" data-en="Text AI">文字 AI</th><th data-zh="圖像 AI" data-en="Image AI">圖像 AI</th><th data-zh="揭露位置" data-en="Disclosure">揭露位置</th><th data-zh="嚴格度" data-en="Strictness">嚴格度</th></tr></thead>
+<tbody>
+<tr><td>ICMJE (clinical med floor)</td><td data-zh="允許 + 揭露" data-en="Allowed + disclose">允許 + 揭露</td><td data-zh="允許 + 揭露" data-en="Allowed + disclose">允許 + 揭露</td><td>Methods + Acknowledgments</td><td>★★★</td></tr>
+<tr><td>Nature / Springer Nature</td><td data-zh="允許 + Methods 揭露；copy-editing 免揭露" data-en="Allowed + Methods disclosure; copy-editing exempt">允許 + Methods 揭露；copy-editing 免揭露</td><td data-zh="❌ 禁止（含影片）" data-en="❌ Banned (incl. video)">❌ 禁止（含影片）</td><td>Methods</td><td>★★★★</td></tr>
+<tr><td>Science (AAAS)</td><td data-zh="未經編輯同意完全禁止 AI 生成文字；2024 起略放寬" data-en="Banned without editor approval; slightly relaxed since 2024">未經編輯同意完全禁止 AI 生成文字；2024 起略放寬</td><td>❌</td><td data-zh="Cover letter + Methods" data-en="Cover letter + Methods">Cover letter + Methods</td><td>★★★★★</td></tr>
+<tr><td>Cell Press</td><td data-zh="允許可讀性改善 + 標準揭露" data-en="Allowed for readability + standard disclosure">允許可讀性改善 + 標準揭露</td><td>❌</td><td>Methods（提供範本）</td><td>★★★</td></tr>
+</tbody>
+</table>
+<div class="callout danger"><span class="callout-icon">🚨</span><div>
+<span data-lang="zh"><strong>AI 同儕審查違規：</strong>把同儕審查的稿件貼進公用 ChatGPT / Claude 等，會被視為<strong>洩漏未發表資料</strong>，違反期刊保密協議——已有 2024 / 2025 多家期刊把此列入學術不端記錄。如需 AI 輔助 review，必須使用機構提供的 enterprise / on-prem 版本，且符合期刊政策。</span>
+<span data-lang="en"><strong>AI peer-review violations:</strong> Pasting a manuscript under peer review into public ChatGPT / Claude is treated as a <strong>leak of unpublished data</strong> and breaches confidentiality — 2024 / 2025 saw several journals add this to misconduct records. If you need AI help for review, use institutional enterprise / on-prem editions and check the journal's policy.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="案例與決策樹" data-en="CASES + DECISION TREE">案例與決策樹</div>
+<h2 data-zh="五、真實案例與你的決策流程" data-en="V. Real Cases + Your Decision Flow">五、真實案例與你的決策流程</h2>
+<div data-lang="zh">
+<p>2023–2025 已有多起公開案例：(1) 一篇 PLOS 期刊論文因為 AI 生成的解剖學圖示（鼠蛋蛋過度誇張）被撤稿；(2) 多篇引用「不存在的 PMID」被讀者抓出（hallucinated reference），導致更正或撤稿；(3) 一位審稿人把稿件貼進 ChatGPT 索取 review 草稿，被作者透過浮水印偵測到，編輯撤換審稿人並列入紀錄。</p>
+</div>
+<div data-lang="en">
+<p>Real cases from 2023–2025: (1) A PLOS paper retracted because of an AI-generated anatomical figure (notoriously exaggerated rodent anatomy); (2) Multiple papers caught with "non-existent PMID" citations (hallucinated references), leading to corrections or retractions; (3) A reviewer pasted a manuscript into ChatGPT for a draft review and was caught via watermarking — editor replaced the reviewer and logged the breach.</p>
+</div>
+<div class="decision-tree">
+<h4 data-zh="使用 AI 寫稿前的 3 個自問" data-en="Three Self-Checks Before Using AI">使用 AI 寫稿前的 3 個自問</h4>
+<div class="dt-node"><span class="dt-q">Q1</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>這個用法該期刊允許嗎？</strong>查最新政策（Nature 禁圖、Science 嚴格、ICMJE 是底線）。</div><div data-lang="en"><strong>Does the journal allow this use?</strong> Check the latest policy (Nature bans images, Science is strict, ICMJE is the floor).</div></div>
+<div class="dt-node"><span class="dt-q">Q2</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>我能在 Methods 寫清楚 model + 用途 + prompt 嗎？</strong>能 → OK；不能 / 不想 → 不要用。</div><div data-lang="en"><strong>Can I clearly state model + purpose + prompt in Methods?</strong> Yes → OK; No / unwilling → don't use it.</div></div>
+<div class="dt-node"><span class="dt-q">Q3</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>我能為每個字、每條引用負責嗎？</strong>能 → 簽下去；不能 → 重做或請 co-author 一起 review。</div><div data-lang="en"><strong>Can I stand behind every word and citation?</strong> Yes → sign off; No → redo or co-review with co-authors.</div></div>
+</div>
+</section>
+
+<!-- ===== Expanded Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：Frontiers 2024 AI 圖像撤稿與 NEJM 退稿流程" data-en="Two deeper cases: the Frontiers 2024 AI-image retraction and an NEJM desk-reject">兩個深入案例</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🖼️</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：Frontiers 2024 「老鼠 nonsense 圖」撤稿事件</h4>
+<p>2024 年 2 月 13 日，Frontiers in Cell and Developmental Biology 發表一篇關於 stem cell 訊息傳遞的論文，包含一張「老鼠解剖」示意圖——但圖中老鼠擁有<strong>四個解剖位置錯誤、字形怪異無意義的標籤</strong>，包括 "dissilced"、"Stemm cells" 等明顯 AI 生成 garbage text，且老鼠生殖器尺寸不合解剖比例。社群媒體（X / 前 Twitter）在 24 小時內瘋傳，超過 1.2 萬次轉發，The Verge、Ars Technica、Nature News 都做新聞。Frontiers 在 48 小時內撤稿，並承認：(a) 審稿人發現了圖中問題並要求修正，但作者未實質修改；(b) 編輯部最終決定接受時未複查圖像；(c) 圖片產生器是 Midjourney，作者在 Methods 揭露為 "Figure generated by Midjourney" 但編輯部未認知此為禁止內容。事件導致 Frontiers 立即更新政策：所有 AI 生成圖像 ban；強制使用 Proofig AI 圖像偵測；對所有曾接受論文 retrospective audit。<strong>對學術界的衝擊</strong>：證明 (1) AI 圖像偵測必須自動化、人類審稿人會漏；(2) Methods 揭露不等於同意——某些用法即使揭露也禁止；(3) 「以為審稿人會抓」是極危險的偏誤。Bik 2024 警告：更精緻的 AI 生成 Western blot / IHC 圖像可能已悄悄通過審查，現有 retraction watch 只是冰山一角。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: The Frontiers 2024 "nonsense rat" retraction</h4>
+<p>On 13 Feb 2024, Frontiers in Cell and Developmental Biology published a paper on stem-cell signalling with a rat anatomy schematic — except the rat had <strong>four anatomically wrong labels in garbled non-words</strong> ("dissilced," "Stemm cells") and impossible genital proportions. Social media (X / former Twitter) blew up in 24 hours with 12K+ reshares; The Verge, Ars Technica, and Nature News all covered it. Frontiers retracted within 48 hours and admitted: (a) reviewers had flagged the figure and requested revisions but the authors didn't materially fix it; (b) editorial acceptance didn't re-check the image; (c) the image generator was Midjourney, disclosed in Methods as "Figure generated by Midjourney" but the editorial office didn't recognise this as banned content. The event forced Frontiers to immediately update policy: ban all AI-generated images, require Proofig AI image detection, and retrospectively audit prior accepted papers. <strong>Impact on academia</strong>: (1) AI-image detection must be automated — human reviewers will miss; (2) Methods disclosure ≠ permission — some uses are banned even when disclosed; (3) "reviewers will catch it" is a dangerous illusion. Bik 2024 warned that more polished AI-generated Western blot / IHC images may have already slipped through review — current retraction lists are the tip of the iceberg.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">📨</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：ICMJE 2025 修訂後某 NEJM-class 期刊退稿流程</h4>
+<p>2025 年 ICMJE 修訂揭露範本變嚴後，某 NEJM-class 期刊（為討論方便稱 "Journal X"）發生以下真實流程：投稿一篇 cardiology RCT 二次分析。作者 Methods 寫「We used AI for writing assistance」，cover letter 提到「used ChatGPT」，但未指明 model version、cutoff、用途與範圍。Editorial 在 desk-review 階段以下三點退稿（72 小時內）：(1) <strong>揭露不足</strong>：未指明 GPT-4 / GPT-5、未列 cutoff date、未說明用於 Methods 改寫還是 Discussion 草擬；(2) <strong>引用驗證缺失</strong>：抽查 Reference list 12 條，發現 3 條 PMID 對應不同論文（明顯 hallucinated）；(3) <strong>Acknowledgments 未列 AI</strong>：違反 ICMJE 2023 雙處揭露要求。Editorial decision 為「Reject — major integrity concerns」，並附建議：若想 resubmit 需 (a) 完整揭露含 model + version + cutoff + prompt template + 章節範圍；(b) 提供 citation verification log（每筆 PMID/DOI 驗證 timestamp）；(c) Acknowledgments 補上 AI tool + 用途；(d) 接受 image manipulation AI check（Proofig）。作者最終 8 週後完整補全 resubmit，二輪 peer review 後接受。<strong>關鍵 takeaway</strong>：Journal-side enforcement 正在加緊，「used AI for writing」這種模糊揭露 2025 後等於沒揭露；honest + complete 揭露反而是最快路徑。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: An NEJM-class journal desk-reject after the ICMJE 2025 revision</h4>
+<p>After ICMJE tightened its disclosure template in 2025, an NEJM-class journal (call it "Journal X") ran this real workflow: a submission of a secondary analysis of a cardiology RCT. The Methods said "We used AI for writing assistance"; the cover letter mentioned "used ChatGPT," but neither specified model version, cutoff, purpose, or scope. Editorial desk-rejected within 72 hours on three grounds: (1) <strong>insufficient disclosure</strong> — no GPT-4 / GPT-5 version, no cutoff date, no scope between Methods rewrite and Discussion drafting; (2) <strong>missing citation verification</strong> — random check of 12 references found 3 PMIDs resolving to different papers (clearly hallucinated); (3) <strong>Acknowledgments missed AI</strong> — breached ICMJE 2023 double-disclosure rule. The editorial decision: "Reject — major integrity concerns" with conditions for resubmission: (a) full disclosure including model + version + cutoff + prompt template + section scope; (b) a citation-verification log (timestamps for every PMID / DOI); (c) AI tool + purpose added to Acknowledgments; (d) accept image-manipulation AI check (Proofig). The authors resubmitted 8 weeks later with everything closed; accepted after a second peer review. <strong>Key takeaway</strong>: journal-side enforcement is tightening — "used AI for writing" is effectively zero disclosure after 2025; complete honest disclosure is now the fastest path.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="學術倫理 AI 揭露最常踩的五個坑" data-en="Five common AI-disclosure pitfalls">學術倫理 AI 揭露最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：Methods 揭露太籠統（「used AI for writing」）</strong><br>
+為什麼錯：ICMJE 2023 + 2025 修訂明確要求揭露 model + version + cutoff + 用途 + 範圍。「used AI for writing」這種模糊文字 2025 後等於未揭露，多家頂刊已 desk-reject。Editorial 認為這暗示作者試圖隱藏實質用法。<br>
+正確做法：標準 Methods 範本「We used [GPT-5 / Claude 4.5 / Gemini 2.5 Pro] (model version YYYY-MM, knowledge cutoff YYYY-MM) for [purpose: e.g. Methods grammar polishing, Discussion paraphrasing, or first-draft Introduction]. All AI-suggested citations were manually verified via PubMed / Crossref on [date]. No AI was used for data analysis or figure generation.」</div>
+<div data-lang="en"><strong>Pitfall 1: Methods disclosure too vague ("used AI for writing")</strong><br>
+Why wrong: ICMJE 2023 + 2025 revisions explicitly require model + version + cutoff + purpose + scope. Vague phrasing like "used AI for writing" effectively counts as non-disclosure post-2025; multiple top journals desk-reject for it. Editors read it as concealment.<br>
+Fix: standard Methods template — "We used [GPT-5 / Claude 4.5 / Gemini 2.5 Pro] (model version YYYY-MM, knowledge cutoff YYYY-MM) for [purpose: Methods grammar polishing, Discussion paraphrasing, or first-draft Introduction]. All AI-suggested citations were manually verified via PubMed / Crossref on [date]. No AI was used for data analysis or figure generation."</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：用 AI 做同儕審查</strong><br>
+為什麼錯：把 manuscript 內容貼進公開 AI 工具 = 洩漏 unpublished data + 違反 confidentiality（COPE / ICMJE / Springer Nature 2024 明文禁止）。即使是 enterprise 版本，也可能違反 publisher 與 reviewer 的 NDA。後果：被列入學術不端紀錄、永久禁止為該期刊 review。<br>
+正確做法：peer review 全程不可用任何 LLM 工具（特例：publisher-provided + 已通知作者的工具）。寫 review 時 ChatGPT-Plus 等個人帳號禁用——即使是「協助寫英文」也不被允許。</div>
+<div data-lang="en"><strong>Pitfall 2: Using AI for peer review</strong><br>
+Why wrong: pasting manuscript content into public AI tools = leaking unpublished data + breaching confidentiality (explicitly forbidden by COPE / ICMJE / Springer Nature 2024). Even enterprise versions may breach publisher-reviewer NDAs. Consequences: misconduct record, permanent reviewer ban from that journal.<br>
+Fix: no LLM tools during peer review (exception: publisher-provided tools the authors have been notified about). Personal ChatGPT-Plus accounts are off-limits even "to polish my English" — not allowed.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：以為 copy-editing 免揭露，但實際用了重寫</strong><br>
+為什麼錯：ICMJE 與多數期刊對純拼字 / 文法 copy-editing 確實 exempt，但門檻很窄——只指「不改變語意、不增刪句子」。若用 AI「rewrite for clarity」、「improve flow」、「reorganize paragraph」就已超出 copy-editing 範圍，必揭露。作者常自我安慰「只是改流暢度」，實際 30%+ wording 被替換。<br>
+正確做法：保留 before / after diff（Git 或 track changes）；超過 ~5% 字句變動 + 任何句子重組 / 增刪 = 揭露。寧過頭也別漏。</div>
+<div data-lang="en"><strong>Pitfall 3: Believing copy-editing is exempt while actually rewriting</strong><br>
+Why wrong: ICMJE and most journals exempt pure spelling / grammar copy-editing, but the threshold is narrow — "no semantic change, no add / remove sentences." Using AI to "rewrite for clarity," "improve flow," or "reorganize paragraphs" exceeds copy-editing and must be disclosed. Authors comfort themselves with "just polishing flow" while 30%+ wording is replaced.<br>
+Fix: keep before / after diffs (Git or track changes); &gt;~5% wording change + any sentence reorg / add-delete = disclose. Over-disclose rather than under-disclose.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：用 AI 生成 figure 但不揭露</strong><br>
+為什麼錯：Nature / Springer Nature / Cell Press / Science 對 AI 生成圖像皆已明文禁止，即使揭露也不接受。AI 改 schematic 或繪 conceptual figure 看似無害，但模型可能加入 nonsense detail（Frontiers 老鼠事件即是）。Proofig / Imagetwin 等 AI 偵測工具已能識別 90%+ AI 生成圖像，2025 多家期刊強制使用。<br>
+正確做法：所有 figure 用傳統工具（BioRender、Adobe Illustrator、PowerPoint）；如必要使用 AI（如 ChemDraw AI assist），需明確揭露並提供原稿；對 schematic 必人工審核每個 label 與 element。</div>
+<div data-lang="en"><strong>Pitfall 4: Using AI to generate figures without disclosure</strong><br>
+Why wrong: Nature / Springer Nature / Cell Press / Science explicitly ban AI-generated images — disclosure does not help. AI-drawn schematics or conceptual figures look harmless but models inject nonsense details (the Frontiers rat case). Proofig / Imagetwin detect 90%+ of AI-generated images; many journals require these checks in 2025.<br>
+Fix: all figures via traditional tools (BioRender, Adobe Illustrator, PowerPoint). If AI must be used (e.g. ChemDraw AI assist), disclose explicitly and provide the raw output; manually review every label and element on every schematic.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：Cover letter 主動承認 AI 用法但 Methods 沒寫</strong><br>
+為什麼錯：揭露不一致 = inconsistent disclosure → editorial 視為紅旗。若 cover letter 寫「used ChatGPT for writing」但 Methods 與 Acknowledgments 皆無提，editorial 會懷疑作者試圖只在 informal 層級揭露而不留正式紀錄。ICMJE 2023 雙處揭露要求即為防止此情況。<br>
+正確做法：揭露必三處一致——Methods + Acknowledgments + Cover letter，內容相同。Cover letter 不可比 Methods 多 / 少資訊；如有 funding 與 COI，三處皆需。</div>
+<div data-lang="en"><strong>Pitfall 5: Cover letter admits AI use but Methods doesn't</strong><br>
+Why wrong: inconsistent disclosure = red flag to editorial. If the cover letter says "used ChatGPT for writing" but Methods and Acknowledgments are silent, editors suspect authors are only disclosing informally to avoid the formal record. The ICMJE 2023 double-disclosure rule exists precisely to prevent this.<br>
+Fix: disclosure must be consistent across Methods + Acknowledgments + Cover letter, identical wording. The cover letter must not contain more / less than Methods; funding and COI follow the same three-way rule.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：Liang 2024 AI 偵測、ICMJE 標準化、Nature 圖像禁令法律邏輯、Springer Nature 政策時間軸" data-en="Advanced: Liang 2024 AI detection, ICMJE standardization, Nature image-ban legal logic, Springer Nature policy timeline">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 Liang 2024 AI 偵測、ICMJE 範本標準化、Nature 圖像禁令的著作權邏輯、SN 政策時間軸" data-en="🔬 Liang 2024 AI detection, ICMJE standardization, Nature image-ban copyright logic, SN policy timeline">🔬 Liang 2024 AI 偵測、ICMJE 範本標準化、Nature 圖像禁令的著作權邏輯、SN 政策時間軸</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① Liang 2024 偵測 AI-modified content。</strong>Liang et al. 2024（arXiv:2403.07183）用 word-frequency shift（"delve"、"meticulous"、"showcasing" 等詞在 2023+ 論文急升）+ stylistic embedding distance（與 LLM-generated reference 的相似度）估計 17.5% 計算機科學摘要、6.3% 自然科學摘要在 2023/3 後「實質受 ChatGPT 修改」。方法：把 ICLR / NeurIPS / Nature 摘要的 word-frequency 與 2022 比較，計算偏離 baseline 的 expected ratio，假設這些偏離主因是 LLM 改寫。2024 Liang et al. 在 <em>arXiv</em> 後續論文延伸到 peer review 偵測，發現 ~17% NeurIPS reviews 顯示 LLM 寫作 signature。<strong>限制</strong>：population-level signal，個別論文無法 reliably 判定；human-edited AI output 可能 evade detection。但這提供 publisher 一個 aggregate level 監控指標。</p>
+<p><strong>② ICMJE 揭露範本標準化（2023 vs 2025）。</strong>2023/8 ICMJE 公佈三鐵律：(a) AI 不可掛名；(b) Methods 揭露 AI tool + 用途；(c) 人類作者負全責。2025 修訂進一步要求：(d) 揭露 model version + cutoff date；(e) Methods + Acknowledgments + Cover letter 三處一致；(f) AI 用於 reference 必附 verification log。各 section 範本：<strong>Methods</strong>「The authors used [tool, version, date] for [purpose: e.g., language editing of Methods Section; first-draft generation of Discussion section]. Authors verified all factual content and citations.」<strong>Acknowledgments</strong>「[Tool name] was used to [purpose].」<strong>Cover letter</strong>「In compliance with ICMJE 2023 + 2025, we disclose AI tool use as described in Methods.」</p>
+<p><strong>③ Nature 圖像禁令的著作權邏輯。</strong>Nature / Springer Nature 2023 政策「ban AI-generated images」並非單純科學誠信考量，而是著作權法（copyright）邏輯：US Copyright Office 2023/3 在 Zarya of the Dawn（Kashtanova v. USCO）裁定 AI 生成內容「lacks human authorship」不享 copyright protection。Nature 期刊內容必須能 enforce 著作權（轉載、引用、reuse），若 AI 圖像 unprotectable 則 publisher 無法控制使用。<strong>例外</strong>：human-significant-modification 後的 AI 圖像可能可獲 copyright（USCO 2023 一案中對「human modify + selection」部分給予 protection）。所以即使 Nature 禁止，Springer Nature 在 Cell-like 旗下某些非 flagship 期刊曾考慮接受 human-significantly-modified AI 圖像，但 2024 後統一禁止以簡化政策。EU 著作權邏輯類似但不完全相同——EUIPO 2024 報告中對 AI-assisted 與 AI-generated 區分得更細。</p>
+<p><strong>④ Springer Nature AI 政策時間軸。</strong>2023/1：ChatGPT 不可掛名（首家頂刊明文禁止），LLM 用法須揭露。2023/6：禁止 AI 生成 / AI 改造 image / video。2023/11：明確 peer review 不可用公開 LLM 工具。2024/3：強制使用 Proofig / Imagetwin 對 figure 自動 AI 偵測。2024/9：Methods + Acknowledgments + cover letter 三處揭露要求。2025/2：揭露範本更新含 model version + cutoff。2025/8：開始 retrospective audit 2023+ 接受論文（抽樣 ~1%）。Cell Press 與 ACS 採近似時間軸；Science 走較嚴格路線（2023 完全禁，2024 略放寬但仍要 editorial pre-approval）。</p>
+<p><strong>⑤ 進階參考。</strong>Liang 2024 (AI-modified content detection, arXiv:2403.07183) · ICMJE 2023 + 2025 disclosure templates · WAME 2024 (recommendations on ChatGPT) · COPE 2024 (AI guidance) · Nature editorial 2023 "Tools such as ChatGPT threaten transparent science" · Thorp 2023 Science editorial "ChatGPT is fun, but not an author" · USCO 2023 (Zarya of the Dawn ruling) · Bik 2024 (AI image misconduct) · Retraction Watch · Springer Nature AI policy archive 2023–2025.</p>
+</div>
+<div data-lang="en">
+<p><strong>① Liang 2024 — detecting AI-modified content.</strong> Liang et al. 2024 (arXiv:2403.07183) used word-frequency shifts ("delve," "meticulous," "showcasing" spiking in 2023+ papers) plus stylistic embedding distance to LLM-generated references, estimating 17.5% of CS abstracts and 6.3% of natural-science abstracts post-March 2023 are "substantially modified by ChatGPT." Method: compare ICLR / NeurIPS / Nature abstract word frequencies to 2022 baseline; treat deviation as a population-level LLM signal. A follow-up paper extends this to peer review, finding ~17% of NeurIPS reviews carry LLM signatures. <strong>Limits</strong>: a population-level signal — individual papers cannot be reliably classified; human-edited AI output evades detection. But it gives publishers an aggregate-level monitoring metric.</p>
+<p><strong>② ICMJE disclosure templates (2023 vs 2025).</strong> Aug 2023 ICMJE issued three iron rules: (a) AI cannot be an author; (b) Methods discloses AI tool + purpose; (c) human authors bear full responsibility. The 2025 revision adds: (d) disclose model version + cutoff date; (e) Methods + Acknowledgments + Cover letter must agree; (f) AI-suggested references require a verification log. Templates: <strong>Methods</strong> "The authors used [tool, version, date] for [purpose: e.g., language editing of Methods; first-draft Discussion]. Authors verified all factual content and citations." <strong>Acknowledgments</strong> "[Tool name] was used to [purpose]." <strong>Cover letter</strong> "In compliance with ICMJE 2023 + 2025, we disclose AI tool use as described in Methods."</p>
+<p><strong>③ Nature image-ban copyright logic.</strong> The Nature / Springer Nature 2023 ban on AI-generated images isn't purely about scientific integrity — it's also copyright law. The US Copyright Office in March 2023 (Zarya of the Dawn, Kashtanova v. USCO) ruled AI-generated content "lacks human authorship" and gets no copyright protection. Nature content must be enforceable for reproduction / citation / reuse; if AI images are unprotectable, the publisher cannot control downstream use. <strong>Exception</strong>: AI images with substantial human modification may earn copyright (USCO 2023 granted protection for the human "selection + arrangement"). So some non-flagship Springer Nature journals briefly considered accepting human-significantly-modified AI images, but unified to a ban in 2024 for simplicity. EU copyright logic is similar — EUIPO 2024 distinguishes AI-assisted vs AI-generated more finely.</p>
+<p><strong>④ Springer Nature AI policy timeline.</strong> Jan 2023: ChatGPT can't be an author (first major publisher to explicitly forbid); LLM use must be disclosed. Jun 2023: ban on AI-generated / AI-altered images / video. Nov 2023: peer review cannot use public LLM tools. Mar 2024: mandatory Proofig / Imagetwin AI-image detection on figures. Sep 2024: triple disclosure (Methods + Acknowledgments + cover letter). Feb 2025: disclosure template updated with model version + cutoff. Aug 2025: retrospective audit of 2023+ accepted papers (~1% sample). Cell Press and ACS track a similar timeline; Science is stricter (2023 full ban, 2024 relaxed slightly but still needs editorial pre-approval).</p>
+<p><strong>⑤ Key references.</strong> Liang 2024 (AI-modified content detection, arXiv:2403.07183) · ICMJE 2023 + 2025 disclosure templates · WAME 2024 (ChatGPT recommendations) · COPE 2024 (AI guidance) · Nature editorial 2023 "Tools such as ChatGPT threaten transparent science" · Thorp 2023 Science editorial "ChatGPT is fun, but not an author" · USCO 2023 (Zarya of the Dawn ruling) · Bik 2024 (AI image misconduct) · Retraction Watch · Springer Nature AI policy archive 2023–2025.</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: 實習生 cover letter 完全用 AI 寫該揭露嗎？</h4>
+<p>實習生在投稿時用 ChatGPT 寫 cover letter（不是 Methods 也不是 manuscript 本體）。某 PI 認為「cover letter 是 communication，免揭露」；另一派認為「cover letter 是稿件正式部分，需揭露」。ICMJE 規定不明確。<strong>請思考</strong>：你支持哪邊？如果以「凡涉及對 editorial 的呈現都要揭露」為原則，是否該對致謝信、rebuttal letter、回應審稿意見都揭露？這會不會反而 punish 誠實的非英文母語者？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Should a trainee disclose using AI for the cover letter?</h4>
+<p>A trainee uses ChatGPT to draft a cover letter (not Methods, not manuscript body). One PI says "the cover letter is communication — no disclosure needed"; another says "the cover letter is a formal submission part — disclose." ICMJE is ambiguous. <strong>Consider</strong>: which camp? If the principle is "anything presented to editorial requires disclosure," should rebuttal letters and review responses also be disclosed? Does this punish honest non-native speakers?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: AI 生成 schematic 與 Photoshop figure manipulation 該等同處理嗎？</h4>
+<p>傳統 Photoshop splice / duplicate Western blot 是 misconduct；AI 生成 conceptual schematic（如示意 signaling pathway）目前多被禁止但「嚴重程度」尚有爭議。Frontiers 老鼠事件中作者「只是」想要漂亮 schematic，無 fabrication 意圖。<strong>請思考</strong>：你認為兩者應等同嚴重嗎？理由為何？如果 AI 生成 schematic 可被認定無誤導 intent，是否該降為「需揭露但允許」？對教育性 illustration（textbook chapter）是否該不同？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: AI-generated schematics vs Photoshop figure manipulation — same severity?</h4>
+<p>Traditional Photoshop splice / duplicate of a Western blot is misconduct; AI-generated conceptual schematics (e.g. signalling diagrams) are currently banned but the severity is debated. In the Frontiers rat case, authors "just" wanted a pretty schematic, no fabrication intent. <strong>Consider</strong>: should they be treated as equally severe? Why? If AI schematics carry no misleading intent, should they drop to "must disclose, allowed"? Should educational illustrations (textbook chapters) be treated differently?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: 非英文母語者用 AI 改 Methods，揭露不揭露公平嗎？</h4>
+<p>某非英文母語博後用 ChatGPT 修改 Methods 文法，因此揭露；其同事是 native speaker 自行修文，不揭露。Editorial 對前者投以「AI-assisted」標籤，對後者視為「正常稿件」。實質上兩者輸出品質可能類似，但 perception 不同。<strong>請思考</strong>：這算 disclosure penalty 嗎？該如何修正？是否應該對 native speaker 也要求列出 editing assistance？或對 AI 揭露採「neutral language」避免暗示低品質？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Is disclosure unfair to non-native English speakers using AI?</h4>
+<p>A non-native postdoc uses ChatGPT for Methods grammar, discloses it. A native-speaker peer self-edits, no disclosure. Editorial labels the former "AI-assisted" and treats the latter as "normal." Outputs may be similar quality but perceptions differ. <strong>Consider</strong>: is this a disclosure penalty? How to fix? Should native speakers also disclose editing assistance? Should AI disclosure use neutral language to avoid implying lower quality?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: 期刊該強制公開所有揭露的 AI 使用嗎？</h4>
+<p>目前 AI 揭露雖寫進 Methods 但 reader 通常不會注意；某些 advocate 提議「在論文頂部置 AI Use Statement banner」如 retraction notice 般顯眼；反對者認為這 stigmatize 合理用法。<strong>請思考</strong>：你支持顯眼 banner 嗎？這會鼓勵 honest disclosure 還是反而促使作者隱藏？對 readership 透明度（讓 reader 自己判斷 AI 介入程度）與 author equity（避免「AI scarlet letter」）如何平衡？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Should journals prominently flag all AI use?</h4>
+<p>Currently AI disclosure lives in Methods and readers rarely notice; some advocates propose a prominent "AI Use Statement" banner atop each paper (like a retraction notice). Critics argue this stigmatises legitimate use. <strong>Consider</strong>: do you support visible banners? Does this encourage honest disclosure or push authors to hide? How do you balance reader transparency (let readers judge AI involvement) with author equity (avoid the "AI scarlet letter")?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">1. ICMJE 為什麼禁止 AI 掛名作者？</p>
+<p data-lang="en">1. Why does ICMJE forbid AI authorship?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 太貴</span><span data-lang="en">A. Too expensive</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. AI 無法承擔內容責任、無法簽 COI</span><span data-lang="en">B. AI cannot take responsibility for content nor sign COI</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. AI 數量太多</span><span data-lang="en">C. Too many AI models</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 沒有 IRB</span><span data-lang="en">D. No IRB</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">2. 把同儕審查稿件貼進公用 ChatGPT 的後果？</p>
+<p data-lang="en">2. Consequence of pasting a peer-review manuscript into public ChatGPT?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 沒事</span><span data-lang="en">A. No consequence</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 編輯會稱讚效率高</span><span data-lang="en">B. Editor will praise the efficiency</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 被視為洩漏未發表資料 → 列入學術不端紀錄</span><span data-lang="en">C. Treated as leaking unpublished data → logged as misconduct</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 自動通過 review</span><span data-lang="en">D. Auto-accept review</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh">3. Nature / Springer Nature 對 AI 生成內容的特殊規定？</p>
+<p data-lang="en">3. Nature / Springer Nature special rule for AI-generated content?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 完全禁止 LLM</span><span data-lang="en">A. Bans all LLM use</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 允許 AI 掛名第一作者</span><span data-lang="en">B. Permits AI as first author</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 拼字錯誤必須揭露</span><span data-lang="en">C. Spelling typos must be disclosed</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 禁止 AI 生成圖像與影片（即使揭露也不行）</span><span data-lang="en">D. Bans AI-generated images and video (even with disclosure)</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你的博後在投稿一篇 cardiology RCT 二次分析到 NEJM-class 期刊。她用 GPT-5 改寫 Methods 文法 + 用 Claude 4.5 草擬 Discussion 第一稿（後手改 70%）+ 用 Midjourney 畫 Figure 1 conceptual schematic + cover letter 提了 ChatGPT；但 Methods 只寫「We used AI for writing assistance」、Acknowledgments 完全沒提。Reference list 中她有抽查 PMID 但沒留 verification log。投稿後 72 小時內被 desk-reject。根據本章 5 個 pitfall + ICMJE 2025 規定，她最該改善哪些？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. Your postdoc submits a cardiology RCT secondary analysis to an NEJM-class journal. She used GPT-5 to polish Methods grammar, Claude 4.5 to draft Discussion (70% manually edited), Midjourney for the Figure 1 conceptual schematic, and the cover letter mentioned "ChatGPT"; Methods only says "We used AI for writing assistance" and Acknowledgments doesn't mention AI. She verified PMIDs but kept no log. Desk-rejected within 72 hours. Based on the five pitfalls + ICMJE 2025 rules, what should she fix first?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 揭露細節改不重要——重做整篇研究</span><span data-lang="en">A. Disclosure details don't matter — redo the study</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 隱藏所有 AI 使用以避免被退</span><span data-lang="en">B. Hide all AI use to avoid rejection</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 投到沒有 AI 政策的 predatory journal</span><span data-lang="en">C. Submit to a predatory journal with no AI policy</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 同時補：(a) Methods 改寫成具體格式（model + version + cutoff + 章節範圍）；(b) 三處（Methods + Acknowledgments + Cover letter）揭露一致；(c) 提供 PMID/DOI verification log（含 timestamp）；(d) 移除 Midjourney 圖換成 BioRender / Adobe Illustrator——AI 圖即使揭露也被禁；(e) 為 Claude Discussion 草稿保留 before/after diff 證明 70% 人工修改</span><span data-lang="en">D. Fix all: (a) rewrite Methods with specifics (model + version + cutoff + scope); (b) consistent disclosure in Methods + Acknowledgments + Cover letter; (c) provide PMID/DOI verification log with timestamps; (d) replace Midjourney with BioRender / Adobe Illustrator — AI images are banned even with disclosure; (e) keep before/after diffs for the Claude Discussion to evidence 70% human edits</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 Nature / Springer Nature 禁止 AI 生成圖像的「法律邏輯」（不只是科學誠信），下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. Nature / Springer Nature's legal logic (beyond integrity) for banning AI-generated images — which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 純粹科學誠信考量，與法律無關</span><span data-lang="en">A. Pure integrity concern, unrelated to law</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 因為 AI 圖檔太大</span><span data-lang="en">B. AI images have large file sizes</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. US Copyright Office 2023 (Zarya of the Dawn) 裁定 AI 生成內容「lacks human authorship」不享 copyright 保護；publisher 必須能 enforce 著作權（reuse、轉載、citation），無 copyright 的圖像 publisher 無法控制下游用法，故禁止以簡化政策（並有少量「human-significantly-modified」例外但 2024 後統一禁止）</span><span data-lang="en">C. The US Copyright Office 2023 ruling (Zarya of the Dawn) held AI-generated content "lacks human authorship" and has no copyright; publishers need enforceable copyright (reuse, reprints, citation), so AI images without copyright cannot be controlled downstream — hence a blanket ban (a small "human-significantly-modified" exception briefly existed but was unified to a ban in 2024)</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. EU 法律強制要求</span><span data-lang="en">D. EU law mandates it</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="clinical-ai.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 18: 臨床決策 AI" data-en="Step 18: Clinical Decision AI">Step 18: 臨床決策 AI</span></a>
+<a href="reproducibility.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 20: 隱私、法規與可重現性" data-en="Step 20: Privacy, Regulation &amp;amp; Reproducibility">Step 20: 隱私、法規與可重現性</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Journal policy lookup
+const JR={
+  icmje:{zh:{text:'允許使用 LLM 協助寫稿、改寫、分析，但必須在 Methods + cover letter 揭露。',img:'允許但須揭露；不可掛名作者。',disc:'Methods + Acknowledgments + Cover letter。範本見上方 code-tabs。',extra:'這是全球臨床醫學期刊的最低共識。'},en:{text:'Allows LLM for writing assistance, revision, analysis — must disclose in Methods + cover letter.',img:'Allowed with disclosure; AI cannot be an author.',disc:'Methods + Acknowledgments + Cover letter. Templates in the code-tabs above.',extra:'This is the floor consensus for clinical medicine journals worldwide.'}},
+  nature:{zh:{text:'允許 + Methods 揭露；單純拼字 / 文法 copy-editing 免揭露。',img:'❌ 禁止 AI 生成圖像與影片，即使揭露也不行。',disc:'Methods 段落內。投稿系統有專用 LLM-use 欄位。',extra:'Springer Nature 旗下所有期刊（Nat Med、Nat Methods、Nat Biotech 等）皆通用。'},en:{text:'Allowed + Methods disclosure; pure spelling / grammar copy-editing is exempt.',img:'❌ Bans AI-generated images and video — disclosure does not help.',disc:'Inside Methods. Submission portal has a dedicated LLM-use field.',extra:'Applies to all Springer Nature journals (Nat Med, Nat Methods, Nat Biotech, etc.).'}},
+  science:{zh:{text:'2023 完全禁止 AI 生成文字；2024 起略放寬，但仍需編輯預先同意。',img:'❌ 禁止。',disc:'Cover letter（強制） + Methods。',extra:'AAAS 旗下 Science、Sci. Adv.、Sci. Transl. Med. 等皆通用。最嚴的一家。'},en:{text:'2023: full ban on AI-generated text; slightly relaxed in 2024 but still requires prior editorial approval.',img:'❌ Banned.',disc:'Cover letter (mandatory) + Methods.',extra:'Applies to AAAS journals (Science, Sci. Adv., Sci. Transl. Med.). The strictest publisher.'}},
+  cell:{zh:{text:'允許 LLM 改善可讀性與草擬，須揭露；提供標準揭露範本。',img:'❌ 禁止 AI 生成圖像。',disc:'Methods 段落。Cell Press 官網有標準揭露 sentence。',extra:'Cell Press 旗下 Cell、Cancer Cell、Med、Cell Reports 等皆通用。'},en:{text:'Allows LLM for readability and drafting with disclosure; provides standard disclosure templates.',img:'❌ Bans AI-generated images.',disc:'Within Methods. Cell Press website provides a standard disclosure sentence.',extra:'Applies to Cell Press journals (Cell, Cancer Cell, Med, Cell Reports).'}}
+};
+function pickJr(j){
+  document.querySelectorAll('.jr-btn').forEach(b=>{
+    const on=b.dataset.jr===j;
+    b.classList.toggle('active',on);
+    b.style.background=on?'var(--c-accent)':'transparent';
+    b.style.color=on?'#fff':'inherit';
+  });
+  const L=window.I18n?I18n.get():'en';
+  const d=JR[j][L];
+  const labels=L==='zh'?{t:'文字 AI',i:'圖像 AI',dd:'揭露位置',e:'備註'}:{t:'Text AI',i:'Image AI',dd:'Disclosure',e:'Notes'};
+  document.getElementById('jrBox').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px"><div><div style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.t+'</div><p style="margin:4px 0;font-size:.88rem;line-height:1.5">'+d.text+'</p></div><div><div style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.i+'</div><p style="margin:4px 0;font-size:.88rem;line-height:1.5">'+d.img+'</p></div></div>'+
+    '<div style="margin-bottom:8px"><div style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.dd+'</div><p style="margin:4px 0;font-size:.88rem;line-height:1.5">'+d.disc+'</p></div>'+
+    '<div><div style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.e+'</div><p style="margin:4px 0;font-size:.85rem;line-height:1.5;color:var(--c-ink-muted)">'+d.extra+'</p></div>';
+}
+document.querySelectorAll('.jr-btn').forEach(b=>b.addEventListener('click',()=>pickJr(b.dataset.jr)));
+document.addEventListener('langchange',()=>{const a=document.querySelector('.jr-btn.active');pickJr(a?a.dataset.jr:'icmje');});
+document.addEventListener('DOMContentLoaded',()=>pickJr('icmje'));
+
+// Quiz
+const QF={zh:{q1_y:'AI 無法承擔內容責任、無法簽 COI，所以不能掛名作者——這是 ICMJE 的核心理由。',q2_y:'同儕審查貼進公用 LLM = 洩漏未發表資料，會被列入學術不端紀錄。',q3_y:'Nature / Springer Nature 禁止 AI 生成的圖像與影片，即使揭露也不可使用。',q4_y:'desk-reject 觸發點是 5 個 pitfall 同時踩到：揭露太籠統、揭露不一致（cover letter ≠ Methods ≠ Ack）、無 verification log、用 Midjourney 生 figure（即使揭露也禁止）、AI 草稿無 before/after evidence。修正方案：具體 Methods 範本 + 三處揭露一致 + PMID 驗證 log + 換 BioRender + 保留 Claude diff。',q5_y:'Nature 圖像禁令的核心邏輯是著作權：USCO 2023 Zarya of the Dawn 裁定 AI 生成內容無 copyright，publisher 必須能 enforce 著作權，故禁止以簡化政策。EU 邏輯類似但不完全相同（EUIPO 2024 對 AI-assisted 與 AI-generated 區分更細）。'},en:{q1_y:'AI cannot take responsibility for content nor sign COI — that is ICMJE\'s core reason.',q2_y:'Pasting a peer-review manuscript into a public LLM = leaking unpublished data → misconduct record.',q3_y:'Nature / Springer Nature bans AI-generated images and video — disclosure does not help.',q4_y:'The desk-reject was triggered by all five pitfalls combined: vague disclosure, inconsistent disclosure (cover letter ≠ Methods ≠ Ack), no verification log, Midjourney-generated figure (banned even when disclosed), and no before/after evidence for the Claude draft. The fix: specific Methods template + triple-consistent disclosure + PMID verification log + swap Midjourney for BioRender + retain Claude diffs.',q5_y:'The Nature image-ban\'s core logic is copyright: the USCO 2023 Zarya of the Dawn ruling held AI-generated content has no copyright; publishers need enforceable copyright, so the blanket ban simplifies policy. EU logic is similar but distinguishes AI-assisted vs AI-generated more finely (EUIPO 2024).'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

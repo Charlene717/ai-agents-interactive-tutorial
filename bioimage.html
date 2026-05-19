@@ -1,0 +1,481 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 15: Bioimage AI — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html" class="active">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 15 / 20</div>
+<h1 data-zh="生物影像 AI" data-en="Bioimage AI">生物影像 AI</h1>
+<p class="subtitle" data-lang="zh">Cellpose-SAM、StarDist、SAM 2、CellSAM——讓細胞分割從「博士論文題目」變成「兩行 code」。</p>
+<p class="subtitle" data-lang="en">Cellpose-SAM, StarDist, SAM 2, CellSAM — turning cell segmentation from a PhD project into two lines of code.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="生物影像 AI 必懂十詞" data-en="Ten terms for bioimage AI">生物影像 AI 必懂十詞</h2>
+<div data-lang="zh"><p>這 10 個詞貫穿整章——先讀過一次，後面 Cellpose-SAM、StarDist、SAM 2、IoU、Dice 的討論就會清晰許多。</p></div>
+<div data-lang="en"><p>These ten terms recur throughout. Skim once and the discussion of Cellpose-SAM, StarDist, SAM 2, IoU, and Dice flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🧫</div><h4>Cellpose</h4>
+<div data-lang="zh"><p>Stringer et al. 2021 <em>Nat Methods</em>。CNN-based generalist 細胞分割，核心是「流場」（gradient flow）：模型預測每個 pixel 指向細胞中心的向量，再追蹤匯聚點得到 instance mask。2025 升級為 Cellpose-SAM（SAM ViT backbone）。</p></div>
+<div data-lang="en"><p>Stringer et al. 2021 <em>Nat Methods</em>. CNN-based generalist cell segmentation built on "flow fields" (gradient flow): the model predicts a vector at every pixel pointing to its cell centre, then tracks convergence points into instance masks. Upgraded to Cellpose-SAM (SAM ViT backbone) in 2025.</p></div>
+</div>
+<div class="card"><div class="card-icon">⭐</div><h4>StarDist</h4>
+<div data-lang="zh"><p>Schmidt et al. 2018 (MICCAI)。把每個 nuclei 表示為「中心點 + N 條 radial distance」的 star-convex polygon，對 H&amp;E、IF nuclei 等 convex shape 效能極佳。<code>2D_versatile_he</code> 是 H&amp;E 業界標準預訓練。</p></div>
+<div data-lang="en"><p>Schmidt et al. 2018 (MICCAI). Represents each nucleus as "centre + N radial distances" = star-convex polygon, excellent on H&amp;E and IF nuclei (convex shapes). The <code>2D_versatile_he</code> pretrained model is the H&amp;E industry standard.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>SAM (Segment Anything)</h4>
+<div data-lang="zh"><p>Kirillov et al. 2023 <em>ICCV</em> (Meta)。在 SA-1B（11M images / 1B masks）上預訓練的 ViT-based promptable segmentation foundation model；接受 point / box / mask prompt，輸出任意物體 mask。是 Cellpose-SAM、CellSAM 的 backbone 基礎。</p></div>
+<div data-lang="en"><p>Kirillov et al. 2023 <em>ICCV</em> (Meta). ViT-based promptable segmentation foundation model pretrained on SA-1B (11M images / 1B masks). Accepts point / box / mask prompts; outputs masks for any object. Backbone for Cellpose-SAM and CellSAM.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎥</div><h4>SAM 2</h4>
+<div data-lang="zh"><p>Ravi et al. 2024 (Meta)。SAM 的 video 升級版，引入 memory attention 在幀間傳播 mask；對 time-lapse / lightsheet movie 的細胞追蹤，提供「click frame 0 → 全 video 自動 propagate」能力。</p></div>
+<div data-lang="en"><p>Ravi et al. 2024 (Meta). The video upgrade of SAM, adding memory attention to propagate masks across frames. For time-lapse / lightsheet movies, enables "click frame 0 → auto-propagate through the whole video".</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>CellSAM</h4>
+<div data-lang="zh"><p>Israel et al. 2025 <em>Nat Methods</em>。CellFinder 偵測器 + SAM prompt 流程：先用 detector 找 cell bounding box，再用 box 當 prompt 餵 SAM。對「擁擠 / overlapping cells」效果好。</p></div>
+<div data-lang="en"><p>Israel et al. 2025 <em>Nat Methods</em>. CellFinder detector + SAM prompting: detector locates cell bounding boxes, then boxes become prompts to SAM. Strong on dense / overlapping cells.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔢</div><h4>Instance Segmentation</h4>
+<div data-lang="zh"><p>每個物件得到獨立的 ID（cell 1, cell 2, …）。是計數、tracking、shape analysis 的基礎。Cellpose、StarDist、SAM 都做 instance segmentation。</p></div>
+<div data-lang="en"><p>Each object gets a unique ID (cell 1, cell 2, ...). The foundation for counting, tracking, shape analysis. Cellpose, StarDist, SAM all do instance segmentation.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎨</div><h4>Semantic Segmentation</h4>
+<div data-lang="zh"><p>只區分 class（e.g., cell vs background）而不分 instance。對「cell density map」或「tissue type 區劃」夠用，但無法數細胞。U-Net（Ronneberger 2015）是經典代表。</p></div>
+<div data-lang="en"><p>Distinguishes classes (cell vs background) but not instances. Sufficient for cell-density maps or tissue-type zoning, but you can't count cells. U-Net (Ronneberger 2015) is the classical representative.</p></div>
+</div>
+<div class="card"><div class="card-icon">📊</div><h4>IoU (Intersection over Union)</h4>
+<div data-lang="zh"><p>分割評估指標：<code>IoU = |A ∩ B| / |A ∪ B|</code>。0 = 完全不重疊、1 = 完全一致。COCO / 細胞分割 benchmark 常用 IoU@0.5 / 0.75。</p></div>
+<div data-lang="en"><p>Segmentation metric: <code>IoU = |A ∩ B| / |A ∪ B|</code>. 0 = no overlap, 1 = identical. COCO / cell-segmentation benchmarks commonly use IoU@0.5 / 0.75.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎲</div><h4>Dice Coefficient</h4>
+<div data-lang="zh"><p><code>Dice = 2|A ∩ B| / (|A| + |B|)</code>。等價於 F1-score 對於分割問題；對小物體較 forgiving。醫療影像（lesion seg）多用 Dice，細胞 benchmark 多用 IoU。</p></div>
+<div data-lang="en"><p><code>Dice = 2|A ∩ B| / (|A| + |B|)</code>. Equivalent to F1 for segmentation; more forgiving on small objects. Medical imaging (lesion seg) leans Dice; cell benchmarks lean IoU.</p></div>
+</div>
+<div class="card"><div class="card-icon">⛰️</div><h4>Watershed</h4>
+<div data-lang="zh"><p>1991 年的傳統演算法：把灰階影像當地形圖，從「local minima」灌水擴散，分水嶺線即為物件邊界。Deep learning 出現前的主流 instance separation 方法；至今仍用於 post-processing。</p></div>
+<div data-lang="en"><p>The 1991 classical algorithm: treat the grayscale image as a topographic map, flood from local minima, and the watershed lines are object boundaries. The dominant instance-separation method before deep learning; still used as post-processing.</p></div>
+</div>
+<div class="card"><div class="card-icon">〰️</div><h4>Active Contour</h4>
+<div data-lang="zh"><p>Kass et al. 1988 (snakes)。「彈性曲線」演算法：能量函數 = 內部彈性 + 外部影像梯度 + 終止條件，迭代收斂到物體邊界。傳統年代的細胞 / lesion 分割主力，現多被 CNN 取代但仍用於 fine-tuning seed mask。</p></div>
+<div data-lang="en"><p>Kass et al. 1988 (snakes). The "elastic curve" algorithm: energy = internal elasticity + external image gradient + termination, iteratively converging to boundaries. The classical workhorse for cell / lesion segmentation; largely replaced by CNNs but still used to refine seed masks.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏷️</div><h4>Annotation</h4>
+<div data-lang="zh"><p>由人類專家在影像上手工畫出 ground-truth mask / box / point。是 supervised training 的成本核心；典型 cell 影像專家標註速度 30–60 cells/hr，dense field 可降到 5–10。Foundation model 的目標就是讓 annotation cost 降到 minimal。</p></div>
+<div data-lang="en"><p>Human experts manually drawing ground-truth masks / boxes / points on images. The cost centre of supervised training; typical experts annotate 30–60 cells/hr on cell images, dropping to 5–10 in dense fields. Foundation models aim to drive annotation cost to minimal.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="為什麼 2025–2026 是生物影像 AI 的拐點？" data-en="Why 2025–2026 is bioimage AI's inflection point">為什麼 2025–2026 是生物影像 AI 的拐點？</h2>
+<div data-lang="zh">
+<p>2020 年的 Cellpose 已經是一場革命——你不再需要手動調 watershed 參數。但 2025 年發表的 <a href="https://www.biorxiv.org/content/10.1101/2025.04.28.651001" target="_blank">Cellpose-SAM (bioRxiv 2025.04.28)</a> 把 SAM transformer 當 backbone 替換掉原本的 CNN，結果是：在多個 benchmark 上「效能超越人類間一致性 (human inter-rater agreement)」——換句話說，AI 與人類專家的差異，已經小於兩個人類專家之間的差異。</p>
+<p>同期，<a href="https://doi.org/10.1038/s41592-025-02879-w" target="_blank">CellSAM (Nat Methods 2025)</a> 把 prompt-based SAM 和自家 CellFinder 偵測器結合；StarDist 仍是 H&amp;E nuclei 分割的金標準；Meta SAM 2 把 video / 多幀分割變得近乎免費；<a href="https://bioimage.io" target="_blank">BioImage Model Zoo</a> 讓所有模型 ilastik、QuPath、Napari、CellProfiler、deepImageJ 之間互通——選工具的瓶頸從「演算法」變成「modality 對不對 + GPU 夠不夠」。</p>
+</div>
+<div data-lang="en">
+<p>The 2020 Cellpose was already a revolution — you no longer hand-tune watershed parameters. But <a href="https://www.biorxiv.org/content/10.1101/2025.04.28.651001" target="_blank">Cellpose-SAM (bioRxiv 2025.04.28)</a> swaps the CNN backbone for SAM transformers, and the result is that on several benchmarks it "exceeds human inter-rater agreement" — the model is more consistent with human consensus than two human experts are with each other.</p>
+<p>In parallel, <a href="https://doi.org/10.1038/s41592-025-02879-w" target="_blank">CellSAM (Nat Methods 2025)</a> fuses prompt-driven SAM with a CellFinder detector; StarDist remains the gold standard for H&amp;E nuclei; Meta SAM 2 makes video / multi-frame segmentation near-free; the <a href="https://bioimage.io" target="_blank">BioImage Model Zoo</a> makes everything interoperate across ilastik, QuPath, Napari, CellProfiler, deepImageJ. The bottleneck has shifted from algorithm to "is the modality right? Is the GPU big enough?"</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>2026 年生物影像 AI 的選型原則：先確定 <strong>modality（brightfield / fluorescence / H&amp;E / video）</strong> 與 <strong>target（whole cell / nuclei / organelle）</strong>，再從 BioImage Model Zoo 找預訓練模型；幾乎不需要從頭訓。</span>
+<span data-lang="en"><strong>Core mindset:</strong> The 2026 selection rule for bioimage AI: first nail down <strong>modality (brightfield / fluorescence / H&amp;E / video)</strong> and <strong>target (whole cell / nuclei / organelle)</strong>, then pull a pre-trained model from the BioImage Model Zoo. Training from scratch is almost never needed.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心模型" data-en="MODELS">核心模型</div>
+<h2 data-zh="一、五大主力模型" data-en="I. Five Workhorse Models">一、五大主力模型</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🧫</div><h4>Cellpose-SAM</h4>
+<div data-lang="zh"><p>2025 年最新版，SAM transformer backbone；通用細胞分割（brightfield / fluorescence），效能超越人類間一致性。</p></div>
+<div data-lang="en"><p>2025 release with a SAM transformer backbone; generalist cell segmentation (brightfield / fluorescence), exceeds human inter-rater agreement.</p></div>
+</div>
+<div class="card"><div class="card-icon">⭐</div><h4>StarDist</h4>
+<div data-lang="zh"><p>star-convex polygon 表示法，對「凸形 nuclei」極佳；H&amp;E pathology 與 IF nuclei 主流。</p></div>
+<div data-lang="en"><p>Star-convex polygon representation excels on convex nuclei; mainstream for H&amp;E pathology and IF nuclei.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎥</div><h4>SAM 2 (Meta)</h4>
+<div data-lang="zh"><p>2024 升級版，支援影片 / 多幀分割，活細胞追蹤、time-lapse 不再需要客製 tracker。</p></div>
+<div data-lang="en"><p>2024 release, supports video / multi-frame segmentation — live-cell tracking and time-lapse no longer need a custom tracker.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>CellSAM</h4>
+<div data-lang="zh"><p>Nat Methods 2025；CellFinder 偵測器 + SAM prompt 流程，對「擁擠細胞」表現好。</p></div>
+<div data-lang="en"><p>Nat Methods 2025; CellFinder detector + SAM prompting, strong on dense / crowded fields.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏛️</div><h4>BioImage Model Zoo</h4>
+<div data-lang="zh"><p>社群共享平台 bioimage.io，與 ilastik / QuPath / Napari / CellProfiler / deepImageJ / ImJoy 互通。</p></div>
+<div data-lang="en"><p>Community hub at bioimage.io, interoperates with ilastik / QuPath / Napari / CellProfiler / deepImageJ / ImJoy.</p></div>
+</div>
+<div class="card"><div class="card-icon">🖼️</div><h4>Napari / QuPath</h4>
+<div data-lang="zh"><p>不是模型，是 viewer：Napari（Python）做活細胞分析、QuPath 做病理 WSI——皆能呼叫上述模型。</p></div>
+<div data-lang="en"><p>Not models — viewers. Napari (Python) for live-cell analysis; QuPath for pathology WSI. Both can invoke the models above.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動引導" data-en="INTERACTIVE">互動引導</div>
+<h2 data-zh="二、模型選擇引導器" data-en="II. Model Selection Guide">二、模型選擇引導器</h2>
+<div data-lang="zh"><p>選擇你的影像 modality 與分割 target，看 2026 推薦工具。</p></div>
+<div data-lang="en"><p>Pick your imaging modality and segmentation target to see the 2026 recommended tool.</p></div>
+<div class="interactive-panel">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div><label data-zh="影像 modality" data-en="Modality" style="font-weight:600">影像 modality</label>
+      <select id="mod" style="width:100%;margin-top:6px;padding:8px;border-radius:6px;border:1px solid var(--c-border,#ccc)">
+        <option value="bf">Brightfield / Phase</option>
+        <option value="fl">Fluorescence</option>
+        <option value="he">H&amp;E pathology</option>
+        <option value="vid">Video / time-lapse</option>
+      </select>
+    </div>
+    <div><label data-zh="分割 target" data-en="Target" style="font-weight:600">分割 target</label>
+      <select id="tgt" style="width:100%;margin-top:6px;padding:8px;border-radius:6px;border:1px solid var(--c-border,#ccc)">
+        <option value="nuc">Nuclei</option>
+        <option value="cell">Whole cell</option>
+        <option value="org">Organelle</option>
+      </select>
+    </div>
+  </div>
+  <div id="recBox" style="padding:14px;background:var(--c-bg-alt);border-radius:8px;border-left:4px solid var(--c-accent)"></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作程式碼" data-en="HANDS-ON CODE">實作程式碼</div>
+<h2 data-zh="三、三種典型 pipeline" data-en="III. Three Typical Pipelines">三、三種典型 pipeline</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'c1')">Cellpose-SAM</button><button class="code-tab-btn" onclick="switchTab(this,'c2')">StarDist 2D</button><button class="code-tab-btn" onclick="switchTab(this,'c3')">SAM 2 video</button></div>
+<div class="code-tab-content active" id="c1"><pre><span class="comment"># Cellpose-SAM — generalist segmentation</span>
+<span class="comment"># pip install cellpose-sam</span>
+<span class="kw">from</span> cellpose_sam <span class="kw">import</span> models
+<span class="kw">import</span> tifffile, numpy <span class="kw">as</span> np
+
+img = tifffile.imread(<span class="str">"colony_brightfield.tif"</span>)   <span class="comment"># H,W or H,W,C</span>
+mdl = models.CellposeSAM(gpu=<span class="kw">True</span>)
+
+masks, flows, styles = mdl.eval(
+    img, diameter=<span class="kw">None</span>,           <span class="comment"># auto-estimate</span>
+    flow_threshold=<span class="num">0.4</span>,
+    cellprob_threshold=<span class="num">0.0</span>)
+
+<span class="func">print</span>(<span class="str">f"Found {masks.max()} cells"</span>)
+<span class="comment"># masks: int array, 0 = background, 1..N = cell IDs</span></pre></div>
+<div class="code-tab-content" id="c2"><pre><span class="comment"># StarDist 2D — H&amp;E or IF nuclei</span>
+<span class="comment"># pip install stardist</span>
+<span class="kw">from</span> stardist.models <span class="kw">import</span> StarDist2D
+<span class="kw">from</span> csbdeep.utils <span class="kw">import</span> normalize
+<span class="kw">import</span> tifffile
+
+mdl = StarDist2D.from_pretrained(<span class="str">"2D_versatile_he"</span>)
+
+img = tifffile.imread(<span class="str">"tumor_HE.tif"</span>)
+img_n = normalize(img, <span class="num">1</span>, <span class="num">99.8</span>, axis=(<span class="num">0</span>,<span class="num">1</span>,<span class="num">2</span>))
+
+labels, details = mdl.predict_instances(
+    img_n, prob_thresh=<span class="num">0.5</span>, nms_thresh=<span class="num">0.4</span>)
+
+<span class="func">print</span>(<span class="str">f"Nuclei: {labels.max()}"</span>)
+<span class="comment"># details['coord'] = polygon vertices per nucleus</span></pre></div>
+<div class="code-tab-content" id="c3"><pre><span class="comment"># SAM 2 — track cells across video frames</span>
+<span class="comment"># pip install sam2</span>
+<span class="kw">from</span> sam2.build_sam <span class="kw">import</span> build_sam2_video_predictor
+<span class="kw">import</span> torch
+
+predictor = build_sam2_video_predictor(
+    config_file=<span class="str">"sam2_hiera_l.yaml"</span>,
+    ckpt_path=<span class="str">"sam2_hiera_large.pt"</span>)
+
+state = predictor.init_state(video_path=<span class="str">"timelapse/"</span>)
+
+<span class="comment"># Click one cell on frame 0; SAM 2 propagates the mask</span>
+predictor.add_new_points(state, frame_idx=<span class="num">0</span>, obj_id=<span class="num">1</span>,
+    points=[[<span class="num">128</span>, <span class="num">128</span>]], labels=[<span class="num">1</span>])
+
+<span class="kw">for</span> idx, ids, masks <span class="kw">in</span> predictor.propagate_in_video(state):
+    save_mask(idx, masks)        <span class="comment"># full track through video</span></pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工具比較" data-en="TOOL COMPARISON">工具比較</div>
+<h2 data-zh="四、5 工具速查表" data-en="IV. Five-Tool Cheat Sheet">四、5 工具速查表</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="工具" data-en="Tool">工具</th><th data-zh="適用 modality" data-en="Modality">適用 modality</th><th data-zh="分割類型" data-en="Segmentation type">分割類型</th><th data-zh="GPU 需求" data-en="GPU">GPU 需求</th><th data-zh="整合性" data-en="Integration">整合性</th></tr></thead>
+<tbody>
+<tr><td>Cellpose-SAM</td><td data-zh="brightfield / fluorescence 通用" data-en="brightfield / fluorescence (generalist)">brightfield / fluorescence 通用</td><td data-zh="whole cell / nuclei" data-en="whole cell / nuclei">whole cell / nuclei</td><td data-zh="中（8 GB+）" data-en="Med (8 GB+)">中（8 GB+）</td><td>Napari, CellProfiler</td></tr>
+<tr><td>StarDist</td><td>H&amp;E, IF</td><td data-zh="nuclei（star-convex）" data-en="nuclei (star-convex)">nuclei（star-convex）</td><td data-zh="低（4 GB）" data-en="Low (4 GB)">低（4 GB）</td><td>QuPath, Fiji, Napari</td></tr>
+<tr><td>SAM 2</td><td data-zh="影片 / 多幀" data-en="video / multi-frame">影片 / 多幀</td><td data-zh="prompt-based 任意物件" data-en="prompt-based any object">prompt-based 任意物件</td><td data-zh="高（16 GB+）" data-en="High (16 GB+)">高（16 GB+）</td><td>Napari plugin</td></tr>
+<tr><td>CellSAM</td><td data-zh="fluorescence, 擁擠細胞" data-en="fluorescence, dense fields">fluorescence, 擁擠細胞</td><td>whole cell</td><td data-zh="中–高" data-en="Med–high">中–高</td><td>deepImageJ, Napari</td></tr>
+<tr><td>BioImage Model Zoo</td><td data-zh="all（社群上傳）" data-en="all (community)">all（社群上傳）</td><td data-zh="all" data-en="all">all</td><td data-zh="依模型而定" data-en="Varies">依模型而定</td><td data-zh="全平台" data-en="All platforms">全平台</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>常見坑：</strong>(1) 訓練資料偏 H&amp;E / 標準染色，IHC / IF 多色情境仍可能需 fine-tune；(2) WSI 等級影像（>10 GB）需要 tile 處理；(3) Z-stack 通常要逐層分割再 stitch；(4) 即使 Cellpose-SAM 通用，仍須抽 20–50 張人工標註做 sanity check。</span>
+<span data-lang="en"><strong>Common pitfalls:</strong> (1) Training data is biased to H&amp;E / standard stains — IHC / IF multi-colour may still need fine-tune; (2) WSI scale (>10 GB) needs tiling; (3) Z-stacks usually segment per slice then stitch; (4) Even generalist Cellpose-SAM needs 20–50 hand-labels for a sanity check.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工作流" data-en="WORKFLOW">工作流</div>
+<h2 data-zh="五、典型生物影像 AI 流程" data-en="V. A Typical Bioimage AI Pipeline">五、典型生物影像 AI 流程</h2>
+<div class="workflow">
+  <div class="workflow-step" data-step="1"><h4 data-zh="① 載入 + QC" data-en="① Load + QC">① 載入 + QC</h4>
+  <div data-lang="zh"><p>用 Napari / Fiji 開影像；檢查 channel order、scale (µm/px)、有無 artifact。bad data in → bad mask out。</p></div>
+  <div data-lang="en"><p>Open with Napari / Fiji; verify channel order, scale (µm/px), artifacts. Bad data in → bad mask out.</p></div>
+  </div>
+  <div class="workflow-step" data-step="2"><h4 data-zh="② 模型選擇 + 預測" data-en="② Pick model + predict">② 模型選擇 + 預測</h4>
+  <div data-lang="zh"><p>根據 modality × target 從 bioimage.io 抓模型；先在 1–2 張影像試跑、看遮罩疊圖合不合理。</p></div>
+  <div data-lang="en"><p>Pick a model from bioimage.io by modality × target; test on 1–2 images and overlay masks visually.</p></div>
+  </div>
+  <div class="workflow-step" data-step="3"><h4 data-zh="③ 量化 + 統計" data-en="③ Quantify + stats">③ 量化 + 統計</h4>
+  <div data-lang="zh"><p>用 scikit-image / CellProfiler 抽 features：面積、周長、intensity；輸出 CSV 進 R / pandas 做 group comparison。</p></div>
+  <div data-lang="en"><p>Extract features with scikit-image / CellProfiler: area, perimeter, intensity; export CSV → R / pandas for group comparisons.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- ===== Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：Cellpose-SAM 從 0.78 拉到 0.91、SAM 2 追蹤 200 cells × 100 frames" data-en="Two deeper cases: Cellpose-SAM lifts IoU 0.78→0.91 and SAM 2 tracks 200 cells across 100 frames">兩個深入案例：Cellpose-SAM 從 0.78 拉到 0.91、SAM 2 追蹤 200 cells × 100 frames</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🧫</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：Cellpose-SAM 用 SAM ViT-H backbone 把 fluorescence cell segmentation IoU 從 0.78 拉到 0.91</h4>
+<p>2025 年 Carsen Stringer 團隊在 bioRxiv (2025.04.28.651001) 公開 Cellpose-SAM：他們把原版 Cellpose 的 U-Net backbone 換成 Meta SAM 的 ViT-H（630M 參數，預訓於 SA-1B 1B masks），其他流程（flow field 預測、cellprob 邊界、watershed-like post-processing）保留。在 LIVECell 與 TissueNet benchmark 上，<strong>fluorescence cell segmentation 的 IoU 從原版 Cellpose 2.0 的 0.78 提升到 0.91</strong>；對於「人類專家 vs 人類專家」的 inter-rater IoU 約 0.86，意味著 Cellpose-SAM <strong>已比兩位人類專家彼此一致還準</strong>。技術上關鍵有三：(1) SAM ViT-H 在 SA-1B 上學到的 generic object boundary prior 比 ImageNet pretrained U-Net 強得多；(2) ViT 的 global attention 對「擁擠細胞 / 大尺寸變化」效果更好；(3) Cellpose 的 flow-field decoder 對 SAM feature 仍 transfer 得很順。<strong>啟示</strong>：generic foundation backbone（SAM、DINOv2）+ domain-specific decoder 是 2025–2026 生物影像 AI 的標準範式；從零訓 backbone 在多數情境已不划算。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: Cellpose-SAM with a SAM ViT-H backbone lifts fluorescence cell IoU from 0.78 to 0.91</h4>
+<p>In 2025 the Carsen Stringer team published Cellpose-SAM on bioRxiv (2025.04.28.651001): they swapped Cellpose's U-Net backbone for Meta SAM's ViT-H (630M params, pretrained on SA-1B / 1B masks) while keeping the rest of the pipeline (flow-field prediction, cellprob boundary, watershed-like post-processing). On LIVECell and TissueNet benchmarks, <strong>fluorescence cell segmentation IoU jumped from Cellpose 2.0's 0.78 to 0.91</strong>; human-vs-human inter-rater IoU is ~0.86, meaning Cellpose-SAM is <strong>more consistent with consensus than two human experts are with each other</strong>. Three technical keys: (1) SAM ViT-H's generic object-boundary prior from SA-1B beats ImageNet-pretrained U-Net by a wide margin; (2) ViT's global attention handles dense fields and large size variation better; (3) Cellpose's flow-field decoder transfers smoothly from SAM features. <strong>The lesson</strong>: "generic foundation backbone (SAM, DINOv2) + domain-specific decoder" is the standard paradigm for 2025–2026 bioimage AI; training a backbone from scratch is usually no longer worth it.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🎥</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：SAM 2 在 lightsheet developmental movie 自動追蹤 200 cells × 100 frames</h4>
+<p>2025 年某 zebrafish 發育生物學 lab 想分析 lightsheet 顯微鏡拍下的 100 幀 time-lapse（4D：x, y, z, t），追蹤胚胎發育過程中 ~200 個神經元前體細胞的 lineage。傳統流程：用 TrackMate 或自製 Hungarian tracker，每個 cell 需 1–2 hr 人工修正；200 cells × 100 frames 至少 100 工時。他們改用 SAM 2 video predictor：<strong>只在 frame 0 click 200 個 cell 中心點（約 15 分鐘）</strong>，模型用 memory attention 把 mask 自動 propagate 到所有後續 frames，輸出每個 cell 的時序 mask 序列。比對人工 ground truth：自動 track 在 95 / 100 frames 上 IoU &gt; 0.7（細胞發生分裂或被擋住時偶爾掉鏈），總共節省約 80% 人工時間。不足之處：(a) 細胞分裂時 SAM 2 不會自動建立新 lineage（仍需 manual split annotation）；(b) 嚴重 occlusion 時 mask drift；(c) GPU memory ~16 GB 才跑得順。<strong>啟示</strong>：SAM 2 把「video 細胞追蹤」從 PhD-level 課題降到 undergraduate 可勝任；但 cell division、occlusion 等生物特定情境仍需人工介入或專用 tracker（如 TrackPy、btrack）配合。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: SAM 2 auto-tracks 200 cells across 100 frames in a lightsheet developmental movie</h4>
+<p>In 2025 a zebrafish developmental biology lab wanted to analyse a lightsheet movie of 100 frames (4D: x, y, z, t) and track ~200 neural progenitor lineages through embryonic development. Classical pipeline: TrackMate or a custom Hungarian tracker, with 1–2 hr of manual correction per cell — 200 × 100 = ~100 person-hours. They switched to the SAM 2 video predictor: <strong>just click 200 cell centres on frame 0 (~15 min)</strong>, and memory attention propagates masks through every subsequent frame, producing per-cell mask time series. Against manual ground truth: automatic tracks hit IoU &gt;0.7 on 95/100 frames (occasional drops on divisions or occlusions), saving ~80% of person-hours. Caveats: (a) SAM 2 doesn't auto-spawn new lineages on division (manual split annotation still needed); (b) severe occlusion causes mask drift; (c) ~16 GB GPU memory required. <strong>The lesson</strong>: SAM 2 turned "video cell tracking" from a PhD-level project into something an undergraduate can tackle; but biology-specific phenomena like division and occlusion still need human intervention or a dedicated tracker (TrackPy, btrack) in the loop.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="新手做生物影像 AI 最常踩的五個坑" data-en="Five common pitfalls when doing bioimage AI">新手做生物影像 AI 最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：在 IHC 直接用 H&amp;E pretrain 的 model</strong><br>
+為什麼錯：H&amp;E 染色色彩（紫紅 + 粉紅）與 IHC（棕色 DAB + 藍色 hematoxylin）光譜完全不同。StarDist <code>2D_versatile_he</code> 在 H&amp;E 上 SOTA，但拿到 IHC 上 IoU 通常從 0.85 降到 0.5–0.65，因為 IHC 的 chromatic distribution 是 OOD（out-of-distribution）。<br>
+正確做法：(a) 找 IHC 專用 pretrained model（QuPath、HoVer-Net、CellViT）；(b) 若沒有，retrain / fine-tune Cellpose 或 StarDist 在 50–200 張 IHC 標註上，通常一張 24GB GPU 一晚可完成。事前用 ColorConvolution / Macenko stain deconvolution 也可緩解色差。</div>
+<div data-lang="en"><strong>Pitfall 1: Using an H&amp;E-pretrained model on IHC directly</strong><br>
+Why wrong: H&amp;E (magenta + pink) and IHC (brown DAB + blue hematoxylin) have entirely different chromatic profiles. StarDist <code>2D_versatile_he</code> is SOTA on H&amp;E but typically drops from IoU 0.85 to 0.5–0.65 on IHC because the chromatic distribution is OOD.<br>
+Fix: (a) use an IHC-specific pretrained model (QuPath, HoVer-Net, CellViT); (b) otherwise retrain / fine-tune Cellpose or StarDist on 50–200 IHC annotations — typically one night on a 24GB GPU. Pre-processing with Color Convolution / Macenko stain deconvolution also helps.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：3D 影像沒做 Z-stack 校正就分割</strong><br>
+為什麼錯：confocal / lightsheet 的 Z-stack 通常有 anisotropic voxel（XY 0.2 µm、Z 1 µm）、illumination drop along Z（深層訊號弱）、refractive index mismatch 造成的軸向偏移。直接用 2D model 跑每層 → 用 watershed stitch 時，會出現 ghost cells、層間錯位、過度合併等問題。<br>
+正確做法：(a) 先做 z-attenuation correction（如 BaSiC、CIDRE）；(b) 用 Cellpose 3D 模式或 StarDist 3D（直接 3D tensor 推論）；(c) 對 lightsheet 多視角資料，先 fusion 再分割（BigStitcher → Cellpose）。</div>
+<div data-lang="en"><strong>Pitfall 2: Segmenting 3D images without Z-stack correction</strong><br>
+Why wrong: confocal / lightsheet Z-stacks have anisotropic voxels (XY 0.2 µm, Z 1 µm), illumination drop along Z (weak signal deep in), and refractive-index-mismatch axial shifts. Running a 2D model per slice and stitching with watershed produces ghost cells, inter-slice misregistration, and over-merging.<br>
+Fix: (a) z-attenuation correction (BaSiC, CIDRE) first; (b) use Cellpose 3D or StarDist 3D on the full 3D tensor; (c) for multi-view lightsheet, fuse before segmenting (BigStitcher → Cellpose).</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：把 instance segmentation 當 semantic 用</strong><br>
+為什麼錯：U-Net 等 semantic segmentation 模型輸出 binary mask（cell vs background），<strong>不分 cell ID</strong>。新手常對 binary mask 直接 <code>connected_components</code> 標 instance，但密集細胞時相鄰 cell 被連成一塊，導致細胞數嚴重低估（典型 -20% to -50%）。<br>
+正確做法：需要 cell counting / per-cell feature 時，必選 instance segmentation 模型（Cellpose、StarDist、CellSAM）。若手上只有 semantic mask，需先做 distance transform + watershed 或 marker-controlled watershed 才能分離 instance。</div>
+<div data-lang="en"><strong>Pitfall 3: Treating instance segmentation as semantic</strong><br>
+Why wrong: U-Net-style semantic models output a binary mask (cell vs background) with <strong>no cell IDs</strong>. Beginners often <code>connected_components</code> on a binary mask, but in dense fields adjacent cells get merged — undercounting by 20–50%.<br>
+Fix: when you need cell counts or per-cell features, use an instance segmentation model (Cellpose, StarDist, CellSAM). If you only have a semantic mask, separate instances first with distance transform + watershed or marker-controlled watershed.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：不調整 SAM 的 prompt point 就相信結果</strong><br>
+為什麼錯：SAM 的輸出對 prompt 極敏感。同一張影像，prompt point 在 cell 中心 → 完美 mask；prompt 偏到 cell 邊緣 → 模型可能只圈一半、或圈到鄰居；prompt 點落在背景 → 模型可能輸出整片背景 mask。SAM 2 在 video 上的 mask drift 也常源於初始 prompt 不夠精確。<br>
+正確做法：(a) 用 detector（CellFinder、StarDist）先給高品質 box / point prompt（CellSAM 路徑）；(b) 對手動 prompt，prompt point 越靠近 cell centroid 越穩；(c) 使用 SAM 的 multi-mask output（每個 prompt 輸出 3 個 mask 候選）+ confidence score 選最好的；(d) 對重要結果，always overlay 視覺檢查。</div>
+<div data-lang="en"><strong>Pitfall 4: Trusting SAM without tuning prompt points</strong><br>
+Why wrong: SAM is highly prompt-sensitive. On the same image, a prompt at the cell centre → perfect mask; near the edge → only half-cell or includes neighbour; on background → whole-background mask. SAM 2 video drift often traces to imprecise initial prompts.<br>
+Fix: (a) feed high-quality box / point prompts from a detector (CellFinder, StarDist) — the CellSAM route; (b) for manual prompts, place the point near the centroid; (c) use SAM's multi-mask output (3 mask candidates per prompt) + confidence score to pick the best; (d) always overlay visually on important results.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：GPU memory 不足卻硬跑全圖 → 邊界 artifact</strong><br>
+為什麼錯：WSI（whole-slide image）動輒 100,000 × 100,000 pixel，10–20 GB。新手對 8 GB GPU 想一次處理全圖，被迫 downsample 4–8 倍——導致小 nuclei 完全消失。或者強行 tile 但不設 overlap，tile 邊緣的細胞被切兩半，post-process 又無法合併，最終影像邊界出現假 fragments。<br>
+正確做法：用 tile-based inference 並設 10–20% overlap，post-process 用 NMS（non-max suppression）或 mask merging 重組跨 tile 邊界的物件。QuPath、HoVer-Net 都內建這種 tile-stitching 流程。對 WSI，推薦 Cellpose 的 <code>resize</code> 模式或 StarDist 的 block-wise predict。</div>
+<div data-lang="en"><strong>Pitfall 5: Forcing full-image inference on insufficient GPU → boundary artefacts</strong><br>
+Why wrong: WSIs (whole-slide images) are 100,000 × 100,000 px, 10–20 GB. Beginners on 8 GB GPUs often downsample 4–8× to fit — small nuclei disappear entirely. Or they tile without overlap, cells at tile borders get cut in half, post-processing can't merge them, and false fragments accumulate at boundaries.<br>
+Fix: tile-based inference with 10–20% overlap, then post-process with NMS or mask merging to reassemble cross-tile objects. QuPath and HoVer-Net include tile-stitching pipelines. For WSI, use Cellpose's <code>resize</code> mode or StarDist's block-wise predict.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：SAM ViT 架構、Cellpose 流場、ImageJ + Python 整合、JUMP-Cell Painting" data-en="Advanced: SAM ViT, Cellpose flow fields, ImageJ + Python, JUMP-Cell Painting">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 SAM ViT 架構、Cellpose 流場演算法、ImageJ macro 與 Python pipeline 整合、JUMP-Cell Painting benchmark" data-en="🔬 SAM ViT architecture, Cellpose flow-field algorithm, ImageJ macro + Python integration, JUMP-Cell Painting benchmark">🔬 SAM ViT 架構、Cellpose 流場演算法、ImageJ + Python pipeline 整合、JUMP-Cell Painting benchmark</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① SAM ViT 架構（Kirillov 2023）。</strong>SAM 由三部分組成：(a) <strong>Image Encoder</strong>——MAE pretrained ViT-H/L/B（632M / 308M / 86M 參數），輸入 1024×1024 image → 64×64×256 image embedding；計算量大但每張圖只跑一次（可 cache）。(b) <strong>Prompt Encoder</strong>——把 point / box / mask 編成 256-d embedding，sparse（point/box）走 positional encoding，dense（mask）走 conv embedding。(c) <strong>Mask Decoder</strong>——two-way attention transformer (~4M 參數)，融合 image + prompt embedding，輸出 3 個 mask + IoU prediction，<strong>輕量、可即時互動</strong>。這種設計讓你可以「encode 一次、prompt 無限次」，是 SAM 在互動式工具（Napari、ImageJ）能用的關鍵。</p>
+<p><strong>② Cellpose 流場演算法（Stringer 2021）。</strong>傳統 instance segmentation 用 anchor / box；Cellpose 改用「flow field」：對每個 pixel 預測一個 2D 向量，指向該細胞中心。訓練時 ground truth flow 由 ground-truth mask 經 heat diffusion 計算（向 mask center 流動）。Inference 時：(a) 預測 flow + cellprob；(b) 對每個 pixel 跑「Euler integration」沿著 flow 走 200 步；(c) 終點匯聚到 mask centers 形成 cluster——這天然產生 instance ID。優勢：對任意形狀 / 拓撲（細長、彎曲、有孔）都 work，不像 StarDist 限於 star-convex。Cellpose-SAM 保留這個 decoder，只把 backbone 換成 SAM ViT。</p>
+<p><strong>③ ImageJ macro + Python pipeline 整合。</strong>實務上常用組合：(a) <strong>Fiji + Cellpose plugin</strong>——Fiji 的 BIOP Cellpose wrapper 可在 macro 中呼叫 Python conda env 的 Cellpose，輸入 ROI 輸出 mask；(b) <strong>QuPath + StarDist extension</strong>——QuPath 的 Groovy script 可直接呼叫 StarDist pretrained model，適合病理 WSI；(c) <strong>Napari + scikit-image</strong>——pure Python，可載 Cellpose、StarDist、SAM 2 plugin，互動式 QC。pipeline 設計建議：QC 與標註用 GUI（Napari / QuPath），batch inference 用 CLI / Python script，最終 feature extraction 走 scikit-image / CellProfiler 並導 CSV 進 R 做統計。Schmid 2024 (<em>Nat Methods</em>) 的 BioImage Model Zoo 文章詳細介紹這種跨平台流程。</p>
+<p><strong>④ JUMP-Cell Painting benchmark（Chandrasekaran 2023 <em>Nat Methods</em>）。</strong>JUMP（Joint Undertaking in Morphological Profiling）是 Broad Institute 領銜的 cell painting 大型 benchmark：12 個 cell line × 116,750 chemical perturbations × 6 fluorescence channels（Hoechst, ConA, SYTO14, MitoTracker, phalloidin, WGA），3.5 億 cell images。標準流程：CellProfiler 抽 ~1,000 features per cell → average per perturbation → mean Average Precision (mAP) 評估「同 MoA 化合物是否聚在一起」。是評估 cell painting AI 模型（如 DINO4Cells、Cell Painting Gallery）的 de facto standard。最新挑戰：foundation model（CellSAM + DINOv2 embedding）能否在 JUMP 上 zero-shot 比 CellProfiler hand-crafted features 強？2025 多項初步結果顯示 foundation embedding 在「rare MoA discovery」上有 1.5–2× 提升。</p>
+<p><strong>⑤ 進階參考。</strong>Stringer et al. 2021 <em>Nat Methods</em> (Cellpose) · Pachitariu &amp; Stringer 2022 <em>Nat Methods</em> (Cellpose 2) · 2025 bioRxiv Cellpose-SAM · Schmidt et al. 2018 MICCAI (StarDist) · Kirillov et al. 2023 ICCV (SAM) · Ravi et al. 2024 (SAM 2) · Israel et al. 2025 <em>Nat Methods</em> (CellSAM) · Schmid et al. 2024 <em>Nat Methods</em> (BioImage Model Zoo) · Chandrasekaran et al. 2023 <em>Nat Methods</em> (JUMP-Cell Painting) · Ouyang et al. 2024 (DINO4Cells).</p>
+</div>
+<div data-lang="en">
+<p><strong>① SAM ViT architecture (Kirillov 2023).</strong> SAM has three parts: (a) <strong>Image Encoder</strong> — MAE-pretrained ViT-H/L/B (632M / 308M / 86M params), 1024×1024 input → 64×64×256 embedding; expensive but runs once per image (cacheable). (b) <strong>Prompt Encoder</strong> — embeds point / box / mask into 256-d; sparse (point/box) uses positional encoding, dense (mask) uses conv embedding. (c) <strong>Mask Decoder</strong> — a two-way attention transformer (~4M params) fusing image + prompt embeddings, outputting 3 masks + IoU predictions — <strong>lightweight and real-time</strong>. This design lets you "encode once, prompt infinitely", which is why SAM works in interactive tools like Napari and ImageJ.</p>
+<p><strong>② Cellpose flow-field algorithm (Stringer 2021).</strong> Classical instance seg uses anchors / boxes; Cellpose instead predicts a "flow field" — a 2D vector at each pixel pointing toward its cell centre. Ground-truth flow is computed from ground-truth masks via heat diffusion (flowing toward mask centres). At inference: (a) predict flow + cellprob; (b) for each pixel, run Euler integration 200 steps along the flow; (c) endpoints converge to mask centres, forming clusters that naturally yield instance IDs. Advantages: works on arbitrary shapes / topologies (elongated, curved, with holes) — unlike StarDist which is restricted to star-convex. Cellpose-SAM keeps this decoder, only swapping the backbone for SAM ViT.</p>
+<p><strong>③ ImageJ macro + Python pipeline integration.</strong> Common practical combos: (a) <strong>Fiji + Cellpose plugin</strong> — Fiji's BIOP Cellpose wrapper calls a Python conda env from a macro, ROI in → mask out; (b) <strong>QuPath + StarDist extension</strong> — Groovy scripts call StarDist pretrained models, great for pathology WSI; (c) <strong>Napari + scikit-image</strong> — pure Python, can load Cellpose / StarDist / SAM 2 plugins, interactive QC. Pipeline tip: GUI (Napari / QuPath) for QC and annotation; CLI / Python script for batch inference; scikit-image / CellProfiler for feature extraction and CSV export into R for statistics. Schmid 2024 (<em>Nat Methods</em>) on the BioImage Model Zoo describes this cross-platform flow in detail.</p>
+<p><strong>④ JUMP-Cell Painting benchmark (Chandrasekaran 2023 <em>Nat Methods</em>).</strong> JUMP (Joint Undertaking in Morphological Profiling) is a Broad-led large-scale cell painting benchmark: 12 cell lines × 116,750 chemical perturbations × 6 fluorescence channels (Hoechst, ConA, SYTO14, MitoTracker, phalloidin, WGA), 350M cell images. Standard pipeline: CellProfiler extracts ~1,000 features per cell → averaged per perturbation → mean Average Precision (mAP) measures whether same-MoA compounds cluster. It's the de facto standard for evaluating cell-painting AI (DINO4Cells, Cell Painting Gallery). The current question: can foundation models (CellSAM + DINOv2 embedding) zero-shot beat hand-crafted CellProfiler features on JUMP? 2025 preliminary results show foundation embeddings offer 1.5–2× gains on rare-MoA discovery.</p>
+<p><strong>⑤ Key references.</strong> Stringer et al. 2021 <em>Nat Methods</em> (Cellpose) · Pachitariu &amp; Stringer 2022 <em>Nat Methods</em> (Cellpose 2) · 2025 bioRxiv Cellpose-SAM · Schmidt et al. 2018 MICCAI (StarDist) · Kirillov et al. 2023 ICCV (SAM) · Ravi et al. 2024 (SAM 2) · Israel et al. 2025 <em>Nat Methods</em> (CellSAM) · Schmid et al. 2024 <em>Nat Methods</em> (BioImage Model Zoo) · Chandrasekaran et al. 2023 <em>Nat Methods</em> (JUMP-Cell Painting) · Ouyang et al. 2024 (DINO4Cells).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: Foundation segmentation model 是否會讓 traditional Cellpose 過時？</h4>
+<p>2025 年 Cellpose-SAM 把 backbone 換成 SAM ViT，原版 CNN-based Cellpose 看似「過時」。但某 PI 主張：「對 8 GB GPU lab、edge device、嵌入式顯微鏡，原版 Cellpose 仍是首選；foundation model 不是萬靈丹」；另一 PI 反對：「foundation 已經是物美價廉，學生不該再學 CNN-based 流程」。<strong>請思考</strong>：訓練學生時該不該先學 U-Net / Cellpose CNN，再學 foundation？hardware-constrained 環境（field hospital、低收入地區）的 AI 影像分析該選什麼？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: Will foundation segmentation models make traditional Cellpose obsolete?</h4>
+<p>The 2025 Cellpose-SAM swap to SAM ViT makes CNN Cellpose look "outdated". One PI argues: "for 8 GB GPU labs, edge devices, embedded microscopy, classical Cellpose is still the right pick — foundation models aren't universal"; another counters: "foundation is already cheap and good, students shouldn't waste time on CNN-based pipelines". <strong>Consider</strong>: should students learn U-Net / Cellpose CNN before foundation? What should hardware-constrained settings (field hospitals, low-income areas) choose for image-analysis AI?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: Annotation cost 該由誰承擔？</h4>
+<p>Foundation model 的 fine-tune 仍需 50–500 張人工標註，這項工作往往落在博士生 / RA 上，每張 dense field 可能要 30 分鐘。某 lab 提議用 crowdsourcing（如 Quanti.us）或 LLM-assisted annotation 加速；另一 lab 反對：「unskilled annotators 會引入 systematic error，不該為了省錢犧牲品質」。<strong>請思考</strong>：annotation 該被視為 research labour 還是 service work？該如何在 author list 中認可 annotation 貢獻？AI-assisted annotation 在學術 publication 中該如何揭露？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: Who should bear the annotation cost?</h4>
+<p>Even foundation-model fine-tuning needs 50–500 human-labelled images, work usually falling on PhDs / RAs at ~30 min per dense field. One lab proposes crowdsourcing (Quanti.us) or LLM-assisted annotation; another resists: "unskilled annotators introduce systematic error, don't sacrifice quality for cost". <strong>Consider</strong>: is annotation research labour or service work? How should annotation contributions show up on author lists? How should AI-assisted annotation be disclosed in publications?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: Cellpose-SAM 「超越人類間一致性」該如何解讀？</h4>
+<p>2025 Cellpose-SAM 報告 IoU 比 human-human inter-rater 高 5pp。某團隊主張這意味著「AI 已成為新的 ground truth provider」；另一團隊反對：「inter-rater 一致性低本來就是 annotation 困難的訊號，AI 只是學到 trainer 的 consensus，不是真實生物」。<strong>請思考</strong>：「超越人類一致性」是 AI 進步的證明還是 benchmark 設計的問題？該如何設計更可靠的 ground truth？該不該強制 multi-rater + adjudication？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: How should we interpret Cellpose-SAM "beating human inter-rater agreement"?</h4>
+<p>2025 Cellpose-SAM reports IoU 5pp higher than human-human inter-rater. One camp argues this means "AI is now the new ground truth provider"; another disagrees: "low inter-rater agreement is itself a signal that annotation is hard; the model just learns trainer consensus, not biological truth". <strong>Consider</strong>: is "beating human agreement" evidence of AI progress or a benchmark design flaw? How would you design more reliable ground truth? Should multi-rater + adjudication be mandatory?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: 影像 AI 模型應否強制公開 training data？</h4>
+<p>Cellpose-SAM、CellSAM 公開訓練資料 list，但某些商用模型（Aiforia、PathAI）不公開 training set。某學者主張：「凡用於 publication 的影像 AI 必須公開 training data 或至少 dataset registry，否則無法重現」；某公司反對：「training data 是核心商業資產，公開等同放棄競爭優勢」。<strong>請思考</strong>：學術 vs 商業該用不同標準嗎？「至少公開 dataset list 與 size distribution」是否合理折衷？non-public training data 的論文該被頂級期刊接受嗎？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Should image AI models be required to disclose training data?</h4>
+<p>Cellpose-SAM and CellSAM publish their training data lists; commercial models (Aiforia, PathAI) don't. One scholar argues: "any image AI used in publication must release training data or at least a dataset registry — otherwise it's not reproducible"; a company counters: "training data is core commercial asset, releasing it kills the moat". <strong>Consider</strong>: should academia and industry follow different standards? Is "at least publish dataset list + size distribution" a reasonable middle ground? Should top journals accept papers using non-public training data?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">1. Cellpose-SAM 相對於原版 Cellpose 的關鍵改進？</p>
+<p data-lang="en">1. Key improvement of Cellpose-SAM over original Cellpose?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 改用 R 語言重寫</span><span data-lang="en">A. Rewritten in R</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 只支援 H&amp;E</span><span data-lang="en">B. Only supports H&amp;E</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 用 SAM transformer 取代 CNN backbone，效能超越人類間一致性</span><span data-lang="en">C. Replaced CNN backbone with SAM transformer; exceeds human inter-rater agreement</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 不需要 GPU</span><span data-lang="en">D. No GPU needed</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="0">
+<p data-lang="zh">2. 你要做活細胞 time-lapse 細胞追蹤，最適合的 2026 工具？</p>
+<p data-lang="en">2. Best 2026 tool for live-cell time-lapse tracking?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. SAM 2（支援 video / 多幀傳播）</span><span data-lang="en">A. SAM 2 (supports video / multi-frame propagation)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. StarDist（star-convex polygon，靜態 nuclei）</span><span data-lang="en">B. StarDist (star-convex polygon, static nuclei)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. PubMedBERT</span><span data-lang="en">C. PubMedBERT</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. AlphaFold 3</span><span data-lang="en">D. AlphaFold 3</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh">3. BioImage Model Zoo (bioimage.io) 的核心價值？</p>
+<p data-lang="en">3. Core value of the BioImage Model Zoo (bioimage.io)?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 提供無限免費 GPU</span><span data-lang="en">A. Free unlimited GPU</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 自動撰寫 paper</span><span data-lang="en">B. Auto-writes papers</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 只接受 H&amp;E 影像</span><span data-lang="en">C. Only accepts H&amp;E images</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 社群共享 + 跨平台互通（ilastik / QuPath / Napari / CellProfiler / deepImageJ）</span><span data-lang="en">D. Community sharing + cross-platform interop (ilastik / QuPath / Napari / CellProfiler / deepImageJ)</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你的 lab 想分析腫瘤 IHC 切片，目標：分割 CD8+ T cells（棕色 DAB + 藍色 hematoxylin counterstain）。同事建議直接用 StarDist <code>2D_versatile_he</code> pretrained model；你試跑後發現 IoU 只有 0.58（H&amp;E 上通常 0.85+），且很多 negative cells 被誤分為 positive。你只有 6 GB GPU、約 200 張 IHC 影像可標註。最該採取的方法？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. Your lab wants to segment CD8+ T cells in tumour IHC (brown DAB + blue hematoxylin counterstain). A colleague suggests StarDist <code>2D_versatile_he</code> pretrained. You run it and get IoU 0.58 (vs ~0.85 on H&amp;E), with many negatives misclassified as positive. You have a 6 GB GPU and ~200 IHC images you can annotate. What's the right move?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 接受 0.58 結果，當作這就是 IHC 的天花板</span><span data-lang="en">A. Accept 0.58 as the IHC ceiling</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 改用 SAM 2 全圖 prompt-based 分割（更大模型應該更好）</span><span data-lang="en">B. Switch to SAM 2 whole-image prompt-based segmentation (bigger model = better)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 升級 32 GB GPU 後重跑相同 pretrained model</span><span data-lang="en">C. Upgrade to 32 GB GPU and rerun the same pretrained model</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. H&amp;E pretrained 對 IHC 是 OOD chromatic distribution；可先用 Macenko stain deconvolution 預處理，再用 200 張標註 fine-tune Cellpose 或 StarDist；或改用 IHC 專用 model（QuPath、HoVer-Net、CellViT）。6 GB 足夠單一影像 inference + 小 batch fine-tune</span><span data-lang="en">D. H&amp;E pretrained is OOD on IHC chromatic distribution; preprocess with Macenko stain deconvolution, then fine-tune Cellpose or StarDist on the 200 IHC labels; or switch to an IHC-specific model (QuPath, HoVer-Net, CellViT). 6 GB is enough for single-image inference and small-batch fine-tune</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 Cellpose 的 flow-field decoder 與 StarDist 的 star-convex polygon，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. Regarding Cellpose's flow-field decoder vs StarDist's star-convex polygon, which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 兩者完全等價，只是命名不同</span><span data-lang="en">A. They are equivalent, just named differently</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. StarDist 不能用於 nuclei；Cellpose 不能用於 cells</span><span data-lang="en">B. StarDist can't do nuclei; Cellpose can't do cells</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. Cellpose 對每個 pixel 預測一個指向 cell center 的 2D 向量，Euler integration 200 步形成 cluster，自然產生 instance ID。對任意拓撲（細長、彎曲、有孔）皆 work。StarDist 把每個 nucleus 表示成「中心點 + N 條 radial distance」的 star-convex polygon，對 convex shapes（H&amp;E nuclei）極佳但無法處理 non-convex shapes（如神經元突起）</span><span data-lang="en">C. Cellpose predicts a 2D vector at each pixel pointing to the cell centre; 200-step Euler integration converges into clusters that yield instance IDs. Works on any topology (elongated, curved, with holes). StarDist represents each nucleus as "centre + N radial distances" = star-convex polygon — excellent on convex shapes (H&amp;E nuclei) but unable to handle non-convex shapes (e.g., neuronal processes)</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. Cellpose 用 transformer，StarDist 用 RNN</span><span data-lang="en">D. Cellpose uses transformer; StarDist uses RNN</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="biomedical-llm.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 14: 生醫文本 LLM" data-en="Step 14: Biomedical Text LLMs">Step 14: 生醫文本 LLM</span></a>
+<a href="clinical-imaging.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 16: 醫療影像 Foundation 模型" data-en="Step 16: Clinical Imaging Foundation Models">Step 16: 醫療影像 Foundation 模型</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Model recommendation
+const REC={
+  'bf-nuc':{tool:'Cellpose-SAM',note_zh:'brightfield nuclei：通用模型表現最穩；prob threshold 視訊號雜訊微調。',note_en:'Brightfield nuclei: generalist model is most stable; tune cellprob_threshold for noisy images.'},
+  'bf-cell':{tool:'Cellpose-SAM',note_zh:'brightfield 整顆細胞：首選；diameter=None 自動估算。',note_en:'Brightfield whole cell: top choice; diameter=None for auto-estimate.'},
+  'bf-org':{tool:'CellSAM + manual prompt',note_zh:'brightfield organelle 通常需要 prompt-based 模型或自訓 fine-tune。',note_en:'Brightfield organelle usually needs prompt-based model or fine-tuned custom model.'},
+  'fl-nuc':{tool:'StarDist 2D (fluo)',note_zh:'fluorescence nuclei：StarDist DSB2018 model 是 SOTA。',note_en:'Fluorescence nuclei: StarDist DSB2018 model is SOTA.'},
+  'fl-cell':{tool:'Cellpose-SAM / CellSAM',note_zh:'fluo whole cell：Cellpose-SAM 通用；擁擠時用 CellSAM。',note_en:'Fluo whole cell: Cellpose-SAM by default; CellSAM for dense fields.'},
+  'fl-org':{tool:'Custom fine-tune (Napari)',note_zh:'fluo organelle 多樣，通常需用 Napari + Cellpose retrain 或 StarDist fine-tune。',note_en:'Fluo organelles vary widely — typically retrain Cellpose or fine-tune StarDist via Napari.'},
+  'he-nuc':{tool:'StarDist 2D versatile_he',note_zh:'H&E nuclei：StarDist 2D_versatile_he 是業界標準。',note_en:'H&E nuclei: StarDist 2D_versatile_he is the industry standard.'},
+  'he-cell':{tool:'Cellpose-SAM + WSI tiling',note_zh:'H&E 整顆細胞罕見需求；通常做 nuclei 即可。WSI 須 tile。',note_en:'H&E whole cell is rare — nuclei usually suffice. WSI needs tiling.'},
+  'he-org':{tool:'N/A',note_zh:'H&E organelle 通常解析度不足。',note_en:'H&E rarely resolves organelles.'},
+  'vid-nuc':{tool:'SAM 2 + StarDist prompts',note_zh:'video nuclei tracking：先 StarDist 給 frame 0 標籤，SAM 2 propagate。',note_en:'Video nuclei tracking: StarDist for frame 0, SAM 2 to propagate.'},
+  'vid-cell':{tool:'SAM 2',note_zh:'video whole-cell tracking：SAM 2 直接 prompt 第一幀即可。',note_en:'Video whole-cell tracking: SAM 2 with a click on frame 0.'},
+  'vid-org':{tool:'SAM 2 + fine-tune',note_zh:'video organelle 通常需先 fine-tune backbone。',note_en:'Video organelle usually needs fine-tuning the backbone.'}
+};
+function renderRec(){
+  const m=document.getElementById('mod').value;
+  const t=document.getElementById('tgt').value;
+  const k=m+'-'+t;
+  const r=REC[k]||{tool:'?',note_zh:'未涵蓋組合',note_en:'Combination not covered'};
+  const L=window.I18n?I18n.get():'en';
+  const note=L==='zh'?r.note_zh:r.note_en;
+  const tlabel=L==='zh'?'推薦工具':'Recommended tool';
+  document.getElementById('recBox').innerHTML='<div style="font-size:.78rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+tlabel+'</div><div style="font-size:1.2rem;font-weight:600;color:var(--c-accent);margin:6px 0">'+r.tool+'</div><div style="font-size:.9rem;line-height:1.5">'+note+'</div>';
+}
+document.getElementById('mod').addEventListener('change',renderRec);
+document.getElementById('tgt').addEventListener('change',renderRec);
+document.addEventListener('langchange',renderRec);
+document.addEventListener('DOMContentLoaded',renderRec);
+
+// Quiz
+const QF={zh:{q1_y:'Cellpose-SAM 用 SAM transformer backbone 取代 CNN，效能超越人類間一致性。',q2_y:'SAM 2 原生支援 video / 多幀分割傳播，活細胞追蹤的最佳選擇。',q3_y:'BioImage Model Zoo 的核心是模型共享 + 跨主流影像平台互通。',q4_y:'IoU 從 0.85 掉到 0.58 的根本原因是 H&E pretrained 對 IHC 是 OOD chromatic distribution（紫紅+粉紅 vs 棕色 DAB+藍色 hematoxylin）。換更大模型（B）、升級 GPU（C）、或接受現狀（A）都無解。正確流程：Macenko stain deconvolution 預處理 + 用 200 張標註 fine-tune Cellpose / StarDist，或改用 IHC-specific model（QuPath、HoVer-Net、CellViT）。6 GB 足夠 inference 與小 batch fine-tune。',q5_y:'Cellpose 流場：對每個 pixel 預測指向 cell center 的 2D 向量，Euler integration 形成 cluster 得到 instance ID，對任意拓撲皆可（包括 non-convex 神經元、有孔細胞）。StarDist star-convex polygon：每個 nucleus = 中心 + N 條 radial distance，對 convex shape（H&E nuclei）SOTA 但無法處理 non-convex shape。設計取捨：StarDist 對 nuclei 快又準，Cellpose 通用但較慢；Cellpose-SAM 用 SAM ViT backbone 同時提升精度與通用性，但 GPU 需求增加。'},en:{q1_y:'Cellpose-SAM replaces the CNN backbone with SAM transformer and exceeds human inter-rater agreement.',q2_y:'SAM 2 natively propagates masks across video frames — ideal for live-cell tracking.',q3_y:'BioImage Model Zoo is about sharing + cross-platform interop across major viewers.',q4_y:'The IoU drop from 0.85 to 0.58 comes from H&E pretrained being OOD on IHC chromatic distribution (magenta+pink vs brown DAB + blue hematoxylin). Bigger models (B), more GPU (C), or accepting it (A) don\'t fix the root cause. The right flow: Macenko stain deconvolution preprocessing + fine-tune Cellpose / StarDist on the 200 labels, or switch to an IHC-specific model (QuPath, HoVer-Net, CellViT). 6 GB is enough for inference and small-batch fine-tuning.',q5_y:'Cellpose flow field: predicts a 2D vector at each pixel toward the cell centre; Euler integration forms clusters that yield instance IDs — works on any topology (non-convex neurons, cells with holes). StarDist star-convex polygon: each nucleus = centre + N radial distances — SOTA on convex shapes (H&E nuclei) but cannot represent non-convex shapes. Trade-off: StarDist is fast and accurate on nuclei; Cellpose is general but slower; Cellpose-SAM uses a SAM ViT backbone to gain both accuracy and generality at higher GPU cost.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

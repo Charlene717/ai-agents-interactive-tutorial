@@ -1,0 +1,572 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 3: Prompt Engineering Basics — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html" class="active">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 3 / 20</div>
+<h1 data-zh="Prompt 工程基礎" data-en="Prompt Engineering Basics">Prompt 工程基礎</h1>
+<p class="subtitle" data-lang="zh">90% 的 AI 失望源於 prompt 不夠精確。掌握六大原則，你的 prompt 從「請幫我」升級為可被工程化、可重現的 specification。</p>
+<p class="subtitle" data-lang="en">Ninety percent of AI frustration comes from imprecise prompts. Master six principles and your prompts become engineerable, reproducible specifications.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="十個 prompt 工程常出現的詞" data-en="Ten terms you'll meet in prompt engineering">十個 prompt 工程常出現的詞</h2>
+<div data-lang="zh"><p>下方任何技巧名稱都不會憑空冒出；先讀完這 10 張卡片，後面所有 prompt 範例都讀得明白。</p></div>
+<div data-lang="en"><p>None of the technique names will come out of nowhere. Skim these ten cards first; every prompt example later will then read clearly.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📝</div><h4>Prompt</h4>
+<div data-lang="zh"><p>給 LLM 的<strong>輸入文字</strong>，廣義包含 system + user + history + retrieved chunks。模型對你說的「整段話」都是 prompt 一部分。</p></div>
+<div data-lang="en"><p>The <strong>input text</strong> you give an LLM. Broadly: system + user + history + retrieved chunks. Everything you "say" is part of the prompt.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚙️</div><h4>System Prompt</h4>
+<div data-lang="zh"><p>放在最前的<strong>長期身分與規則</strong>。模型會在整個對話中遵守。在 API 中是獨立欄位，Claude 用 <code>system=</code> 參數、OpenAI 用 <code>"role":"system"</code>。</p></div>
+<div data-lang="en"><p>The <strong>persistent identity + rules</strong> placed up front. Honored across the whole conversation. In APIs it's a separate field: Claude uses <code>system=</code>, OpenAI uses <code>"role":"system"</code>.</p></div>
+</div>
+<div class="card"><div class="card-icon">💬</div><h4>User Prompt</h4>
+<div data-lang="zh"><p>使用者本輪的問題/指令。是模型「直接回應」的對象。多輪對話會把 user/assistant 交錯堆疊起來成為 history。</p></div>
+<div data-lang="en"><p>The user's question or instruction for this turn — what the model directly responds to. Multi-turn chats stack user/assistant alternately as history.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎭</div><h4>Role</h4>
+<div data-lang="zh"><p>給模型分配「身份」（內分泌科醫師、生統助理教授）。能<strong>啟動領域 prior</strong>，是 6 大原則之首。</p></div>
+<div data-lang="en"><p>Assigns the model an identity (endocrinologist, biostat assistant professor). <strong>Activates domain priors</strong> — first of the six principles.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>Few-shot</h4>
+<div data-lang="zh"><p>在 prompt 中放 2–5 個「輸入 → 輸出」範例。是<strong>鎖死輸出格式</strong>最強招式；對抽取任務尤其有效。</p></div>
+<div data-lang="en"><p>Embed 2–5 input/output examples in the prompt. The <strong>strongest single move</strong> for locking output format; especially effective on extraction tasks.</p></div>
+</div>
+<div class="card"><div class="card-icon">🎲</div><h4>Zero-shot</h4>
+<div data-lang="zh"><p>不給範例，純靠指令完成任務。對<strong>強模型</strong> + 清楚 instruction 能成立；對複雜結構化任務常需 few-shot 才穩。</p></div>
+<div data-lang="en"><p>No examples — pure instruction. Works on <strong>strong models</strong> with crystal-clear instructions; complex structured tasks usually still need few-shot.</p></div>
+</div>
+<div class="card"><div class="card-icon">📐</div><h4>Output Format</h4>
+<div data-lang="zh"><p>對輸出的<strong>形態約束</strong>：長度、結構（markdown、JSON）、語言。明確規定能讓後續腳本直接 parse。</p></div>
+<div data-lang="en"><p><strong>Shape constraints</strong> on the output: length, structure (markdown, JSON), language. Lets downstream scripts parse directly.</p></div>
+</div>
+<div class="card"><div class="card-icon">🚧</div><h4>Constraint</h4>
+<div data-lang="zh"><p>「<strong>不能做什麼</strong>」的明文約束：不虛構引用、不超過 500 字、不出現 PHI。比正面 instruction 更能擋掉壞行為。</p></div>
+<div data-lang="en"><p>Explicit "<strong>what NOT to do</strong>": no fabricated citations, no exceeding 500 words, no PHI. Better at suppressing bad behaviors than positive instructions.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌡️</div><h4>Temperature</h4>
+<div data-lang="zh"><p>採樣的「<strong>隨機度旋鈕</strong>」。0 = argmax；1 = 標準 softmax；&gt;1 = 更發散。事實任務用 0.0–0.3，創意用 0.7–1.0。</p></div>
+<div data-lang="en"><p>The <strong>randomness dial</strong>. 0 = argmax; 1 = vanilla softmax; &gt;1 = more diverse. Facts 0.0–0.3, creative 0.7–1.0.</p></div>
+</div>
+<div class="card"><div class="card-icon">📊</div><h4>Top-p (nucleus)</h4>
+<div data-lang="zh"><p>另一個採樣參數：只從「累積機率 ≤ p」的 token 中採樣。<strong>跟 temperature 互補</strong>，常被同時調整。建議二選一。</p></div>
+<div data-lang="en"><p>Another sampling knob: sample only from tokens whose cumulative probability ≤ p. <strong>Complementary to temperature</strong>; usually tune one or the other.</p></div>
+</div>
+</div>
+</section>
+
+<!-- ===== Beginner intro ===== -->
+<section class="section">
+<div class="section-label" data-zh="初學者導讀" data-en="GENTLE INTRO">初學者導讀</div>
+<h2 data-zh="兩個類比直接讓你「會寫 prompt」" data-en="Two analogies that make prompt-writing intuitive">兩個類比直接讓你「會寫 prompt」</h2>
+<div data-lang="zh">
+<p><strong>類比 1：寫 prompt 就像寫實驗 protocol。</strong>你絕不會跟新進的 RA 說「幫我跑一下 western」就走人。你會寫：用哪個 cell line、收幾個 well、哪個 antibody、稀釋幾倍、什麼條件曝光多久。Prompt 也是一樣——LLM 不是「你的同事」，它是一個會嚴格按指令做事的高效助手。<strong>「指令模糊 → 結果模糊」是 prompt 的 garbage-in-garbage-out</strong>。Protocol 寫得詳細，跑出來的 western 才能 reproducible；prompt 寫得詳細，輸出才會穩定。</p>
+<p><strong>類比 2：Prompt 是「條件機率」P(output | prompt) 的條件設定。</strong>同一個 prompt 模型每次回應略有不同，這是「給定 prompt 後分佈的不同樣本」。你寫得越具體、越受約束，這個分佈越窄；同一個輸出出現的機率越高，「穩定性」就越好。<strong>Few-shot 的數學直覺</strong>就是：給範例等於告訴模型「我要的輸出長得像這些」，讓 likely 區間收緊。對統計背景的人來說，prompt engineering 是「對 likelihood 加 informative prior」的 Bayesian 操作。</p>
+</div>
+<div data-lang="en">
+<p><strong>Analogy 1: Writing a prompt is like writing a wet-lab protocol.</strong> You'd never tell a new RA "just run a Western" and leave. You write: cell line, well count, antibody, dilution, exposure time. Prompts work the same way. The LLM isn't your colleague; it's a high-efficiency assistant that follows instructions literally. <strong>"Vague instruction → vague result" is prompt-side garbage-in-garbage-out.</strong> Detailed protocols give reproducible Westerns; detailed prompts give stable outputs.</p>
+<p><strong>Analogy 2: A prompt sets the condition in P(output | prompt).</strong> Same prompt, slightly different runs — those are samples from the conditional distribution. Write more specifics and constraints, narrow that distribution, raise the probability of your target output. <strong>The math intuition for few-shot</strong>: showing examples tells the model "outputs look like these," tightening the likely region. For statisticians, prompt engineering is "adding an informative prior" in a Bayesian sense.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="把 prompt 當成 API 規格書" data-en="Treat prompts like API specs">把 prompt 當成 API 規格書</h2>
+<div data-lang="zh">
+<p>LLM 是機率性生成器，所以同一個模糊問題每次回應都會「漂移」。<strong>解決方式不是換更強的模型，是把 prompt 寫得像 API spec</strong>——明確輸入、明確輸出、明確邊界。一個好 prompt 平均能讓 GPT-5.5 / Claude Opus 4.6 的可用率從 40% 提升到 90%，這個提升通常比換 model size 更大。</p>
+<p>2026 年 prompt 工程已經有了相對穩定的「六原則」共識：<strong>Role（角色）、Context（上下文）、Task（任務）、Format（輸出格式）、Constraints（限制）、Examples（範例）</strong>。本章我們用一個真實研究情境（協助寫 grant aims）來練習從爛 prompt 升級到好 prompt。</p>
+</div>
+<div data-lang="en">
+<p>LLMs are probabilistic, so a vague question drifts each time. <strong>The fix isn't a bigger model — it's writing prompts like API specs</strong>: explicit input, explicit output, explicit boundaries. A well-crafted prompt typically lifts Claude Opus 4.6 / GPT-5.5 from ~40% useful to ~90% — bigger than upgrading model size.</p>
+<p>By 2026 the field has settled on six principles: <strong>Role, Context, Task, Format, Constraints, Examples</strong>. We'll practice on a real scenario — drafting grant aims — and walk a bad prompt up to a strong one.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>不要把 LLM 當成「能讀心的同事」。它沒有你的研究背景、不知道你給誰看、不知道你要多長。<strong>每一個被你略過的細節，都會被它用機率猜出來</strong>——而它的猜測通常是「最大眾」的版本，不是你要的。</span>
+<span data-lang="en"><strong>Core mindset:</strong> Don't treat the LLM as a colleague who reads your mind. It doesn't know your research background, audience, or desired length. <strong>Anything you skip, it guesses</strong> — and the guess is usually the most generic version, not yours.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="六大原則" data-en="SIX PRINCIPLES">六大原則</div>
+<h2 data-zh="RCTFCE：好 prompt 的六個組件" data-en="RCTFCE: the six components of a strong prompt">RCTFCE：好 prompt 的六個組件</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🎭</div><h4>Role</h4>
+<div data-lang="zh"><p>指派身分：「你是審稿經驗豐富的腫瘤學家」。讓模型啟動領域 prior。</p></div>
+<div data-lang="en"><p>Assign a persona: "You are a senior oncologist with peer-review experience." This activates domain priors.</p></div>
+</div>
+<div class="card"><div class="card-icon">🗂️</div><h4>Context</h4>
+<div data-lang="zh"><p>提供你的處境：研究領域、對象、已知資訊、限制（如：給 NIH R01）。</p></div>
+<div data-lang="en"><p>Give your situation: field, audience, what's known, constraints (e.g., for an NIH R01).</p></div>
+</div>
+<div class="card"><div class="card-icon">🎯</div><h4>Task</h4>
+<div data-lang="zh"><p>具體動詞 + 範圍：「列出 5 個 specific aims」、「比較 2 個演算法的差異」。</p></div>
+<div data-lang="en"><p>Concrete verb + scope: "list 5 specific aims", "compare two algorithms".</p></div>
+</div>
+<div class="card"><div class="card-icon">📐</div><h4>Format</h4>
+<div data-lang="zh"><p>輸出長度 / 結構 / 語言：「繁中 markdown，500 字內，每段附 1 個 PMID」。</p></div>
+<div data-lang="en"><p>Length / structure / language: "Traditional Chinese markdown, &lt;500 words, 1 PMID per section".</p></div>
+</div>
+<div class="card"><div class="card-icon">🚧</div><h4>Constraints</h4>
+<div data-lang="zh"><p>明確邊界：「不要虛構引用」、「若不確定請說明」、「避開 cohort &lt; 100 的研究」。</p></div>
+<div data-lang="en"><p>Boundaries: "no fabricated citations", "say when unsure", "exclude cohorts &lt;100".</p></div>
+</div>
+<div class="card"><div class="card-icon">🧪</div><h4>Examples</h4>
+<div data-lang="zh"><p>給 1–3 個範例（few-shot），是讓輸出格式 / 風格收斂的最強招式。</p></div>
+<div data-lang="en"><p>Provide 1–3 worked examples (few-shot). The single strongest move for locking format and tone.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="Prompt 評分器：差 / 中 / 好" data-en="Prompt Rater: bad / okay / great">Prompt 評分器：差 / 中 / 好</h2>
+<div data-lang="zh"><p>下方有三個 prompt 寫法。點擊任一個，看模型「可能怎麼回應」與分數。</p></div>
+<div data-lang="en"><p>Three prompt variants below — click one to see the likely model response and a quality score.</p></div>
+<div class="interactive-panel">
+<div id="promptCards" style="display:grid;grid-template-columns:1fr;gap:12px"></div>
+<div id="promptDetail" style="margin-top:16px;padding:14px;background:var(--c-bg-alt);border-radius:8px;border-left:4px solid var(--c-accent);min-height:120px">
+  <div data-lang="zh" style="color:var(--c-ink-muted);font-size:.88rem">點擊上方的 prompt 卡片以查看模型可能回應與評分。</div>
+  <div data-lang="en" style="color:var(--c-ink-muted);font-size:.88rem">Click a prompt card above to see a model response and score.</div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式範例" data-en="CODE EXAMPLES">程式範例</div>
+<h2 data-zh="從爛 prompt 到結構化 prompt" data-en="From bad prompts to structured prompts">從爛 prompt 到結構化 prompt</h2>
+<div class="code-tabs">
+<div class="code-tab-btns">
+  <button class="code-tab-btn active" onclick="switchTab(this,'pp1')">❌ Bad</button>
+  <button class="code-tab-btn" onclick="switchTab(this,'pp2')">✅ Structured</button>
+  <button class="code-tab-btn" onclick="switchTab(this,'pp3')">⭐ XML / Markdown</button>
+</div>
+<div class="code-tab-content active" id="pp1"><pre><span class="comment"># 模糊型 / Vague</span>
+幫我寫一個 grant 的 specific aims，關於糖尿病。
+<span class="comment"># Help me write specific aims for a grant on diabetes.</span>
+
+<span class="comment"># 問題：沒角色、沒對象、沒長度、沒格式、可能虛構引用</span>
+<span class="comment"># Problems: no role / audience / length / format; may fabricate refs</span></pre></div>
+<div class="code-tab-content" id="pp2"><pre><span class="kw">Role:</span> 你是 NIH R01 審查經驗的內分泌科臨床研究者。
+<span class="kw">Context:</span> 我正在準備 T2D 並發症的 R01 (mechanism + intervention)。
+申請人為 K99 transition 階段、已有 2 篇 first-author publication。
+<span class="kw">Task:</span> 給出 3 個 Specific Aims（Aim 1 mechanism, Aim 2 in vivo,
+Aim 3 small clinical pilot），每個 aim 附 hypothesis、approach、
+可行性說明。
+<span class="kw">Format:</span> 繁體中文，markdown，每 Aim &lt;= 250 字，title 用 H3。
+<span class="kw">Constraints:</span> 不引用 PMID（避免虛構）；不確定處註明 [需查證]。</pre></div>
+<div class="code-tab-content" id="pp3"><pre><span class="comment"># 用 XML 與 Markdown 結構分隔，模型最容易解析</span>
+<span class="kw">&lt;role&gt;</span>Senior translational endocrinologist, NIH R01 reviewer.<span class="kw">&lt;/role&gt;</span>
+
+<span class="kw">&lt;context&gt;</span>
+- Topic: T2D complications, mitochondrial dysfunction in renal tubular cells
+- Stage: K99/R00 → R01 transition
+- Preliminary data: 2 first-author papers, mouse KO line available
+<span class="kw">&lt;/context&gt;</span>
+
+<span class="kw">&lt;task&gt;</span>
+Draft 3 Specific Aims (mechanism / in vivo / clinical pilot).
+For each: Hypothesis · Approach · Feasibility · Risk &amp; mitigation.
+<span class="kw">&lt;/task&gt;</span>
+
+<span class="kw">&lt;format&gt;</span>
+Output as a Markdown document with H3 per Aim, &lt;=300 words per aim.
+<span class="kw">&lt;/format&gt;</span>
+
+<span class="kw">&lt;constraints&gt;</span>
+- Do NOT invent PMIDs. Mark unverified facts as [verify].
+- Avoid generic NIH boilerplate ("paradigm-shifting").
+<span class="kw">&lt;/constraints&gt;</span>
+
+<span class="kw">&lt;example&gt;</span>
+### Aim 1. Establish that ...
+**Hypothesis:** ...
+<span class="kw">&lt;/example&gt;</span></pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工作流程" data-en="WORKFLOW">工作流程</div>
+<h2 data-zh="六步驟 prompt 建構流程" data-en="Six-step prompt construction">六步驟 prompt 建構流程</h2>
+<div class="workflow">
+  <div class="workflow-step" data-step="1"><h4 data-zh="① 定義目標讀者" data-en="① Define the audience">① 定義目標讀者</h4>
+  <div data-lang="zh"><p>是 grant 評審？lab meeting？住院醫師？讀者層級決定詞彙與深度。</p></div>
+  <div data-lang="en"><p>Grant reviewer? Lab meeting? Resident? The audience sets vocabulary and depth.</p></div>
+  </div>
+  <div class="workflow-step" data-step="2"><h4 data-zh="② 指派 Role" data-en="② Assign a Role">② 指派 Role</h4>
+  <div data-lang="zh"><p>把模型「設定」成領域專家，這會啟動該領域相關的訓練分布。</p></div>
+  <div data-lang="en"><p>"Set" the model as a domain expert; this activates the relevant training distribution.</p></div>
+  </div>
+  <div class="workflow-step" data-step="3"><h4 data-zh="③ 給足 Context" data-en="③ Provide enough Context">③ 給足 Context</h4>
+  <div data-lang="zh"><p>你的 lab、資料、已知結果、限制——能寫的都寫；過多比過少好。</p></div>
+  <div data-lang="en"><p>Lab, data, known findings, constraints — write more not less. Over-context beats under-context.</p></div>
+  </div>
+  <div class="workflow-step" data-step="4"><h4 data-zh="④ 明確 Task 動詞" data-en="④ Precise Task verb">④ 明確 Task 動詞</h4>
+  <div data-lang="zh"><p>「列出」「比較」「批判」「重寫」「翻譯」——避免「幫我看看」。</p></div>
+  <div data-lang="en"><p>"List", "Compare", "Critique", "Rewrite", "Translate" — avoid "have a look".</p></div>
+  </div>
+  <div class="workflow-step" data-step="5"><h4 data-zh="⑤ 鎖死 Format" data-en="⑤ Lock the Format">⑤ 鎖死 Format</h4>
+  <div data-lang="zh"><p>長度、結構、語言、是否 markdown / JSON / 表格——能量化就量化。</p></div>
+  <div data-lang="en"><p>Length, structure, language, markdown / JSON / table — quantify when possible.</p></div>
+  </div>
+  <div class="workflow-step" data-step="6"><h4 data-zh="⑥ 加 Constraints + Examples" data-en="⑥ Add Constraints + Examples">⑥ 加 Constraints + Examples</h4>
+  <div data-lang="zh"><p>不能做什麼 + 1 個格式範例，輸出穩定度可再提升 30%。</p></div>
+  <div data-lang="en"><p>What NOT to do + 1 worked example: bumps output stability by another 30%.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- ===== Anthropic 9 vs OpenAI 6 ===== -->
+<section class="section">
+<div class="section-label" data-zh="官方準則對比" data-en="VENDOR PRINCIPLES">官方準則對比</div>
+<h2 data-zh="Anthropic 9 條 vs. OpenAI 6 條：兩家官方準則對照" data-en="Anthropic 9 vs. OpenAI 6: two official guidelines side-by-side">Anthropic 9 條 vs. OpenAI 6 條：兩家官方準則對照</h2>
+<div data-lang="zh"><p>2024 年 Anthropic 在「<em>Prompt Engineering Overview</em>」整理 9 條黃金準則；OpenAI 同年釋出 6 條「best practice」。整理對照如下——你會發現核心觀念幾乎重疊，但措辭與優先順序不同。</p></div>
+<div data-lang="en"><p>In 2024 Anthropic published nine "golden principles" in <em>Prompt Engineering Overview</em>; OpenAI released six "best practices" the same year. They overlap heavily but emphasize differently.</p></div>
+<table class="comp-table">
+<thead><tr><th data-zh="觀念" data-en="Idea">觀念</th><th>Anthropic (9)</th><th>OpenAI (6)</th><th data-zh="實務操作" data-en="In practice">實務操作</th></tr></thead>
+<tbody>
+<tr><td data-zh="清楚 + 具體" data-en="Be clear &amp; specific"><strong>清楚 + 具體</strong></td><td data-zh="① Be clear and direct" data-en="① Be clear and direct">① Be clear and direct</td><td data-zh="① Write clear instructions" data-en="① Write clear instructions">① Write clear instructions</td><td data-zh="動詞 + 範圍 + 量化" data-en="Verb + scope + numbers">動詞 + 範圍 + 量化</td></tr>
+<tr><td data-zh="少量範例" data-en="Few-shot"><strong>少量範例</strong></td><td data-zh="② Use examples (multishot)" data-en="② Use examples (multishot)">② Use examples (multishot)</td><td data-zh="② Provide reference text" data-en="② Provide reference text">② Provide reference text</td><td data-zh="2–5 個 input/output 範例" data-en="2–5 input/output examples">2–5 個 input/output 範例</td></tr>
+<tr><td data-zh="讓模型思考" data-en="Let it think"><strong>讓模型思考</strong></td><td data-zh="③ Let Claude think (CoT)" data-en="③ Let Claude think (CoT)">③ Let Claude think (CoT)</td><td data-zh="③ Give models time to think" data-en="③ Give models time to think">③ Give models time to think</td><td data-zh="「逐步思考」或 reasoning model" data-en="‘Think step by step’ or reasoning models">「逐步思考」或 reasoning model</td></tr>
+<tr><td data-zh="拆解任務" data-en="Decompose"><strong>拆解任務</strong></td><td data-zh="④ Chain complex prompts" data-en="④ Chain complex prompts">④ Chain complex prompts</td><td data-zh="④ Split complex tasks" data-en="④ Split complex tasks">④ Split complex tasks</td><td data-zh="一個任務拆成 3–5 步多 prompt" data-en="Decompose into 3–5 sub-prompts">一個任務拆成 3–5 步多 prompt</td></tr>
+<tr><td data-zh="提供外部資料" data-en="Provide external data"><strong>提供外部資料</strong></td><td data-zh="⑤ Long context tips / RAG" data-en="⑤ Long context tips / RAG">⑤ Long context tips / RAG</td><td data-zh="⑤ Use external tools" data-en="⑤ Use external tools">⑤ Use external tools</td><td data-zh="放 retrieved chunks + tool use" data-en="Provide retrieved chunks + tool use">放 retrieved chunks + tool use</td></tr>
+<tr><td data-zh="角色 / 結構" data-en="Role / Structure"><strong>角色與結構</strong></td><td data-zh="⑥ Role prompting · ⑦ XML tags" data-en="⑥ Role prompting · ⑦ XML tags">⑥ Role · ⑦ XML tags</td><td>—</td><td data-zh="Anthropic 獨有：明確 XML 分隔" data-en="Anthropic-specific: XML delimiters">Anthropic 獨有：明確 XML 分隔</td></tr>
+<tr><td data-zh="預填輸出 / 強制格式" data-en="Prefill / Force format"><strong>預填輸出</strong></td><td data-zh="⑧ Prefill Claude's response" data-en="⑧ Prefill Claude's response">⑧ Prefill Claude's response</td><td>—</td><td data-zh="用「assistant 預填」逼出格式" data-en="Use assistant prefill to lock format">用「assistant 預填」逼出格式</td></tr>
+<tr><td data-zh="系統性測試" data-en="Test systematically"><strong>系統性測試</strong></td><td data-zh="⑨ Reduce hallucinations + test" data-en="⑨ Reduce hallucinations + test">⑨ Reduce hallucinations + test</td><td data-zh="⑥ Test changes systematically" data-en="⑥ Test changes systematically">⑥ Test changes systematically</td><td data-zh="Eval set + 多模型對照" data-en="Eval set + cross-model A/B">Eval set + 多模型對照</td></tr>
+</tbody>
+</table>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>差異總結：</strong>(1) Anthropic 強調 <strong>XML tags / prefill</strong> 兩個獨家技巧——對 Claude 確實特別有效；(2) OpenAI 強調 <strong>external tools</strong>——反映 ChatGPT 對 plugin / function calling 的重視；(3) 兩家都同意：<strong>清楚 + 範例 + 思考時間</strong>是普世三件套。</span>
+<span data-lang="en"><strong>Summary of differences:</strong> (1) Anthropic uniquely emphasizes <strong>XML tags / prefill</strong> — both genuinely effective on Claude; (2) OpenAI emphasizes <strong>external tools</strong> — reflecting ChatGPT's plugin / function calling; (3) both agree: <strong>clarity + examples + thinking time</strong> is the universal trio.</span>
+</div></div>
+</section>
+
+<!-- ===== Real case studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="REAL-WORLD CASES">真實案例</div>
+<h2 data-zh="兩個從爛到好的 prompt 進化案例" data-en="Two bad-to-good prompt evolution stories">兩個從爛到好的 prompt 進化案例</h2>
+
+<div class="callout tip" style="display:block"><div style="display:flex;gap:10px;align-items:start;margin-bottom:8px"><span class="callout-icon">🧬</span><strong data-zh="案例 A：「請解釋 RNA-seq」 → 結構化 prompt 的完整進化" data-en="Case A: "Explain RNA-seq" → full structured-prompt evolution">案例 A：「請解釋 RNA-seq」 → 結構化 prompt 的完整進化</strong></div>
+<div data-lang="zh">
+<p><strong>第一版（爛 prompt）：</strong>「請解釋 RNA-seq。」<br>實際輸出：模型給了 1500 字泛泛而論——歷史、原理、技術版本各一段，但<strong>沒有對象、沒有臨床例子、沒有 PMID</strong>，且包含 3 個錯誤陳述（FPKM ≠ RPKM、把 Illumina 的 sequencing-by-synthesis 寫成 sequencing-by-ligation）。<br><strong>第二版（加角色）：</strong>「你是生醫教學經驗豐富的 PI，請解釋 RNA-seq。」輸出稍微聚焦但仍泛泛。<br><strong>第三版（加上下文與對象）：</strong>「對剛入學的住院醫師解釋 RNA-seq 與 scRNA-seq 的差異，他們以為兩者只是『細胞數量不同』。」開始有臨床例子。<br><strong>第四版（加格式 + 限制）：</strong>「繁中 markdown，500 字內，分三段（原理 / 應用 / 2024–2026 新趨勢），每段 1 個臨床情境。不要 PMID（避免虛構），不確定處標 [需查證]。」<br><strong>第五版（加範例）：</strong>放一個「Aim 1 結構範本」few-shot。輸出：500 字、結構完美、3 個臨床例子、零幻覺、3 處標 [需查證] 給人類驗證。<strong>從第一版到第五版，可用率從 ~25% 升到 ~95%</strong>。整個過程約 5 次 iteration，總計 5 分鐘。</p>
+</div>
+<div data-lang="en">
+<p><strong>v1 (bad):</strong> "Please explain RNA-seq."<br>Actual output: a 1500-word generic essay — history, principle, tech versions — with <strong>no audience, no clinical example, no PMID</strong>, and 3 factual errors (FPKM ≠ RPKM, calling Illumina's sequencing-by-synthesis "sequencing-by-ligation"). <br><strong>v2 (add role):</strong> "You are an experienced biomed teaching PI; explain RNA-seq." Slightly tighter, still generic.<br><strong>v3 (add context + audience):</strong> "Explain RNA-seq vs scRNA-seq to first-year residents who think the only difference is cell count." Clinical examples appear.<br><strong>v4 (add format + constraints):</strong> "Traditional-Chinese markdown, &lt;500 words, 3 sections (principle / application / 2024–2026 trend), each with 1 clinical scene. No PMIDs (avoid fabrication); mark [verify] when unsure." <br><strong>v5 (add example):</strong> include a "Section template" as few-shot. Output: 500 words, perfect structure, 3 clinical examples, zero hallucination, 3 [verify] tags for human review. <strong>v1 to v5: usability rose from ~25% to ~95%</strong>. About 5 iterations totaling 5 minutes.</p>
+</div>
+</div>
+
+<div class="callout tip" style="display:block"><div style="display:flex;gap:10px;align-items:start;margin-bottom:8px"><span class="callout-icon">💼</span><strong data-zh="案例 B：一個 grant idea 從爛 prompt 到專業 prompt 的迭代" data-en="Case B: a grant idea iterated from bad prompt to professional prompt">案例 B：一個 grant idea 從爛 prompt 到專業 prompt 的迭代</strong></div>
+<div data-lang="zh">
+<p>一位 K99 階段的科學家想用 Claude Opus 寫 R01 的 specific aims。他第一個 prompt：「幫我寫 grant，糖尿病 T2D 並發症」。模型回了 1200 字、5 個假 PMID、aims 與 hypothesis 混淆。他改寫 5 輪：(1) 加角色「NIH R01 reviewer」→ 結構出現了；(2) 加 context「K99 階段 + 已有 mouse KO line」→ feasibility 段變實在；(3) 拆 Aims 為 mechanism / in vivo / clinical pilot 三段；(4) 加 Constraints「不虛構 PMID、不確定標 [verify]」→ 假引用消失；(5) 加一個「Aim 1 結構範例」few-shot → 三個 aims 結構統一。最終版輸出與 PI 親手寫的差距 &lt; 10%，他用這個版本作為跟 mentor 討論的 starting point，比從白紙開始省了 4 天工作量。<strong>關鍵體會：</strong>prompt 不是一次寫對的，是「iteration 5 次」的工程過程；每次 iteration 加一個維度（Role → Context → Task → Format → Constraints → Examples）。</p>
+</div>
+<div data-lang="en">
+<p>A K99-stage scientist wanted Claude Opus to draft R01 specific aims on T2D complications. v1: "Help me write a grant on T2D complications." Result: 1200 generic words, 5 fake PMIDs, aims and hypotheses muddled. Five revisions: (1) add role "NIH R01 reviewer" → structure appears; (2) add context "K99 stage + mouse KO line" → feasibility tightens; (3) split aims into mechanism / in vivo / clinical pilot; (4) add constraints "no fabricated PMIDs, tag [verify]" → fake citations vanish; (5) add an Aim 1 few-shot template → all three aims align. Final version was within 10% of the PI's handwritten draft and saved ~4 days as a mentor-meeting starting point. <strong>Takeaway:</strong> prompts aren't first-try perfect — they're a 5-iteration engineering process; each round adds one principle dimension (Role → Context → Task → Format → Constraints → Examples).</p>
+</div>
+</div>
+</section>
+
+<!-- ===== Advanced details ===== -->
+<details class="accordion-item" style="margin:14px 0">
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 資深讀者深入：Prompt sensitivity 與 jailbreak 的 ML 視角" data-en="🔬 Deeper dive: prompt sensitivity &amp; jailbreaks from an ML perspective">🔬 資深讀者深入：Prompt sensitivity 與 jailbreak 的 ML 視角</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>Prompt sensitivity 的數學本質。</strong>把 LLM 看成函數 f(prompt) → distribution；prompt sensitivity 就是「對 prompt 小擾動 ε 的輸出變化」<code>‖f(p + ε) − f(p)‖</code>。Zou 2023 等多項研究顯示，即使加一個空白字元或變更標點，重要 benchmark 的 score 可上下 5–15%。這跟 ML 中的 adversarial perturbation 同源——LLM 對 input 沒有 strong invariance。</p>
+<p><strong>為什麼 few-shot 有效——in-context learning 假說。</strong>Olsson 2022（Anthropic）提出「induction heads」假設：Transformer 在訓練時學會了一種「複製→比對→預測下一個」的元演算法，所以給範例時模型能「在 context 內」實作小型 gradient-descent like 行為（Akyürek 2023）。這把 few-shot 從「玄學」拉回成可解釋的演算過程。</p>
+<p><strong>Jailbreak 與 prompt injection 的對抗本質。</strong>Jailbreak 與 prompt injection 本質是「在 input space 上找對抗例」——所以 RLHF、Constitutional AI、安全微調都只能「移動分佈」，無法根除。最新 Anthropic「Many-shot Jailbreaking」（2024）顯示給 256 個 fake example 即可繞過部分安全 layer，這是 long context 的副作用。</p>
+</div>
+<div data-lang="en">
+<p><strong>The math of prompt sensitivity.</strong> View the LLM as f(prompt) → distribution; prompt sensitivity is the output change under small perturbations ε: <code>‖f(p + ε) − f(p)‖</code>. Zou 2023 and others showed even a whitespace or punctuation change can shift benchmark scores by 5–15%. Same family as adversarial perturbation — LLMs lack strong input invariance.</p>
+<p><strong>Why few-shot works — the in-context learning hypothesis.</strong> Olsson 2022 (Anthropic) proposed "induction heads": Transformers learn a "copy → match → predict-next" meta-algorithm during pretraining, so given examples they perform something like in-context gradient descent (Akyürek 2023). This grounds few-shot in explainable computation, not magic.</p>
+<p><strong>Jailbreaks and prompt injection as adversarial examples.</strong> Both are adversarial examples in input space — so RLHF, Constitutional AI, and safety fine-tuning only "shift the distribution"; they don't eliminate. Anthropic's "Many-shot Jailbreaking" (2024) showed 256 fake examples can bypass parts of the safety layer — a side-effect of long context.</p>
+</div>
+</div>
+</details>
+
+<!-- ===== Interactive 2: Prompt Reconstructor ===== -->
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="互動 ② Prompt 重構器：點點看 prompt 怎麼變專業" data-en="Interactive ② Prompt Reconstructor: turn a bad prompt into a pro one">互動 ② Prompt 重構器：點點看 prompt 怎麼變專業</h2>
+<div data-lang="zh"><p>下方是一個爛 prompt。每點一個按鈕，會加上一個 RCTFCE 維度，prompt 即時升級。觀察「scrap → spec」的全過程。</p></div>
+<div data-lang="en"><p>Below is a bad prompt. Each button adds one RCTFCE dimension and the prompt updates live. Watch "scrap → spec" unfold.</p></div>
+<div class="interactive-panel">
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+  <button class="toggle-btn" data-pe="role">+ Role</button>
+  <button class="toggle-btn" data-pe="ctx">+ Context</button>
+  <button class="toggle-btn" data-pe="task">+ Task</button>
+  <button class="toggle-btn" data-pe="fmt">+ Format</button>
+  <button class="toggle-btn" data-pe="con">+ Constraint</button>
+  <button class="toggle-btn" data-pe="ex">+ Example</button>
+  <button class="toggle-btn toggle-btn-sm" id="peReset" style="background:var(--c-bg-alt)" data-zh="重設" data-en="Reset">重設</button>
+</div>
+<pre id="peOut" style="background:var(--c-bg-alt);border-radius:8px;padding:14px;font-family:var(--font-mono);font-size:.82rem;white-space:pre-wrap;min-height:200px"></pre>
+<div style="margin-top:10px;font-family:var(--font-mono);font-size:.85rem">
+  <span data-zh="目前分數：" data-en="Current score: ">目前分數：</span><strong id="peScore" style="color:var(--c-highlight)">25</strong> / 100
+</div>
+</div>
+</section>
+
+<!-- ===== Interactive 3: 6-principle self-rating ===== -->
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="互動 ③ 對自己的下一個 prompt 評分 (0–5 分滑桿)" data-en="Interactive ③ Self-rate your next prompt (0–5 sliders)">互動 ③ 對自己的下一個 prompt 評分 (0–5 分滑桿)</h2>
+<div data-lang="zh"><p>把你下次要寫的 prompt 在這 6 個維度上各打 0–5 分（0 = 完全沒寫；5 = 充分明確）。滑桿即時計算總分。&lt; 18 分代表 prompt 還很爛，&gt; 25 分以上才算進入專業區。</p></div>
+<div data-lang="en"><p>Self-rate your next prompt on these six dimensions (0 = absent, 5 = fully explicit). Score updates live. &lt; 18 means rough draft; &gt; 25 enters professional territory.</p></div>
+<div class="interactive-panel">
+<div id="srRows" style="display:flex;flex-direction:column;gap:10px"></div>
+<div style="margin-top:14px;padding:14px;background:var(--c-bg-alt);border-radius:8px;text-align:center">
+  <div data-lang="zh" style="font-size:.82rem;color:var(--c-ink-muted)">總分</div>
+  <div data-lang="en" style="font-size:.82rem;color:var(--c-ink-muted)">Total score</div>
+  <div id="srTotal" style="font-family:var(--font-mono);font-size:1.5rem;color:var(--c-highlight);font-weight:700">0 / 30</div>
+  <div id="srAdvice" style="margin-top:6px;font-size:.85rem;color:var(--c-ink-muted)"></div>
+</div>
+</div>
+</section>
+
+<!-- ===== Common pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="COMMON PITFALLS">常見誤區</div>
+<h2 data-zh="關於 prompting 的 6 個常見錯誤" data-en="Six common prompting mistakes">關於 prompting 的 6 個常見錯誤</h2>
+<div class="callout warn" style="display:block"><div data-lang="zh">
+<ol style="margin:4px 0 0 18px;line-height:1.85;padding:0">
+<li><strong>「禮貌的話可以省」</strong>——你可以省，但加上 "Please" 並不浪費 token 又能讓對話更舒服。不影響輸出品質。</li>
+<li><strong>「prompt 越長越好」</strong>——錯。冗餘指令可能稀釋核心；專業 prompt 是「<strong>精準</strong>」不是「冗長」。</li>
+<li><strong>「同一個 prompt 兩個模型一定一樣」</strong>——錯。Claude 對 XML 敏感，GPT 對 markdown 敏感，Gemini 對 explicit JSON schema 敏感。要根據模型微調。</li>
+<li><strong>「指定『不要』就會避免」</strong>——半對。負面指令有時反而提示模型「想想這件事」。建議用<strong>正面的替代行為</strong>（「使用 X」而非「不要用 Y」）。</li>
+<li><strong>「few-shot 範例多多益善」</strong>——錯。5 個範例後邊際效益陡降；範例 token 也是錢。</li>
+<li><strong>「temperature=0 就會穩定」</strong>——錯。即使 T=0，由於 GPU 浮點誤差，輸出仍可能不完全 deterministic。生產要 reproducibility 須固定 seed + temperature=0 + 相同 hardware。</li>
+</ol></div>
+<div data-lang="en">
+<ol style="margin:4px 0 0 18px;line-height:1.85;padding:0">
+<li><strong>"Politeness wastes tokens"</strong> — actually no. Saying "please" is fine and doesn't hurt output quality.</li>
+<li><strong>"Longer prompts are better"</strong> — wrong. Redundancy dilutes the core; pro prompts are <strong>precise</strong>, not verbose.</li>
+<li><strong>"Same prompt works equally on all models"</strong> — Claude likes XML, GPT likes markdown, Gemini likes explicit JSON schema. Tune per model.</li>
+<li><strong>"Saying 'don't' makes it stop"</strong> — half-true. Negative instructions sometimes prime the very behavior. Prefer positive alternatives ("use X" instead of "don't use Y").</li>
+<li><strong>"More few-shot examples are always better"</strong> — wrong. After ~5, marginal returns crash; example tokens still cost money.</li>
+<li><strong>"temperature=0 = deterministic"</strong> — wrong. GPU floating-point still introduces tiny non-determinism. For reproducibility you need fixed seed + temperature=0 + same hardware.</li>
+</ol></div></div>
+</section>
+
+<!-- ===== Biostats / Maths view ===== -->
+<section class="section">
+<div class="section-label" data-zh="生統數理視角" data-en="BIOSTATS / MATHS VIEW">生統數理視角</div>
+<h2 data-zh="給統計背景讀者的進階註腳" data-en="Footnotes for the statistically inclined">給統計背景讀者的進階註腳</h2>
+<div data-lang="zh">
+<p><strong>① Prompt 作為條件機率設定。</strong>把 LLM 視為 p(y | x, θ)，prompt x 改變條件分佈的形狀。<strong>Role / Context / Constraints 都是在 x 上加結構</strong>，作用上等價於 informative prior：若 x 把分佈推向 mode 集中區（low entropy）就能得到穩定輸出。</p>
+<p><strong>② Few-shot 與 maximum a posteriori。</strong>給 k 個範例 (x_i, y_i)，相當於把 likelihood 用 examples 條件化：p(y | x_new, x_1, y_1, …, x_k, y_k)。當範例代表性強且彼此一致時，posterior 在「正確輸出形式」附近集中，模型自然 mimics。這跟 EBM (empirical Bayes) 的「shrinkage to the prior of group」異曲同工。</p>
+<p><strong>③ Prompt sensitivity 與 perturbation robustness。</strong>Prompt 中加減一個空白 → benchmark 上下 5–15%（Sclar 2024）。可視為 ML 中 adversarial 與 robustness 的延伸——但 LLM 沒有像 image 那樣的 invariance（如平移不變）內建，所以對 input format 高度敏感。</p>
+<p><strong>④ 對齊 token 數 vs 答對率的 power curve。</strong>實證上，prompt 中每加 100 tokens 的「有效信息」（範例、規則、格式），可用率 utility 約增加 5–8%，呈現 saturating 曲線；超過 800–1000 tokens 後邊際效益接近零。這跟 dose-response Emax model 同形。</p>
+</div>
+<div data-lang="en">
+<p><strong>① Prompt as conditioning.</strong> Treat the LLM as p(y | x, θ); the prompt x reshapes the conditional distribution. <strong>Role / Context / Constraints all add structure to x</strong>, functionally an informative prior. If x narrows the mass around a mode (low entropy), output is stable.</p>
+<p><strong>② Few-shot ≈ MAP.</strong> k examples (x_i, y_i) condition the likelihood: p(y | x_new, x_1, y_1, …, x_k, y_k). When the examples are representative and consistent, the posterior concentrates around the correct output form, and the model mimics. Cousin of empirical-Bayes "shrinkage to the prior of group."</p>
+<p><strong>③ Prompt sensitivity vs perturbation robustness.</strong> One whitespace change can shift benchmark scores 5–15% (Sclar 2024). Same family as adversarial / robustness — but LLMs lack built-in invariance (like translation invariance for vision), making them brittle to format.</p>
+<p><strong>④ Power curve: prompt tokens vs accuracy.</strong> Empirically, each additional 100 tokens of useful info (examples, rules, format) lifts utility by ~5–8%, with diminishing returns — past ~800–1000 tokens the marginal gain is near zero. Shape matches dose-response Emax models.</p>
+</div>
+</section>
+
+<!-- ===== Discussion ===== -->
+<section class="section">
+<div class="section-label" data-zh="思考題" data-en="DISCUSSION">思考題</div>
+<h2 data-zh="跟團隊一起討論這四題" data-en="Discuss with your team">跟團隊一起討論這四題</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>📋 Q1</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你發現實驗室裡每人都有自己的「秘密 prompt」。你想推動一個「lab prompt library」（如 Notion 或 GitHub）。<strong>問題：</strong>會遇到什麼阻力？你如何說服資深成員分享？「prompt 智財權」要不要算？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Everyone in lab has private prompts. You want a "lab prompt library" (Notion or GitHub). <strong>Question:</strong> What resistance will appear? How do you persuade senior members to share? Does "prompt IP" matter?</p></div></div>
+<div class="card"><h4>⚖️ Q2</h4>
+<div data-lang="zh"><p><strong>情境：</strong>同一個任務，Claude 與 GPT 對 prompt 偏好不同（前者 XML、後者 markdown）。你的 grant 截稿在即。<strong>問題：</strong>你會 (a) 只精修一個模型的 prompt (b) 雙模型平行精修 (c) 用 LangChain 抽象掉差異？理由？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Claude prefers XML, GPT prefers markdown. Grant deadline looms. <strong>Question:</strong> Would you (a) polish only one model's prompt, (b) polish both in parallel, or (c) abstract the difference with LangChain? Why?</p></div></div>
+<div class="card"><h4>🎓 Q3</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你教 PhD 學生 prompt engineering，發現他們最容易卡在「Constraints」這一條（不知道要禁什麼）。<strong>問題：</strong>你會怎麼設計練習，讓他們學會「想出該禁的事」？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Teaching PhD students prompt engineering, you notice they struggle most with Constraints (no idea what to forbid). <strong>Question:</strong> How would you design an exercise that trains them to think of "what to ban"?</p></div></div>
+<div class="card"><h4>🧠 Q4</h4>
+<div data-lang="zh"><p><strong>情境：</strong>有人主張「2026 模型夠強，prompt 工程已死，直接問就行」。<strong>問題：</strong>你同意嗎？哪些任務 zero-shot 已夠？哪些仍需精雕？你的判斷依據是什麼？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Someone claims "2026 models are so strong that prompt engineering is dead — just ask." <strong>Question:</strong> Agree? Which tasks now work zero-shot? Which still need surgery? What's your criterion?</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh">1. 你寫了「幫我評論這篇 paper」。最缺哪個原則？</p>
+<p data-lang="en">1. You wrote "comment on this paper". Which principle is most missing?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Role</span><span data-lang="en">A. Role</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Examples</span><span data-lang="en">B. Examples</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. Context</span><span data-lang="en">C. Context</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. Task + Format（沒說從哪面向評、要多長）</span><span data-lang="en">D. Task + Format (no angle, no length)</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">2. 想讓模型嚴格遵守輸出格式，最有效的單一招式是？</p>
+<p data-lang="en">2. Single most effective trick to lock output format?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 換更大的模型</span><span data-lang="en">A. Switch to a bigger model</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 提高 temperature</span><span data-lang="en">B. Raise temperature</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 給 1–3 個格式範例（few-shot）</span><span data-lang="en">C. Provide 1–3 format examples (few-shot)</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 反覆問同一個問題</span><span data-lang="en">D. Ask the same question repeatedly</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">3. 你要避免模型虛構 PMID，最該加在 prompt 的哪一塊？</p>
+<p data-lang="en">3. To prevent fabricated PMIDs, where in the prompt should you add it?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Role</span><span data-lang="en">A. Role</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Constraints（「不確定請說明，不要虛構 PMID」）</span><span data-lang="en">B. Constraints ("say when unsure, do not invent PMIDs")</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. Format</span><span data-lang="en">C. Format</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 無解，只能事後查</span><span data-lang="en">D. Unfixable, must verify after</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你的同事寫：「你是世界級的 oncologist，請用最專業的方式幫我評估這個 grant 是否值得投 NCI R01。」測試發現模型回了 3000 字過度禮貌的「方法不錯也許可以再加…」式評論，沒有實質批評，且自動加上 5 個假 PMID。最該怎麼改？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. A colleague wrote: "You are a world-class oncologist, evaluate professionally if this grant is worth submitting to NCI R01." Model returns 3000 over-polite words ("the methods are good, maybe could add…") with no substantive critique, plus 5 fake PMIDs. Best fix?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 換更大模型就好</span><span data-lang="en">A. Just switch to a bigger model</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 提高 temperature 讓模型更直接</span><span data-lang="en">B. Raise temperature to be more direct</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 加 Constraints「給出三個最大弱點 + 三個最大強點 + 不引用任何 PMID」+ Format「H3 標題 + bullet」</span><span data-lang="en">C. Add Constraints "3 top weaknesses + 3 top strengths + cite no PMIDs" + Format "H3 + bullets"</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 改用 zero-shot 直接問</span><span data-lang="en">D. Switch to zero-shot</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="0">
+<p data-lang="zh">5. 你的目標是穩定的 JSON schema 抽取 100 份病歷 ICD-10。下列做法最有效的是？</p>
+<p data-lang="en">5. Target: stable JSON-schema ICD-10 extraction across 100 charts. Most effective?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. Few-shot：放 3 個範例（chart → JSON）+ temperature=0 + 明確 schema</span><span data-lang="en">A. Few-shot: 3 examples (chart → JSON) + temperature=0 + explicit schema</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Zero-shot：「請輸出 JSON」</span><span data-lang="en">B. Zero-shot: "please output JSON"</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 高 temperature + 多次採樣求多樣性</span><span data-lang="en">C. High temperature + multiple samples for diversity</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 把 100 份貼進 context 一次處理</span><span data-lang="en">D. Stuff all 100 into one context</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>6. 從統計觀點，prompt engineering 在 LLM p(y | x, θ) 中對應到？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 6. From a statistical view, prompt engineering corresponds to which operation in p(y | x, θ)?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 修改 θ（fine-tuning）</span><span data-lang="en">A. Modifying θ (fine-tuning)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 改變 y 的 support</span><span data-lang="en">B. Changing the support of y</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 對 x 加結構，等效於加 informative prior 改變條件分佈</span><span data-lang="en">C. Adding structure to x — equivalent to informative prior reshaping the conditional</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 重新訓練模型</span><span data-lang="en">D. Retraining the model</span></div>
+</div><div class="quiz-feedback" id="fb6"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="tokens.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 2: Token 與 Context Window" data-en="Step 2: Tokens &amp;amp; Context Window">Step 2: Token 與 Context Window</span></a>
+<a href="advanced-prompting.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 4: 進階 Prompt 與 RAG" data-en="Step 4: Advanced Prompting &amp;amp; RAG">Step 4: 進階 Prompt 與 RAG</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Prompt rater
+const PROMPTS=[
+  {tag:'❌',score:25,zh:{title:'差',p:'幫我寫 grant，糖尿病。',r:'模型回了 1500 字含 5 個虛構 PMID 的泛泛開場，沒有 aims，沒有 hypothesis。需要重寫 3–4 次才能用。',why:'缺角色、對象、長度、格式、引用約束。'},en:{title:'Bad',p:'Help me write a grant, diabetes.',r:'Model returns 1500 generic words with 5 fabricated PMIDs, no aims, no hypothesis. Needs 3–4 rewrites.',why:'No role, audience, length, format, or citation guardrails.'}},
+  {tag:'🟡',score:60,zh:{title:'中',p:'你是內分泌科研究者，請為 R01 寫 3 個關於 T2D 的 aims，每個 200 字。',r:'aims 結構出現了、長度大致對，但缺背景（preliminary data？mouse line？），feasibility 段空洞，仍可能虛構 PMID。',why:'有 Role/Task/Format，但缺 Context 與 Constraints。'},en:{title:'Okay',p:'You are an endocrinology researcher. Write 3 R01 aims on T2D, 200 words each.',r:'Aims appear with right length, but no preliminary data context — feasibility is hollow, and PMIDs may still be fabricated.',why:'Has Role/Task/Format but missing Context and Constraints.'}},
+  {tag:'✅',score:92,zh:{title:'好',p:'Role + Context（K99 階段、有 mouse KO）+ Task（3 aims，含 hypothesis/approach/feasibility/risk）+ Format（H3，每 aim ≤300 字）+ Constraints（不虛構 PMID，不確定請註明）+ 1 個 aim 範例。',r:'aims 直接可用，hypothesis 緊扣 mechanism，feasibility 引用了你給的 mouse line，所有不確定處標 [verify]，幾乎不需重寫。',why:'六原則齊全，輸出穩定且可追溯。'},en:{title:'Great',p:'Role + Context (K99 stage, mouse KO line) + Task (3 aims with hypothesis/approach/feasibility/risk) + Format (H3, ≤300 words) + Constraints (no fabricated PMIDs, mark [verify]) + 1 worked example.',r:'Aims are immediately usable. Hypothesis links to mechanism, feasibility cites your KO line, unverified facts flagged [verify].',why:'All six principles present, stable and traceable.'}}
+];
+function renderCards(){
+  const L=window.I18n?I18n.get():'en';
+  const wrap=document.getElementById('promptCards');wrap.innerHTML='';
+  PROMPTS.forEach((pr,i)=>{
+    const d=document.createElement('div');
+    d.style.cssText='cursor:pointer;padding:12px 14px;background:var(--c-bg-alt);border:1px solid var(--c-border);border-radius:8px;transition:all .15s';
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong>${pr.tag} ${pr[L].title}</strong><span style="font-family:var(--font-mono);font-size:.85rem;color:var(--c-highlight)">${pr.score}/100</span></div><div style="font-size:.84rem;color:var(--c-ink-muted);font-family:var(--font-mono)">${pr[L].p}</div>`;
+    d.onclick=()=>showDetail(i);
+    wrap.appendChild(d);
+  });
+}
+function showDetail(i){
+  const L=window.I18n?I18n.get():'en';const pr=PROMPTS[i];
+  const labelResp=L==='zh'?'模型可能回應':'Likely model response';
+  const labelWhy=L==='zh'?'為什麼這個分數':'Why this score';
+  document.getElementById('promptDetail').innerHTML=`<div style="font-size:.78rem;color:var(--c-accent);font-weight:700;letter-spacing:.5px;margin-bottom:4px">${labelResp}</div><div style="margin-bottom:10px">${pr[L].r}</div><div style="font-size:.78rem;color:var(--c-accent);font-weight:700;letter-spacing:.5px;margin-bottom:4px">${labelWhy}</div><div style="color:var(--c-ink-muted)">${pr[L].why}</div>`;
+}
+document.addEventListener('langchange',renderCards);
+document.addEventListener('DOMContentLoaded',renderCards);
+
+// Prompt reconstructor
+const PE_PARTS={
+  base:{zh:'幫我寫 grant，糖尿病。',en:'Help me write a grant on diabetes.'},
+  role:{zh:'<role>你是 NIH R01 審稿經驗豐富的內分泌科臨床研究者。</role>',en:'<role>You are an endocrinologist with NIH R01 review experience.</role>',score:15},
+  ctx:{zh:'<context>K99 轉 R00 階段；已有 mouse KO line；2 篇 first-author paper。研究主題：T2D 並發症中腎小管粒線體功能異常。</context>',en:'<context>K99→R00 stage; mouse KO line available; 2 first-author papers. Topic: mitochondrial dysfunction in renal tubular cells in T2D complications.</context>',score:15},
+  task:{zh:'<task>列出 3 個 Specific Aims（mechanism / in vivo / clinical pilot），每個含 hypothesis、approach、feasibility、risk &amp; mitigation。</task>',en:'<task>List 3 Specific Aims (mechanism / in vivo / clinical pilot). Each: hypothesis, approach, feasibility, risk &amp; mitigation.</task>',score:15},
+  fmt:{zh:'<format>繁體中文 markdown，每 Aim 用 H3 標題，每 Aim &lt;= 300 字。</format>',en:'<format>Traditional Chinese markdown, H3 per Aim, &lt;= 300 words each.</format>',score:10},
+  con:{zh:'<constraints>不虛構 PMID；不確定處標 [verify]；避免 NIH 套話 (paradigm-shifting)。</constraints>',en:'<constraints>No fabricated PMIDs; mark [verify] when uncertain; avoid NIH boilerplate (paradigm-shifting).</constraints>',score:10},
+  ex:{zh:'<example>### Aim 1. Establish that ...\n**Hypothesis:** ...\n**Approach:** ...</example>',en:'<example>### Aim 1. Establish that ...\n**Hypothesis:** ...\n**Approach:** ...</example>',score:10}
+};
+const peState={role:false,ctx:false,task:false,fmt:false,con:false,ex:false};
+function peRender(){
+  const L=window.I18n?I18n.get():'en';
+  let text=PE_PARTS.base[L];
+  let score=25;
+  ['role','ctx','task','fmt','con','ex'].forEach(k=>{if(peState[k]){text+='\n\n'+PE_PARTS[k][L];score+=PE_PARTS[k].score;}});
+  document.getElementById('peOut').textContent=text;
+  document.getElementById('peScore').textContent=score;
+  document.querySelectorAll('.toggle-btn[data-pe]').forEach(b=>{
+    if(peState[b.dataset.pe])b.style.cssText='background:var(--c-accent);color:#fff;border:1px solid var(--c-accent)';
+    else b.style.cssText='';
+    b.className='toggle-btn';
+  });
+}
+document.querySelectorAll('.toggle-btn[data-pe]').forEach(b=>b.addEventListener('click',()=>{peState[b.dataset.pe]=!peState[b.dataset.pe];peRender();}));
+document.getElementById('peReset').addEventListener('click',()=>{Object.keys(peState).forEach(k=>peState[k]=false);peRender();});
+document.addEventListener('langchange',peRender);
+document.addEventListener('DOMContentLoaded',peRender);
+
+// 6-principle self-rating
+const SR_DIMS=[{k:'role',zh:'Role 角色',en:'Role'},{k:'ctx',zh:'Context 上下文',en:'Context'},{k:'task',zh:'Task 任務',en:'Task'},{k:'fmt',zh:'Format 格式',en:'Format'},{k:'con',zh:'Constraints 限制',en:'Constraints'},{k:'ex',zh:'Examples 範例',en:'Examples'}];
+const srVals={role:0,ctx:0,task:0,fmt:0,con:0,ex:0};
+function srRender(){
+  const L=window.I18n?I18n.get():'en';
+  const c=document.getElementById('srRows');c.innerHTML='';
+  SR_DIMS.forEach(d=>{
+    const row=document.createElement('div');
+    row.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px"><span>${d[L]}</span><span style="font-family:var(--font-mono);color:var(--c-highlight)" id="srV${d.k}">${srVals[d.k]}</span></div><input type="range" min="0" max="5" step="1" value="${srVals[d.k]}" id="srS${d.k}" style="width:100%">`;
+    c.appendChild(row);
+    row.querySelector('input').addEventListener('input',e=>{srVals[d.k]=+e.target.value;document.getElementById('srV'+d.k).textContent=srVals[d.k];srUpdate();});
+  });
+  srUpdate();
+}
+function srUpdate(){
+  const total=Object.values(srVals).reduce((a,b)=>a+b,0);
+  document.getElementById('srTotal').textContent=total+' / 30';
+  const L=window.I18n?I18n.get():'en';
+  let advice='';
+  if(total<12)advice=L==='zh'?'⚠️ 還是雛形——先補 Role + Task。':'⚠️ Still a draft — add Role + Task first.';
+  else if(total<18)advice=L==='zh'?'🟡 中等，補上 Format + Constraints 會大幅穩定輸出。':'🟡 Okay; adding Format + Constraints will stabilize output dramatically.';
+  else if(total<25)advice=L==='zh'?'🟢 已進專業區，再加 Examples 可達 90%+ 可用率。':'🟢 Professional territory; add Examples to hit 90%+ usability.';
+  else advice=L==='zh'?'⭐ 滿分等級——可以直接提交給高需求協作流程。':'⭐ Top tier — submit directly to high-stakes pipelines.';
+  document.getElementById('srAdvice').textContent=advice;
+}
+document.addEventListener('langchange',srRender);
+document.addEventListener('DOMContentLoaded',srRender);
+
+// Quiz
+const QF={zh:{
+  q1_y:'「評論」沒說從哪個面向評（方法？統計？臨床轉譯？），也沒說多長、要不要列 strength/weakness、要不要 PMID。Task 與 Format 最缺；Role 已隱含（你叫它「幫忙評」就是 implicit role）。',
+  q2_y:'Few-shot 是格式控制最強的單一招式——比 markdown 指令、比 schema 描述都更直接。範例越具體（保持 schema 一致），輸出越穩。',
+  q3_y:'Constraints 明確規定「不虛構引用、若不確定請註明 [verify]」可消除九成假 PMID。配合 RAG 或人類驗證可逼近 100%。',
+  q4_y:'問題在 Constraints + Format 不夠明確。換大模型 (A) 或調 temperature (B) 解決不了「沒結構的禮貌話」。Zero-shot (D) 反而更鬆。明確要求「3 個弱點 + 3 個強點 + 不引用 PMID」會逼出有用的批評。',
+  q5_y:'結構化抽取的黃金組合：Few-shot 範例 + temperature=0 + 明確 JSON schema。B 太鬆會輸出格式漂；C 多樣性對結構化是反向；D 100 份一次跑會被 lost-in-middle 吃掉。',
+  q6_y:'Prompt engineering 不改 θ（那是 fine-tuning），是在 x 上加結構讓條件分佈 p(y|x) 收窄。從 Bayesian 角度就是加 informative prior；few-shot 是 examples 進入條件，把 likelihood 推向「像範例」的區域。'},
+en:{
+  q1_y:'"Comment" doesn\'t specify angle (methods? stats? translation?), length, whether to list strengths/weaknesses, or whether to cite PMIDs. Task + Format are most missing. Role is implicit.',
+  q2_y:'Few-shot is the single strongest format lock — beats markdown instructions or schema descriptions. The more consistent the examples, the more stable the output.',
+  q3_y:'Constraints "no fabricated citations; mark [verify] when unsure" eliminates ~90% of fake PMIDs. With RAG or human verification, approach 100%.',
+  q4_y:'The issue is unclear Constraints + Format. Bigger model (A) or temperature tweak (B) won\'t fix structureless politeness. Zero-shot (D) loosens further. Demanding "3 weaknesses + 3 strengths + no PMIDs" forces useful critique.',
+  q5_y:'Gold combo for structured extraction: few-shot + temperature=0 + explicit JSON schema. (B) too loose; (C) high temperature defeats structure; (D) 100 in one context hits lost-in-middle.',
+  q6_y:'Prompt engineering does NOT modify θ (that\'s fine-tuning); it adds structure to x to narrow p(y|x). Bayesian view: it\'s adding an informative prior; few-shot enters examples into the conditioning, biasing likelihood toward "looks like examples."'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

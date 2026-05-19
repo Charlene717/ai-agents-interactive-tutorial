@@ -1,37 +1,27 @@
-# AI Agents Interactive Tutorial
+# AI 工具素養與生醫研究加速 · Interactive Tutorial
 
-**🌐 Live demo / 線上瀏覽**: <https://charlene717.github.io/ai-agents-interactive-tutorial/>
+**🌐 Live demo / 線上瀏覽**: <https://charlene717.github.io/ai-literacy-tutorial/>
 
 ## 中文簡介
 
-AI Agents 互動式教學。涵蓋從概念到生產環境的完整 AI Agent 主題——12 章互動模擬、Python + JavaScript 程式範例與 2026 工具鏈。
+生醫 AI 素養互動式教學。Prompt 工程、評估方法、偏誤與合規思維，雙語並陳。
 
 ## English Description
 
 
 
-A complete bilingual (Traditional Chinese / English) interactive tutorial covering AI Agents from concept to production — 12 chapters with interactive simulations, Python + JavaScript code examples, and 2026 toolchain coverage.
+Bilingual (中文 / English) interactive tutorial for biomedical researchers — covering 20 modules from LLM fundamentals to AlphaFold 3, agentic workflows, bioimage AI, clinical decision support, ethics, and reproducibility.
 
-## Topics
+## Structure
 
-**Core (Steps 1-9)**
-1. What is an AI Agent? — classical AI vs LLM agents, PEAS, agent types
-2. LLM as the Brain — tokenization, context window, sampling
-3. Prompt Engineering — system prompts, CoT, structured output
-4. Tool Use — function calling, JSON schemas, parallel calls
-5. Memory Systems — working/episodic/semantic/long-term
-6. Planning & Reasoning — ReAct, Plan-and-Execute, ToT, Reflection
-7. RAG — chunking, hybrid search, Agentic RAG
-8. Multi-Agent Systems — supervisor, swarm, debate
-9. Evaluation — outcome vs trajectory metrics, SWE-bench / GAIA / TAU-bench
+- `ai-literacy-tutorial-main/` — main tutorial (20 topic pages + hub)
+- `references/` — bibliography subsite (DOIs, GitHub, official docs)
+- `ai-quiz/` — interactive quiz with multi-user progress tracking
 
-**Advanced (Steps 10-12)**
-10. Framework Comparison — LangGraph, CrewAI, AutoGen / AG2, OpenAI Agents SDK
-11. Model Context Protocol (MCP)
-12. Safety & Deployment — OWASP Top 10, guardrails, monitoring
+## How to use
 
-## How to view
+Open `ai-literacy-tutorial-main/index.html` in any modern browser. No build step needed.
 
-Open `index.html` in any modern browser. Use the language toggle button (top-right) to switch between 中文 and English. Progress saves automatically via localStorage.
+Toggle 中文 / English with the top-right button. Progress and quiz state persist via `localStorage`.
 
-Built on the same stack as the scRNA-seq tutorial — pure HTML/CSS/JS with no build step.
+© Charlene · 2026

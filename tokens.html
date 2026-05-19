@@ -1,0 +1,525 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 2: Tokens &amp; Context Window — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html" class="active">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 2 / 20</div>
+<h1 data-zh="Token 與 Context Window" data-en="Tokens &amp; Context Window">Token 與 Context Window</h1>
+<p class="subtitle" data-lang="zh">為什麼「1M context」聽起來像魔法、但你貼了 800K 字後模型開始忘事？理解 token 計費與召回曲線，是用好 LLM 的第二堂課。</p>
+<p class="subtitle" data-lang="en">Why does "1M context" sound magical yet the model starts forgetting after you paste 800K words? Understanding tokens, pricing, and the recall curve is your second LLM lesson.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="十個關於 token 與 context 的關鍵詞" data-en="Ten key terms for tokens &amp; context">十個關於 token 與 context 的關鍵詞</h2>
+<div data-lang="zh"><p>「token」這個詞在 NLP 圈內含義精確，但跨進生醫圈常被誤用。先讀這 10 張卡，後面所有「為什麼中文比較貴」「為什麼 1M context 不能塞滿」都會自然懂。</p></div>
+<div data-lang="en"><p>"Token" has a precise meaning in NLP that often gets muddled in biomed. Skim these ten cards first; later sections on "why Chinese costs more" and "why 1M context can't be fully filled" will then be obvious.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🔡</div><h4>Token</h4>
+<div data-lang="zh"><p>LLM 處理的最小單位，是<strong>subword 片段</strong>。「mitochondrial」≈1 token；「scRNA-seq」常被切成 3–4 個 token。所有計費與長度限制都以 token 為單位。</p></div>
+<div data-lang="en"><p>The smallest unit an LLM processes — a <strong>subword piece</strong>. "mitochondrial" ≈ 1 token; "scRNA-seq" usually splits into 3–4. Billing and length caps are all token-based.</p></div>
+</div>
+<div class="card"><div class="card-icon">✂️</div><h4>BPE</h4>
+<div data-lang="zh"><p><strong>Byte-Pair Encoding</strong>（Sennrich 2016）：從字元開始，反覆把最常見的字元對合併。GPT 家族使用的 tiktoken 與 cl100k_base 即為變體。</p></div>
+<div data-lang="en"><p><strong>Byte-Pair Encoding</strong> (Sennrich 2016): starts from characters and iteratively merges the most frequent pairs. GPT's tiktoken / cl100k_base are variants.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌐</div><h4>SentencePiece</h4>
+<div data-lang="zh"><p>Google 的 tokenizer，<strong>不依語言邊界</strong>，把空白也當字元處理。Llama、Gemini、T5 都用 SentencePiece 變體，對中文/日文較友善。</p></div>
+<div data-lang="en"><p>Google's tokenizer; <strong>language-agnostic</strong>, treats whitespace as a regular character. Llama, Gemini, and T5 use SentencePiece variants — friendlier to CJK.</p></div>
+</div>
+<div class="card"><div class="card-icon">🪟</div><h4>Context Window</h4>
+<div data-lang="zh"><p>模型一次能看見的 token 數上限。2026 旗艦 ≈ 1M；Llama 4 Scout 達 10M。但<strong>有效 context</strong>（actually useful）通常只有宣稱值的 50–70%。</p></div>
+<div data-lang="en"><p>The maximum number of tokens the model sees at once. 2026 flagships ≈ 1M; Llama 4 Scout 10M. But <strong>effective context</strong> is typically 50–70% of the advertised value.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧮</div><h4>Tokenizer</h4>
+<div data-lang="zh"><p>把文字切成 token 的程式。不同模型 tokenizer 不同——同樣一段文字在 GPT 與 Claude 上的 token 數可能差 10%。<code>tiktoken</code> 是 OpenAI 的開源實作。</p></div>
+<div data-lang="en"><p>The program that chops text into tokens. Different models use different tokenizers; the same passage can differ by 10% across GPT and Claude. <code>tiktoken</code> is OpenAI's open-source one.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚙️</div><h4>Attention</h4>
+<div data-lang="zh"><p>Transformer 核心：對 n 個 token，計算每兩兩 token 的「相關度」。複雜度是 <strong>O(n²)</strong>，這是長 context 慢且貴的主因。</p></div>
+<div data-lang="en"><p>The Transformer's core operation: compute pairwise "relevance" between every two of n tokens. Complexity is <strong>O(n²)</strong> — the main reason long context is slow and pricey.</p></div>
+</div>
+<div class="card"><div class="card-icon">💾</div><h4>KV Cache</h4>
+<div data-lang="zh"><p>Key/Value cache：把已算過的 attention 中間結果存下來，逐 token 生成時不必重算前面。長對話/長 context 的「memory footprint」主因。</p></div>
+<div data-lang="en"><p>Key/Value cache: stores already-computed attention intermediates so each new token doesn't redo the prior ones. The main memory cost of long chats / long context.</p></div>
+</div>
+<div class="card"><div class="card-icon">📍</div><h4>Positional Encoding</h4>
+<div data-lang="zh"><p>告訴模型「token 是第幾個位置」的訊號。從原始 sinusoidal 到 RoPE（Su 2023），讓 attention 帶有相對位置信息。是長 context 外推的關鍵。</p></div>
+<div data-lang="en"><p>The signal telling the model "which position is this token." Evolved from sinusoidal to RoPE (Su 2023), giving attention relative-position information. Critical to long-context extrapolation.</p></div>
+</div>
+<div class="card"><div class="card-icon">🕳️</div><h4>Lost in the Middle</h4>
+<div data-lang="zh"><p>Liu 2024 TACL 觀察：把關鍵資訊放中段，模型常會「跳過」；放開頭/結尾則準確得多。長 context 工程必懂的偏誤。</p></div>
+<div data-lang="en"><p>Liu 2024 TACL: information placed in the middle of a long context often gets "skipped"; the start and end are far more reliably attended to. Essential bias to know.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔄</div><h4>Sliding Window</h4>
+<div data-lang="zh"><p>處理「context 不夠」的工程招式：把長文切重疊段（如 800 token + 120 overlap），逐段處理後合併。也是 Mistral 等模型局部 attention 的設計。</p></div>
+<div data-lang="en"><p>Engineering trick when context isn't enough: chunk long text with overlap (e.g., 800 + 120 overlap), process piece by piece, then merge. Also the local-attention design in models like Mistral.</p></div>
+</div>
+</div>
+</section>
+
+<!-- ===== Beginner intro ===== -->
+<section class="section">
+<div class="section-label" data-zh="初學者導讀" data-en="GENTLE INTRO">初學者導讀</div>
+<h2 data-zh="兩個類比讓你直覺懂 token 與 context" data-en="Two analogies that make tokens &amp; context click">兩個類比讓你直覺懂 token 與 context</h2>
+<div data-lang="zh">
+<p><strong>類比 1：Token 就是 LLM 的「公升」，不是「字」。</strong>你開車進加油站，油價是「每公升 35 元」，不是「每滴」也不是「每箱」。LLM 的世界裡，token 是基本計量單位，所有計費 (input/output)、限制 (max_tokens)、context window 都以 token 計。「字數」「字元數」「位元組數」都不是直接相關。一個英文長詞 (mitochondrial) 可能只佔 1 token；一個中文字常佔 1.5–2 token；一段 JSON 因為括號、引號多，token/char 比例會比純文字高。</p>
+<p><strong>類比 2：Context Window 就像你的工作桌面。</strong>你準備一份 review article，桌上能堆 10 篇 paper，超過就要從架上拿一篇下來、收一篇回去。1M context 像「桌面很大、能堆 1000 篇」。但人類視覺有極限——堆太多時你會看不到中間那本。Liu 2024 的 "lost in the middle" 就是 LLM 的這個現象：context 大不等於「全部都用得到」。所以工程上總是想辦法 (1) 把關鍵段放開頭/結尾 (2) 用 RAG「只取最相關幾頁」(3) 階層摘要。理解了這兩個類比，後面所有「為什麼 RAG 比塞整個 1M 好」的討論就一目了然。</p>
+</div>
+<div data-lang="en">
+<p><strong>Analogy 1: A token is the LLM's liter, not its letter.</strong> When you pull into a gas station, the price is "per liter" — not per drop or per tank. In the LLM world, the token is the unit: billing (input/output), limits (max_tokens), and context window are all token-based. Word count, character count, byte count are not directly related. A long English word like "mitochondrial" can be 1 token; one Chinese character is usually 1.5–2; JSON, with its brackets and quotes, has a higher token-per-char ratio than prose.</p>
+<p><strong>Analogy 2: Context window is your desk.</strong> Drafting a review, you can pile 10 papers on your desk; beyond that you must put one back on the shelf. A 1M context is "an enormous desk that holds 1000 papers." But human vision has limits — pile too high and the middle ones vanish. Liu 2024's "lost in the middle" is exactly this for LLMs: bigger context ≠ uniformly usable context. So engineering always tries to (1) put the critical bits at start/end, (2) use RAG to fetch only the most relevant pages, or (3) summarize hierarchically. With these two analogies, "why RAG beats stuffing 1M" becomes obvious.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="Token 是 LLM 的「公升」" data-en="Tokens are the LLM's litre">Token 是 LLM 的「公升」</h2>
+<div data-lang="zh">
+<p>每次跟 Claude / GPT / Gemini 講話，它都不是用「字元」也不是用「英文單字」計算成本，而是用 <strong>token</strong>。Token 由 tokenizer（BPE、SentencePiece 或 tiktoken）把文字切成 subword 片段：「mitochondrial」可能是 1 個 token，「scRNA-seq」可能被切成 3–4 個。經驗法則：1 個英文單字 ≈ 1.3 tokens，1 個中文字 ≈ 1.5–2 tokens，1 行程式碼 ≈ 5–10 tokens。</p>
+<p>Context window 是模型「一次能塞進腦袋」的 token 數。2026 年的旗艦模型多為 1M（Claude Opus 4.6、GPT-5.5 Pro、Gemini 2.5 Pro），Llama 4 Scout 甚至到 10M。但要注意——大不等於好用：超過 ~500K 後召回率 (needle-in-haystack) 會明顯下降，且 attention 計算是 O(n²)，越長越慢越貴。</p>
+</div>
+<div data-lang="en">
+<p>Every chat with Claude / GPT / Gemini is billed not in characters or English words but in <strong>tokens</strong>. A tokenizer (BPE, SentencePiece, or tiktoken) chops text into subword pieces: "mitochondrial" is often 1 token; "scRNA-seq" splits into 3–4. Rule of thumb: 1 English word ≈ 1.3 tokens, 1 Chinese character ≈ 1.5–2 tokens, 1 line of code ≈ 5–10 tokens.</p>
+<p>The context window is the number of tokens a model can hold in its head at once. The 2026 flagships sit at 1M (Claude Opus 4.6, GPT-5.5 Pro, Gemini 2.5 Pro), while Llama 4 Scout reaches 10M. But bigger isn't always usable: above ~500K, needle-in-haystack recall degrades, and attention is O(n²) — longer = slower and pricier.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>長 context 是工具，不是萬靈丹。「貼整本論文」適合摘要；「貼整個 codebase」適合 refactor；但若你只要回答某個事實，<strong>RAG（先檢索後生成）幾乎永遠比 stuff-in-context 更便宜、更準</strong>。</span>
+<span data-lang="en"><strong>Core mindset:</strong> Long context is a tool, not a panacea. "Paste the whole paper" works for summarization; "paste the whole codebase" works for refactor. But if you only need one fact, <strong>RAG (retrieve, then generate) almost always beats stuff-in-context on both cost and accuracy</strong>.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="核心概念" data-en="CORE CONCEPTS">核心概念</div>
+<h2 data-zh="關於 token 你必須知道的六件事" data-en="Six things you must know about tokens">關於 token 你必須知道的六件事</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🔡</div><h4>BPE / SentencePiece</h4>
+<div data-lang="zh"><p>Byte-Pair Encoding 從字元逐步合併常見對；SentencePiece 不依語言邊界。中文常被切成單字或雙字片段。</p></div>
+<div data-lang="en"><p>BPE merges frequent character pairs; SentencePiece is language-agnostic. Chinese is usually split into 1–2 character pieces.</p></div>
+</div>
+<div class="card"><div class="card-icon">🇬🇧</div><h4>English ratio</h4>
+<div data-lang="zh"><p>≈ 0.75 字/token；100 字英文 ≈ 130 tokens。專業詞（mitochondrial）通常 1 token。</p></div>
+<div data-lang="en"><p>≈ 0.75 words/token; 100 English words ≈ 130 tokens. Long technical words like "mitochondrial" are often 1 token.</p></div>
+</div>
+<div class="card"><div class="card-icon">🇹🇼</div><h4>Chinese ratio</h4>
+<div data-lang="zh"><p>1 漢字 ≈ 1.5–2 tokens；繁體略多於簡體。1000 字中文約 1800 tokens。</p></div>
+<div data-lang="en"><p>1 Chinese char ≈ 1.5–2 tokens; Traditional slightly more than Simplified. 1000 Chinese chars ≈ 1800 tokens.</p></div>
+</div>
+<div class="card"><div class="card-icon">💻</div><h4>Code ratio</h4>
+<div data-lang="zh"><p>程式碼平均 5–10 tokens/行；空格、縮排、特殊符號都吃 token。R 比 Python 略多。</p></div>
+<div data-lang="en"><p>Code averages 5–10 tokens/line; whitespace, indentation, and symbols all consume tokens. R slightly more than Python.</p></div>
+</div>
+<div class="card"><div class="card-icon">💰</div><h4>Input ≠ Output 計費</h4>
+<div data-lang="zh"><p>輸入便宜（讀），輸出貴（寫）；長文摘要划算，長文翻譯不划算。</p></div>
+<div data-lang="en"><p>Input is cheap (read), output is expensive (write). Long summarization is economical; long translation is not.</p></div>
+</div>
+<div class="card"><div class="card-icon">📉</div><h4>Recall decay</h4>
+<div data-lang="zh"><p>超過 ~500K 後針在乾草堆中召回率下降；放關鍵資訊在「開頭或結尾」比放中段更可靠。</p></div>
+<div data-lang="en"><p>Above ~500K, needle-in-haystack recall drops. Place key info at the start or end, not buried mid-context.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="Token 計算器與 context 利用率" data-en="Token Estimator &amp; Context Utilization">Token 計算器與 context 利用率</h2>
+<div data-lang="zh"><p>貼入文字（中英都可），下方會估算 token 數，並對應到五個模型的 context window 使用率。<strong>係數：</strong>英文 1 word ≈ 1.3 token；中文 1 字 ≈ 1.7 token。</p></div>
+<div data-lang="en"><p>Paste any text (mixed CJK + English ok). The estimator gives a token count and shows how much it eats into each model's context window. <strong>Coefficients:</strong> EN 1 word ≈ 1.3 token; ZH 1 char ≈ 1.7 token.</p></div>
+<div class="interactive-panel">
+<textarea id="tokInput" rows="5" style="width:100%;font-family:var(--font-mono);font-size:.85rem;padding:10px;border:1px solid var(--c-border);border-radius:6px;background:var(--c-bg-alt);color:var(--c-ink)" placeholder=""></textarea>
+<div style="margin:14px 0;display:flex;gap:20px;flex-wrap:wrap;font-family:var(--font-mono);font-size:.9rem">
+  <div><span data-zh="中文字" data-en="ZH chars">中文字</span>: <span id="zhCount" style="color:var(--c-accent);font-weight:700">0</span></div>
+  <div><span data-zh="英文字" data-en="EN words">英文字</span>: <span id="enCount" style="color:var(--c-accent);font-weight:700">0</span></div>
+  <div><span data-zh="估算 tokens" data-en="Est. tokens">估算 tokens</span>: <span id="tokCount" style="color:var(--c-highlight);font-weight:700;font-size:1.1rem">0</span></div>
+</div>
+<div id="ctxBars" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
+</div>
+</section>
+
+<!-- ===== Why Chinese costs more ===== -->
+<section class="section">
+<div class="section-label" data-zh="跨語言差異" data-en="LANGUAGE COST">跨語言差異</div>
+<h2 data-zh="為什麼中文比英文耗 token？" data-en="Why does Chinese consume more tokens than English?">為什麼中文比英文耗 token？</h2>
+<div data-lang="zh">
+<p>原因有三層。<strong>第一層：訓練語料分佈不均</strong>。大多數開源 BPE tokenizer 訓練時，英文佔比 70–95%，中文只佔幾個百分點。BPE 演算法會「優先合併常見對」，所以英文常見的 "ing"、"tion"、"ation" 都變成單一 token，而中文兩字詞（粒線體、轉錄因子）卻常被切散。</p>
+<p><strong>第二層：byte-level fallback</strong>。當 tokenizer 沒見過某個字（罕見漢字、繁體偏旁、emoji），會退回到 byte 級別，把它切成 2–4 個 UTF-8 byte token——所以「驫」「鱻」這類字可能每字 3 token。Llama 3、GPT-4o、Claude 3.5 都帶有這個 fallback。</p>
+<p><strong>第三層：tokenizer 對 CJK 的優化</strong>。Gemini（SentencePiece BPE 變體）對中文較好，平均 1 漢字 ≈ 1.2–1.5 token；GPT-5.5 / Claude Opus ≈ 1.5–1.9 token；Llama 4 約 1.7–2.1 token。差異看似小，但 100 萬字中文跑下來，token 數差距可達 30–70%。</p>
+<p><strong>務實建議：</strong>(1) 與英文母語讀者溝通的 prompt，建議直接用英文寫；(2) 處理中文病歷或論文摘要時，預留 1.7–2× 的 token 預算；(3) 同樣預算下，Gemini 對中文最划算；(4) 若大量處理繁體中文，記得加 `disallowed_special` 處理特殊符號，免得 token 數爆衝。</p>
+</div>
+<div data-lang="en">
+<p>Three layers. <strong>Layer 1: training-data imbalance.</strong> Most open BPE tokenizers were trained on text that's 70–95% English with only a few percent Chinese. BPE merges the most frequent pairs first, so English's "ing", "tion", "ation" become single tokens, while two-character Chinese terms (粒線體, 轉錄因子) get split.</p>
+<p><strong>Layer 2: byte-level fallback.</strong> When the tokenizer hasn't seen a character (rare hanzi, traditional radicals, emoji), it falls back to bytes — 2–4 UTF-8-byte tokens per char. Llama 3, GPT-4o, and Claude 3.5 all include this fallback.</p>
+<p><strong>Layer 3: tokenizer optimization for CJK.</strong> Gemini's SentencePiece variant is the friendliest: ~1.2–1.5 tokens per Chinese char. GPT-5.5 / Claude Opus ≈ 1.5–1.9; Llama 4 ≈ 1.7–2.1. Across 1 M Chinese characters this 30–70% gap is significant.</p>
+<p><strong>Practical advice:</strong> (1) prompts to English-speaking peers — write in English; (2) Chinese charts or abstracts — budget 1.7–2× tokens; (3) at equal cost Gemini is cheapest for Chinese; (4) for Traditional Chinese, set <code>disallowed_special</code> carefully to avoid surprise token bloat.</p>
+</div>
+
+<details class="accordion-item" style="margin-top:14px">
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 資深讀者深入：Quadratic Attention 的數學與 Flash Attention 演進" data-en="🔬 Deeper dive: Quadratic Attention math &amp; Flash Attention">🔬 資深讀者深入：Quadratic Attention 的數學與 Flash Attention 演進</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p>Self-attention 的核心計算是 <code>softmax(Q · K^T / √d_k) · V</code>。對 n token 序列，Q、K、V 都是 n × d 矩陣，所以 <code>Q · K^T</code> 是 n × n 矩陣，記憶體 O(n²)、運算 O(n² · d)。當 n = 1M 而 d = 128，光是 attention 矩陣就 10¹² 個 floats = 4 TB（fp32）。這顯然不能放進 GPU。</p>
+<p><strong>三代演進：</strong>(1) <strong>FlashAttention</strong>（Dao 2022）：用 tiling + recomputation 把 attention 計算分塊，I/O 從 O(n²) 降到 O(n) 同時保留精度。Throughput 提升 2–4×；(2) <strong>FlashAttention-2</strong>（Dao 2023）：進一步優化 GPU thread 排程；(3) <strong>Ring Attention / Striped Attention</strong>（Liu 2024）：把 attention 跨 GPU 分散，這是 1M+ context 真正可行的關鍵。</p>
+<p>另一條路是<strong>線性 attention</strong>：Linformer（投影）、Performer（kernel approximation）、Mamba（state space）。Mamba 系列在某些 benchmark 上接近 Transformer，但目前 frontier model 主流仍是 attention + FlashAttention 路線。Hybrid 設計 (e.g., Jamba) 越來越多。</p>
+<p><strong>對使用者的實務意義：</strong>API 上看「1M context」實際 latency 不是線性增長，常是<strong>次線性</strong>（thanks FlashAttention），但 cost 仍隨 n 線性增長（按 token 計費）。對「貼整個 paper 來摘要」這類任務，cost 約是「貼 abstract」的 30–50×，latency 約 3–5×。</p>
+</div>
+<div data-lang="en">
+<p>Self-attention's core is <code>softmax(Q · K^T / √d_k) · V</code>. With sequence length n and head dim d, Q, K, V are n × d, so <code>Q · K^T</code> is n × n: memory O(n²), compute O(n² · d). For n = 1M and d = 128, the attention matrix alone needs 10¹² floats ≈ 4 TB (fp32). Not fitting on any GPU.</p>
+<p><strong>Three generations:</strong> (1) <strong>FlashAttention</strong> (Dao 2022): tiling + recomputation drops I/O from O(n²) to O(n) without losing precision; 2–4× throughput. (2) <strong>FlashAttention-2</strong> (Dao 2023): better GPU thread scheduling. (3) <strong>Ring / Striped Attention</strong> (Liu 2024): split attention across GPUs — the real key to 1M+ context being shippable.</p>
+<p>The alternative line is <strong>linear attention</strong>: Linformer (projection), Performer (kernel), Mamba (state-space). Mamba-class models match Transformers on some benchmarks but frontier models remain attention + FlashAttention. Hybrid designs (Jamba) are growing.</p>
+<p><strong>User implication:</strong> "1M context" API latency is often <strong>sub-linear</strong> (thanks to FlashAttention) but cost is still linear in tokens. Summarizing a full paper costs 30–50× the abstract, with 3–5× the latency.</p>
+</div>
+</div>
+</details>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="程式範例" data-en="CODE EXAMPLES">程式範例</div>
+<h2 data-zh="精確計算 token" data-en="Counting tokens precisely">精確計算 token</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'tk1')">Python · tiktoken</button><button class="code-tab-btn" onclick="switchTab(this,'tk2')">Anthropic SDK</button></div>
+<div class="code-tab-content active" id="tk1"><pre><span class="comment"># pip install tiktoken</span>
+<span class="kw">import</span> tiktoken
+
+enc = tiktoken.encoding_for_model(<span class="str">"gpt-4o"</span>)
+text = <span class="str">"In scRNA-seq, mitochondrial fraction is a key QC metric."</span>
+ids = enc.encode(text)
+<span class="func">print</span>(<span class="str">f"tokens = {len(ids)}"</span>)   <span class="comment"># tokens = 14</span>
+
+<span class="comment"># 估算成本 (GPT-5.5 Pro input $2.50 / 1M tok)</span>
+cost = <span class="func">len</span>(ids) / <span class="num">1_000_000</span> * <span class="num">2.50</span>
+<span class="func">print</span>(<span class="str">f"cost ≈ ${cost:.6f}"</span>)</pre></div>
+<div class="code-tab-content" id="tk2"><pre><span class="comment"># Claude SDK with explicit max_tokens budget</span>
+<span class="kw">from</span> anthropic <span class="kw">import</span> Anthropic
+client = Anthropic()
+
+resp = client.messages.create(
+    model=<span class="str">"claude-opus-4-6"</span>,
+    max_tokens=<span class="num">1024</span>,            <span class="comment"># cap on OUTPUT tokens</span>
+    messages=[{<span class="str">"role"</span>:<span class="str">"user"</span>,
+               <span class="str">"content"</span>: long_paper_text}]
+)
+<span class="func">print</span>(resp.usage.input_tokens,
+      resp.usage.output_tokens)</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模型比較" data-en="MODEL COMPARISON">模型比較</div>
+<h2 data-zh="2026 年五大模型的 context &amp; 價格" data-en="2026 Big Five: context &amp; pricing">2026 年五大模型的 context &amp; 價格</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="模型" data-en="Model">模型</th><th>Context</th><th data-zh="輸入 / 1M" data-en="Input / 1M">輸入 / 1M</th><th data-zh="輸出 / 1M" data-en="Output / 1M">輸出 / 1M</th><th data-zh="知識截止" data-en="Cutoff">知識截止</th></tr></thead>
+<tbody>
+<tr><td>Claude Opus 4.6</td><td>1M</td><td>$15</td><td>$75</td><td>2026-01</td></tr>
+<tr><td>GPT-5.5 Pro</td><td>1M</td><td>$2.50</td><td>$10</td><td>2025-10</td></tr>
+<tr><td>Gemini 2.5 Pro</td><td>1M–2M</td><td>$1.25</td><td>$5</td><td>2026-02</td></tr>
+<tr><td>Llama 4 Scout</td><td>10M</td><td>$0.20 (host)</td><td>$0.60 (host)</td><td>2025-09</td></tr>
+<tr><td>DeepSeek V4 Pro</td><td>1M</td><td>$0.27</td><td>$1.10</td><td>2025-12</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>常見錯誤：</strong>把整個 1 GB BAM/FASTQ「貼進」context。LLM 無法分析二進位資料；也用不上 1M context。改用 sample 統計或 RAG 即可。</span>
+<span data-lang="en"><strong>Common mistake:</strong> Pasting a 1 GB BAM/FASTQ into context. LLMs can't parse binary; 1M won't save you. Sample-level stats or RAG is the right move.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="截斷策略" data-en="TRUNCATION STRATEGIES">截斷策略</div>
+<h2 data-zh="當 context 不夠用時的三招" data-en="Three tactics when context runs out">當 context 不夠用時的三招</h2>
+<div class="workflow">
+  <div class="workflow-step" data-step="1"><h4 data-zh="① Sliding Window 滑動視窗" data-en="① Sliding Window">① Sliding Window 滑動視窗</h4>
+  <div data-lang="zh"><p>把長文切段，每段保留前一段尾巴 200–500 tokens 重疊，逐段處理後 merge。適合長訪談轉錄、長 PDF 摘要。</p></div>
+  <div data-lang="en"><p>Chunk the text and overlap each segment with the prior 200–500 tokens; process and merge. Good for long transcripts and PDFs.</p></div>
+  </div>
+  <div class="workflow-step" data-step="2"><h4 data-zh="② Hierarchical Summarization 階層摘要" data-en="② Hierarchical Summarization">② Hierarchical Summarization 階層摘要</h4>
+  <div data-lang="zh"><p>第一輪每段獨立摘要，第二輪把所有摘要再摘一次。代價是細節流失。適合 50 篇 review 速覽。</p></div>
+  <div data-lang="en"><p>Summarize each chunk, then summarize the summaries. Trades detail for breadth. Good for skimming 50-paper reviews.</p></div>
+  </div>
+  <div class="workflow-step" data-step="3"><h4 data-zh="③ RAG 向量檢索" data-en="③ RAG Vector Retrieval">③ RAG 向量檢索</h4>
+  <div data-lang="zh"><p>把文件 embedding 存進 vector DB（FAISS / Chroma / Pinecone），查詢時只取 top-k 相關段落丟給 LLM。最便宜、最準的長文方案。</p></div>
+  <div data-lang="en"><p>Embed documents into a vector DB (FAISS / Chroma / Pinecone) and feed only the top-k relevant chunks to the LLM. Cheapest and most accurate for long corpora.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- ===== Real-world cases ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="REAL-WORLD CASES">真實案例</div>
+<h2 data-zh="兩個關於 token 經濟的真實故事" data-en="Two real stories on the economics of tokens">兩個關於 token 經濟的真實故事</h2>
+
+<div class="callout tip" style="display:block"><div style="display:flex;gap:10px;align-items:start;margin-bottom:8px"><span class="callout-icon">📚</span><strong data-zh="案例 A：心衰竭組用 1M context 做 50 篇 systematic review" data-en="Case A: HF group pulled 50 papers into 1M context for a systematic review">案例 A：心衰竭組用 1M context 做 50 篇 systematic review</strong></div>
+<div data-lang="zh"><p>2025 年某心衰竭研究團隊嘗試用 Gemini 1.5 Pro 的 1M context 做 SGLT2 inhibitor 對 HFpEF 的 systematic review。他們把 50 篇全文（共約 600K token）一次塞進 context，請模型抽出每篇的「人數、follow-up、primary outcome、HR、CI、p、AE」並輸出 markdown 表格。第一次嘗試結果是：表格結構完美、但 50 篇裡有 14 篇的 HR 數字被「重新採樣」（hallucination 數值）；其中 5 篇 confidence interval 完全錯位。團隊後來改用「逐篇 RAG + verification 」流程，把 hallucination 降到 1/50。<strong>教訓：</strong>1M context 適合「結構轉換 / 重組」型任務（如把 5 篇 review 改寫成 1 份），但<strong>不適合需要精確數值的抽取</strong>——RAG 加 source 驗證才是工程化做法。整個經驗也讓他們把 systematic review 流程從「3 個月 RA 全手工」改成「1 週 RAG + 2 週人類驗證」。</p></div>
+<div data-lang="en"><p>In 2025, a heart-failure research group attempted a systematic review of SGLT2 inhibitors in HFpEF using Gemini 1.5 Pro's 1M context. They stuffed 50 full-text papers (~600K tokens) into a single context and asked the model to extract "n, follow-up, primary outcome, HR, CI, p, AE" per paper as a markdown table. Result: the table looked perfect, but 14/50 hazard ratios were re-sampled (numeric hallucinations), and 5/50 CIs were completely misaligned. They switched to a per-paper RAG + verification pipeline and reduced hallucinations to ~1/50. <strong>Lesson:</strong> 1M context works for structural rewrites (merging 5 reviews into 1) but <strong>fails on precise numeric extraction</strong> — RAG plus source verification is the engineering path. Their downstream workflow shifted from "3 months of manual RA work" to "1 week RAG + 2 weeks human verification."</p></div>
+</div>
+
+<div class="callout tip" style="display:block"><div style="display:flex;gap:10px;align-items:start;margin-bottom:8px"><span class="callout-icon">🇹🇼</span><strong data-zh="案例 B：中文研究者發現「同字數」的中文 prompt 比英文貴 1.5×" data-en="Case B: Chinese researchers discovered same-character-count Chinese prompts cost 1.5×">案例 B：中文研究者發現「同字數」的中文 prompt 比英文貴 1.5×</strong></div>
+<div data-lang="zh"><p>2026 年初某台灣生統團隊在跑大量繁中病歷 de-identification 時發現一個會計震驚：他們以為「字數差不多應該成本差不多」，結果同樣的工作量，中文版的 OpenAI API bill 比英文版高 1.5–1.7×。他們追下去發現原因——cl100k_base tokenizer 對繁體中文不夠優化，每個漢字平均 1.7 token，而英文每 word 只要 1.3 token；加上中文「每 char 1.7 token × 平均 word 內 1.5 char」就是 ~2.5×。他們最後把流程改成：(1) 對「結構抽取」類任務先把 prompt 用英文寫、只把<strong>內容</strong>留中文；(2) 把 Gemini 2.5 Pro 加進選項（對中文 token ratio ~1.3，每月成本省 35%）；(3) 報帳時把這個資料寫進 grant budget justification 給未來申請參考。這是一個典型的「不認識 token 經濟就會被 bill 嚇到」案例。</p></div>
+<div data-lang="en"><p>In early 2026, a Taiwan biostats team running de-identification on Traditional Chinese charts hit a billing shock: same workload, Chinese version costs 1.5–1.7× the English. Root cause: cl100k_base is suboptimal for Traditional Chinese (~1.7 tokens/char), while English averages 1.3 tokens/word; combined with "1.7 token/char × ~1.5 chars/Chinese-word" = ~2.5× per word. They reworked the pipeline: (1) on structured-extraction tasks, write the prompt in English and keep only the content in Chinese; (2) add Gemini 2.5 Pro (Chinese ratio ~1.3, saving ~35% monthly); (3) document this in grant-budget justifications. A classic "you'll be bill-shocked if you don't understand token economics" story.</p></div>
+</div>
+</section>
+
+<!-- ===== Interactive 2: Lost in the middle ===== -->
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="互動 ② Lost-in-the-Middle 召回率曲線" data-en="Interactive ② Lost-in-the-Middle Recall Curve">互動 ② Lost-in-the-Middle 召回率曲線</h2>
+<div data-lang="zh"><p>滑動「context 長度」，觀察「針」(needle) 在不同位置（開頭 / 中段 / 結尾）的召回率變化。這是 Liu 2024 TACL 與 RULER 2024 多次驗證的現象：模型對「開頭」與「結尾」的 token 較敏感；中段最易被忽略。把<strong>關鍵資訊放開頭/結尾</strong>是業界共識。</p></div>
+<div data-lang="en"><p>Drag the "context length" slider and watch how recall changes by needle position (start / middle / end). Documented by Liu 2024 TACL and RULER 2024 — the start and end positions are well attended; the middle tends to be ignored. Putting critical info at start / end is industry standard.</p></div>
+<div class="interactive-panel">
+<div class="slider-group"><label><span data-zh="Context 長度 (token)" data-en="Context length (tokens)">Context 長度</span> <span id="litmCtx">200000</span></label><input type="range" id="litmCtxSlider" min="10000" max="1000000" value="200000" step="10000"></div>
+<div class="chart-container" style="height:280px"><canvas id="litmChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;margin-top:8px"><span data-zh="X = needle 位置 (% of context)；Y = 召回率。多模型平均；模型實際表現會略有差異。" data-en="X = needle position (% of context); Y = recall. Averaged across models; actual numbers vary.">X = needle 位置 (% of context)；Y = 召回率。多模型平均，模型實際表現會略有差異。</span></p>
+</div>
+</section>
+
+<!-- ===== Interactive 3: Attention pattern mock heat-map ===== -->
+<section class="section">
+<div class="section-label" data-zh="互動工具" data-en="INTERACTIVE">互動工具</div>
+<h2 data-zh="互動 ③ Attention 熱圖示意（簡化版）" data-en="Interactive ③ Mock Attention Heatmap (simplified)">互動 ③ Attention 熱圖示意（簡化版）</h2>
+<div data-lang="zh"><p>真實 attention 是 n × n 矩陣（n = token 數）。下方為一句句子「The cardiomyocyte exhibits high mitochondrial fraction.」的簡化示意，每列代表「query token 對其他 token 的關注度」。選 query token 觀察 attention pattern——能直觀理解「為什麼 token 多到一定程度，模型會『看不見』中段」。</p></div>
+<div data-lang="en"><p>Real attention is an n × n matrix. Below is a simplified illustration on the sentence "The cardiomyocyte exhibits high mitochondrial fraction." Each row shows a query token's attention over the others. Pick a query and observe the pattern — gives intuition for why far-away tokens get under-attended.</p></div>
+<div class="interactive-panel">
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="attTokens"></div>
+<div id="attMap" style="display:grid;gap:4px"></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center;margin-top:10px"><span data-zh="顏色越深 = attention 越強。實際模型多頭 attention 模式更豐富。" data-en="Darker = stronger attention. Real multi-head attention is far richer.">顏色越深 = attention 越強。實際多頭 attention 模式更豐富。</span></p>
+</div>
+</section>
+
+<!-- ===== Common pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="COMMON PITFALLS">常見誤區</div>
+<h2 data-zh="關於 token 的 6 個常見誤解" data-en="Six common misconceptions about tokens">關於 token 的 6 個常見誤解</h2>
+<div class="callout warn" style="display:block"><div data-lang="zh">
+<ol style="margin:4px 0 0 18px;line-height:1.85;padding:0">
+<li><strong>「1 個英文字 = 1 token」</strong>——錯。短常見字確實多為 1 token，但 "tokenization"、"systematically" 等常被拆 2–3 個。</li>
+<li><strong>「1M context 就能塞 100 萬個漢字」</strong>——錯。1 漢字 ≈ 1.7 token，1M context ≈ 60 萬中文字、80 萬英文 word。</li>
+<li><strong>「Context window 越大越好」</strong>——錯。Recall 在 ~500K 後下降，且 O(n²) 計算讓 latency/成本爆增。</li>
+<li><strong>「同一個模型對所有語言一樣」</strong>——錯。中文/日文/阿拉伯文 token 比例都明顯高於英文。</li>
+<li><strong>「貼整個 BAM/FASTQ 到 context 就能讓 AI 分析」</strong>——錯。LLM 看不懂 binary；先 sample 統計或 RAG。</li>
+<li><strong>「Output 跟 input 一樣便宜」</strong>——錯。output token 通常 3–10× 貴於 input；長翻譯成本最高。</li>
+</ol></div>
+<div data-lang="en">
+<ol style="margin:4px 0 0 18px;line-height:1.85;padding:0">
+<li><strong>"1 English word = 1 token"</strong> — wrong. Short common words yes, but "tokenization"/"systematically" often split 2–3.</li>
+<li><strong>"1M context = 1M Chinese characters"</strong> — wrong. ~1.7 tokens/char means 1M ctx ≈ 600K Chinese chars or ~800K English words.</li>
+<li><strong>"Bigger context is always better"</strong> — recall drops after ~500K; O(n²) blows up latency and cost.</li>
+<li><strong>"Same model performs uniformly across languages"</strong> — Chinese / Japanese / Arabic all have higher token ratios than English.</li>
+<li><strong>"Just paste the BAM/FASTQ"</strong> — LLMs can't parse binary; summarize or RAG first.</li>
+<li><strong>"Output is as cheap as input"</strong> — output is typically 3–10× more expensive; long translation hits the wallet hardest.</li>
+</ol></div></div>
+</section>
+
+<!-- ===== Biostats view ===== -->
+<section class="section">
+<div class="section-label" data-zh="生統數理視角" data-en="BIOSTATS / MATHS VIEW">生統數理視角</div>
+<h2 data-zh="給統計背景讀者的進階註腳" data-en="Footnotes for the statistically inclined">給統計背景讀者的進階註腳</h2>
+<div data-lang="zh">
+<p><strong>① Token 數估算的隨機性。</strong>對一段文字，token 數可視為一個隨機變數，依語言、tokenizer、是否含特殊符號而變。對 n 字英文文本，token 數 X ≈ 1.3·n，且 (X − 1.3n) / √n 近似 N(0, σ²)，σ ≈ 0.3（經驗值）。對中文 σ 更大（≈ 0.5），因為罕字 byte-fallback 造成尾巴重。<strong>Poisson 近似</strong>對「token 數 / 字元數」這個比例有限制，因 token 並非獨立事件——相鄰字元的合併是高度相關的，所以 token 計數不是純 Poisson。</p>
+<p><strong>② Attention 複雜度的下界。</strong>已有理論結果（Keles 2023, Alman 2024）指出，full attention 在最壞情況下必須 Ω(n²) — 線性 attention 都是某種「近似 / kernel approximation」。FlashAttention 不打破這個下界，它只是把 I/O 從 O(n²) 變 O(n)，計算仍是 O(n²·d)。</p>
+<p><strong>③ Lost-in-the-middle 的統計表現。</strong>把 needle 位置 p ∈ [0,1] 視為自變數，召回率 r(p) 在多數模型上接近 U 型曲線：<code>r(p) ≈ r_0 · (1 − γ · sin(πp))</code>。γ 越大 U 越深；frontier model γ 約 0.2，而早期 8K-context 模型 γ 可達 0.45。</p>
+<p><strong>④ 成本最佳化的拉格朗日。</strong>給定固定預算 B = c_in · T_in + c_out · T_out，且 T_out 與任務相關（摘要 T_out 約 T_in / 100；翻譯 T_out ≈ T_in），最佳化「每元錢輸出 token 數」會自然引導你選對任務類型。對 input-heavy 任務，便宜的 input 計費（Gemini 0.27/M）優於 output-heavy 任務的 output 計費（Claude $75/M output）。</p>
+</div>
+<div data-lang="en">
+<p><strong>① Token-count randomness.</strong> For a text passage, token count is a random variable depending on language, tokenizer, and special characters. For n English chars, X ≈ 1.3·n with (X − 1.3n)/√n ≈ N(0, σ²), σ ≈ 0.3 empirically. For Chinese σ ≈ 0.5 (rare-char byte fallback fattens the tail). A pure <strong>Poisson approximation</strong> fails because adjacent character merges are correlated — token events are not independent.</p>
+<p><strong>② Attention complexity lower bound.</strong> Recent theory (Keles 2023, Alman 2024) shows full attention requires Ω(n²) in the worst case — linear-attention variants are kernel approximations. FlashAttention does not break the bound; it just turns I/O from O(n²) to O(n), with compute still O(n²·d).</p>
+<p><strong>③ Lost-in-the-middle as a function.</strong> With needle position p ∈ [0,1], recall is roughly U-shaped: <code>r(p) ≈ r_0 · (1 − γ · sin(πp))</code>. γ ≈ 0.2 for frontier models; older 8K models had γ ≈ 0.45.</p>
+<p><strong>④ Cost optimization Lagrangian.</strong> Given budget B = c_in · T_in + c_out · T_out, with task-dependent T_out (summary T_out ≈ T_in / 100; translation T_out ≈ T_in), choosing the right model becomes a constrained optimization. Input-heavy tasks favor low input price (Gemini $0.27/M); output-heavy tasks should fear Claude's $75/M output.</p>
+</div>
+</section>
+
+<!-- ===== Discussion ===== -->
+<section class="section">
+<div class="section-label" data-zh="思考題" data-en="DISCUSSION">思考題</div>
+<h2 data-zh="實際應用中思考一下這四題" data-en="Think through these four with your team">實際應用中思考一下這四題</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>🧮 Q1</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你準備 review 50 篇心衰竭 RCT，目標是建立「介入 → 主要終點 → HR (95% CI) → p-value」的整理表。<strong>問題：</strong>你會選擇 (a) 1M context 一次塞 50 篇 (b) 逐篇 prompt 50 次 (c) 建 RAG vector DB？為什麼？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Reviewing 50 HF RCTs to build an "intervention → primary endpoint → HR (95% CI) → p" table. <strong>Question:</strong> Would you (a) stuff all 50 into 1M context, (b) prompt the model 50 separate times, or (c) build a RAG vector DB? Why?</p></div></div>
+<div class="card"><h4>💰 Q2</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你的實驗室每月跑 1000 萬個中文病歷 token de-identification。<strong>問題：</strong>面對 Claude Opus ($15/M input) vs Gemini Pro ($1.25/M input) vs 自架 Llama 4 ($0.20/M)，你會如何決策？除了成本，還需要評估什麼？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Your lab de-identifies 10M Chinese-chart tokens monthly. <strong>Question:</strong> Between Claude Opus ($15/M input), Gemini Pro ($1.25/M), and self-hosted Llama 4 ($0.20/M) — how do you decide? What besides cost matters?</p></div></div>
+<div class="card"><h4>📍 Q3</h4>
+<div data-lang="zh"><p><strong>情境：</strong>已知 lost-in-the-middle 現象。你要寫一個 prompt 從 200K context 中找出特定數字。<strong>問題：</strong>你會把這個「問題」放在 prompt 的什麼位置？文件呢？為什麼？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Knowing lost-in-the-middle, you need to extract a specific number from 200K context. <strong>Question:</strong> Where in the prompt do you place the question? Where the documents? Why?</p></div></div>
+<div class="card"><h4>🌍 Q4</h4>
+<div data-lang="zh"><p><strong>情境：</strong>你的 PI 認為「中文 LLM 表現一定差於英文」並建議實驗室全部改用英文。<strong>問題：</strong>你怎麼用 token 經濟與模型表現的事實回應？2026 年的中英差距還大不大？</p></div>
+<div data-lang="en"><p><strong>Scenario:</strong> Your PI insists "Chinese LLMs must be weaker than English ones — let's force English in the lab." <strong>Question:</strong> How do you respond with token economics and current performance facts? Is the Chinese–English gap still wide in 2026?</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">1. 一份 50 頁的英文 PDF（約 25,000 字）大約是多少 tokens？</p>
+<p data-lang="en">1. A 50-page English PDF (about 25,000 words) is roughly how many tokens?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 約 5,000</span><span data-lang="en">A. ~5,000</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 約 32,000</span><span data-lang="en">B. ~32,000</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 約 250,000</span><span data-lang="en">C. ~250,000</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 約 1,000,000</span><span data-lang="en">D. ~1,000,000</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">2. 你需要在 200 份病歷中找出「過去 30 天內出現 troponin 上升」的病例。最合適做法？</p>
+<p data-lang="en">2. You need to find patients with troponin elevation in the past 30 days across 200 charts. Best approach?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 把 200 份病歷全貼入 1M context 一次問</span><span data-lang="en">A. Paste all 200 charts into 1M context and ask once</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 逐份分開問模型</span><span data-lang="en">B. Ask the model one chart at a time</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 建立 RAG，embedding 索引後 top-k 檢索</span><span data-lang="en">C. Build a RAG index, retrieve top-k</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 提高 temperature 讓模型猜</span><span data-lang="en">D. Raise temperature and let the model guess</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="0">
+<p data-lang="zh">3. 同樣是 100K input tokens，下列哪一個情境最划算？</p>
+<p data-lang="en">3. With the same 100K input tokens, which scenario is most cost-effective?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 摘要為 500 token 的 bullet</span><span data-lang="en">A. Summarize into 500-token bullets</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 翻譯為等長中文（100K output）</span><span data-lang="en">B. Translate to equal-length Chinese (100K output)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 改寫並擴充為 200K</span><span data-lang="en">C. Rewrite and expand to 200K</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 三者一樣</span><span data-lang="en">D. All the same</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你正在用 Gemini 2.5 Pro（1M context）做 50 份 ICU 病歷的處置建議系統。你的測試發現：把「歷史病歷」放開頭、把「今日 vitals」放結尾、把「問題」放最後時準確率 88%；反過來，把「問題」放開頭、「今日 vitals」中段時準確率掉到 71%。最可能的原因？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. You're using Gemini 2.5 Pro (1M context) on 50 ICU charts. Testing shows: history at the start, today's vitals at the end, question at the very end → 88% accuracy. Reverse — question at start, today's vitals in the middle → 71%. Most likely reason?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 模型 bug，要回報 Google</span><span data-lang="en">A. Model bug, file with Google</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 隨機波動，多跑幾次就一樣了</span><span data-lang="en">B. Random fluctuation, average will equalize</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. Lost-in-the-middle 現象——關鍵資訊（今日 vitals）放中段被忽略</span><span data-lang="en">C. Lost-in-the-middle — critical info (vitals) buried mid-context gets ignored</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. Temperature 影響</span><span data-lang="en">D. Temperature effect</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">5. 你的英文同事用 4000 word 的英文 paper 跑摘要花 $0.13；你用同樣<strong>意思但翻成繁體中文</strong>跑摘要花了 $0.21。最直接的原因？</p>
+<p data-lang="en">5. Your English-speaking colleague summarized a 4000-word English paper for $0.13; you ran the same meaning translated to Traditional Chinese and paid $0.21. Direct reason?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 中文比較慢</span><span data-lang="en">A. Chinese is slower</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 繁中 tokenizer 對 CJK 不夠優化，每字 ~1.7–2 token，總 token 數高約 1.5×</span><span data-lang="en">B. CJK tokenization is suboptimal — ~1.7–2 tokens/char, total token count ~1.5× higher</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. OpenAI 對非英文加價</span><span data-lang="en">C. OpenAI surcharges non-English</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 帳單錯誤</span><span data-lang="en">D. Billing error</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>6. Self-attention 的計算複雜度（compute）對序列長度 n 是？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 6. Compute complexity of self-attention in sequence length n is?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. O(n)</span><span data-lang="en">A. O(n)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. O(n log n)</span><span data-lang="en">B. O(n log n)</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. O(n²·d)；FlashAttention 只降 I/O 不打破 compute 下界</span><span data-lang="en">C. O(n²·d); FlashAttention only reduces I/O, not compute lower bound</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. O(n³)</span><span data-lang="en">D. O(n³)</span></div>
+</div><div class="quiz-feedback" id="fb6"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="intro.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 1: AI 與 LLM 基礎" data-en="Step 1: AI &amp;amp; LLM Foundations">Step 1: AI 與 LLM 基礎</span></a>
+<a href="prompting.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 3: Prompt 工程基礎" data-en="Step 3: Prompt Engineering Basics">Step 3: Prompt 工程基礎</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Token estimator
+const MODELS=[{n:'Claude Opus 4.6',ctx:1000000},{n:'GPT-5.5 Pro',ctx:1000000},{n:'Gemini 2.5 Pro',ctx:2000000},{n:'Llama 4 Scout',ctx:10000000},{n:'DeepSeek V4 Pro',ctx:1000000}];
+const SAMPLE={zh:'在心臟組織的 single-cell RNA-seq 分析中，QC 是非常重要的步驟，特別是粒線體比例、雙細胞偵測，以及 ambient RNA 校正。建議搭配 scDblFinder 與 SoupX 共同進行清洗。',en:'In single-cell RNA-seq of cardiac tissue, QC is critical: mitochondrial fraction, doublet detection, and ambient RNA correction. Combine scDblFinder and SoupX for proper cleanup.'};
+function setSample(){const L=window.I18n?I18n.get():'en';const ta=document.getElementById('tokInput');if(!ta.value||ta.dataset.auto==='1'){ta.value=SAMPLE[L];ta.dataset.auto='1';}}
+function estimate(){
+  const text=document.getElementById('tokInput').value;
+  const zh=(text.match(/[㐀-鿿]/g)||[]).length;
+  const en=(text.match(/[A-Za-z]+/g)||[]).length;
+  const tokens=Math.round(zh*1.7+en*1.3);
+  document.getElementById('zhCount').textContent=zh;
+  document.getElementById('enCount').textContent=en;
+  document.getElementById('tokCount').textContent=tokens.toLocaleString();
+  const bars=document.getElementById('ctxBars');bars.innerHTML='';
+  MODELS.forEach(m=>{const pct=Math.min(100,tokens/m.ctx*100);const row=document.createElement('div');row.style.display='flex';row.style.alignItems='center';row.style.gap='10px';row.innerHTML=`<div style="min-width:135px;font-size:.82rem;font-family:var(--font-mono)">${m.n}</div><div style="flex:1;height:14px;background:var(--c-bg-alt);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct.toFixed(3)}%;background:linear-gradient(90deg,var(--c-accent),var(--c-highlight))"></div></div><div style="min-width:80px;font-family:var(--font-mono);font-size:.76rem;color:var(--c-ink-muted);text-align:right">${pct.toFixed(3)}%</div>`;bars.appendChild(row);});
+}
+document.getElementById('tokInput').addEventListener('input',()=>{document.getElementById('tokInput').dataset.auto='0';estimate();});
+document.addEventListener('langchange',()=>{setSample();estimate();});
+document.addEventListener('DOMContentLoaded',()=>{setSample();estimate();});
+
+// Lost-in-the-middle chart
+const POSITIONS=['0%','10%','25%','40%','50%','60%','75%','90%','100%'];
+let litmChart=null;
+function buildLitm(){
+  const ctx=document.getElementById('litmChart').getContext('2d');
+  litmChart=new Chart(ctx,{type:'line',data:{labels:POSITIONS,datasets:[{label:'recall',data:[],borderColor:'rgba(63,81,181,0.9)',backgroundColor:'rgba(63,81,181,0.2)',tension:0.35,fill:true,pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.parsed.y*100).toFixed(1)+'%'}}},scales:{x:{title:{display:true,text:'Needle position'}},y:{min:0,max:1,title:{display:true,text:'Recall'}}}}});
+}
+function updateLitm(){
+  const n=+document.getElementById('litmCtxSlider').value;
+  document.getElementById('litmCtx').textContent=n.toLocaleString();
+  // Empirical-ish: γ grows with n; U-shape
+  const gamma=Math.min(0.5,0.05+0.4*(n/1000000));
+  const r0=Math.max(0.5,0.98-0.25*(n/1000000));
+  const data=POSITIONS.map(p=>{const pp=parseInt(p)/100;return r0*(1-gamma*Math.sin(Math.PI*pp));});
+  if(!litmChart)buildLitm();
+  litmChart.data.datasets[0].data=data;
+  litmChart.update('none');
+}
+document.getElementById('litmCtxSlider').addEventListener('input',updateLitm);
+document.addEventListener('langchange',updateLitm);
+document.addEventListener('DOMContentLoaded',()=>{buildLitm();updateLitm();});
+
+// Attention heatmap
+const ATT_TOKENS=['The','cardio','##myo','##cyte','exhibits','high','mito','##chondrial','fraction','.'];
+let attQuery=4; // 'exhibits'
+function attWeight(i,j){
+  // Simulate decay + slight position bias toward nearby tokens
+  const dist=Math.abs(i-j);
+  const local=Math.exp(-dist*0.55);
+  const semantic=(i===4&&[5,6,7].includes(j))||(i===6&&[7].includes(j))||(i===8&&[6,7,5].includes(j))?0.5:0;
+  return local+semantic*0.6;
+}
+function renderAtt(){
+  const tw=document.getElementById('attTokens');tw.innerHTML='';
+  ATT_TOKENS.forEach((t,i)=>{
+    const b=document.createElement('button');
+    b.textContent=t;
+    b.style.cssText='padding:6px 10px;font-family:var(--font-mono);font-size:.82rem;background:'+(i===attQuery?'var(--c-accent)':'var(--c-bg-alt)')+';color:'+(i===attQuery?'#fff':'var(--c-ink)')+';border:1px solid var(--c-border);border-radius:6px;cursor:pointer';
+    b.onclick=()=>{attQuery=i;renderAtt();};
+    tw.appendChild(b);
+  });
+  const map=document.getElementById('attMap');
+  map.style.gridTemplateColumns=`repeat(${ATT_TOKENS.length},minmax(0,1fr))`;
+  map.innerHTML='';
+  const weights=ATT_TOKENS.map((_,j)=>attWeight(attQuery,j));
+  const max=Math.max(...weights);
+  ATT_TOKENS.forEach((t,j)=>{
+    const c=document.createElement('div');
+    const a=weights[j]/max;
+    c.style.cssText=`height:36px;background:rgba(63,81,181,${a});border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.7rem;color:${a>0.5?'#fff':'var(--c-ink)'}`;
+    c.textContent=t;
+    map.appendChild(c);
+  });
+}
+document.addEventListener('langchange',renderAtt);
+document.addEventListener('DOMContentLoaded',renderAtt);
+
+// Quiz
+const QF={zh:{
+  q1_y:'25,000 字英文 × 1.3 token/word ≈ 32,500 tokens；整份 PDF 加圖說/標題大約 30–40K 區間。選 A(5K) 是把 token 當 character；C(250K) 是把 1 word 視為 10 token；D(1M) 完全不切實際。',
+  q2_y:'200 份病歷在 1M context 一次塞是浪費（lost-in-middle + cost），逐份問成本高且難 aggregate。RAG 建索引後 top-k 檢索是業界 SOP——成本低、可重複查詢、結果可追溯來源。',
+  q3_y:'輸入便宜輸出貴（output 3–10× input）。「100K in → 500 out」(A) 的 output cost 只有 (B)「100K in → 100K out」的 0.5%；(C) 反過來 output 還多。',
+  q4_y:'這是經典 lost-in-the-middle (Liu 2024 TACL)。把最關鍵的「今日 vitals」與「問題」放開頭與結尾，attention 更穩定。不是 bug 或隨機。',
+  q5_y:'cl100k_base 對繁中支援不夠優化（1.7–2 tok/char），加上字元密度與英文 word 不對等，整體 token 數常達英文的 1.5–2×，直接反映在 bill 上。可考慮 Gemini（中文友善）或自訂 tokenizer。',
+  q6_y:'Self-attention 的 compute 是 O(n²·d)，且有 Ω(n²) 下界（Keles 2023, Alman 2024）。FlashAttention 只把 I/O 從 O(n²) 降到 O(n)，並未降低 compute。線性 attention 是 kernel approximation。'},
+en:{
+  q1_y:'25,000 English words × 1.3 tokens/word ≈ 32,500 tokens; full PDF with figure captions sits at 30–40K. (A) treats tokens as characters; (C) assumes 10 tokens/word; (D) is absurd.',
+  q2_y:'Stuffing 200 charts into 1M wastes context (lost-in-middle + cost). Per-chart prompting is expensive and hard to aggregate. RAG with index + top-k retrieval is the SOP — cheap, repeatable, source-traceable.',
+  q3_y:'Input is cheap, output is expensive (3–10× input). "100K in → 500 out" pays only ~0.5% of "100K in → 100K out" (translation). (C) expands further, costing more.',
+  q4_y:'Classic lost-in-the-middle (Liu 2024 TACL). Putting "today vitals" + question at start and end keeps attention strong. Not a bug, not random.',
+  q5_y:'cl100k_base under-optimizes for Traditional Chinese (~1.7–2 tok/char), combined with char-vs-word density yielding total tokens 1.5–2× English. Bill reflects this. Consider Gemini (CJK-friendlier) or a custom tokenizer.',
+  q6_y:'Self-attention compute is O(n²·d) with an Ω(n²) lower bound (Keles 2023, Alman 2024). FlashAttention reduces I/O from O(n²) to O(n) but not the compute bound. Linear attention is a kernel approximation.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 11: AlphaFold &amp; Protein Structure — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html" class="active">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 11 / 20</div>
+<h1 data-zh="AlphaFold 與蛋白結構" data-en="AlphaFold &amp; Protein Structure">AlphaFold 與蛋白結構</h1>
+<p class="subtitle" data-lang="zh">從 AlphaFold 3 / ESM3 / Boltz-1 / RoseTTAFold AA / RFdiffusion——2024–2026 結構生物 AI 的完整地圖。</p>
+<p class="subtitle" data-lang="en">From AlphaFold 3 / ESM3 / Boltz-1 / RoseTTAFold AA / RFdiffusion — the full 2024–2026 structural-biology AI map.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="AlphaFold 與結構 AI 必懂十二詞" data-en="Twelve terms for AlphaFold &amp; structure AI">AlphaFold 與結構 AI 必懂十二詞</h2>
+<div data-lang="zh"><p>這 12 個詞貫穿這一章。先讀過一次，後面 pLDDT、PAE、cryptic pocket、RFdiffusion 的討論就會輕鬆許多。</p></div>
+<div data-lang="en"><p>These twelve words recur throughout. Skim once and the pLDDT / PAE / cryptic pocket / RFdiffusion discussion below flows easily.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🎯</div><h4>pLDDT</h4>
+<div data-lang="zh"><p>per-residue local distance difference test predicted score（0–100）。AlphaFold 對每個殘基的局部準確度自評。&gt;90 高度可信、70–90 中等、50–70 低、&lt;50 多為 IDR 或預測差。是 single-residue 信心 metric。</p></div>
+<div data-lang="en"><p>Per-residue local distance difference test predicted score (0–100). AlphaFold's self-estimate of local accuracy. &gt;90 highly confident, 70–90 medium, 50–70 low, &lt;50 mostly IDR or poor prediction. The single-residue confidence metric.</p></div>
+</div>
+<div class="card"><div class="card-icon">📊</div><h4>PAE (Predicted Aligned Error)</h4>
+<div data-lang="zh"><p>2D 矩陣：兩殘基 X 與 Y 的相對位置誤差（Å）。低 PAE 區塊代表「這兩個 domain 的相對 orientation 可信」。對 multi-domain 蛋白與多鏈 complex 的 domain orientation 判讀是關鍵 metric。</p></div>
+<div data-lang="en"><p>A 2D matrix: predicted error in Å for the relative position of residue X vs Y. Low PAE blocks mean "this domain pair's orientation is trustworthy." The key metric for domain orientation in multi-domain proteins and multi-chain complexes.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚖️</div><h4>TM-score / RMSD</h4>
+<div data-lang="zh"><p>結構比對指標：TM-score 0–1（&gt; 0.5 表示同 fold；Zhang &amp; Skolnick 2004）、RMSD（root-mean-square deviation, Å, 越小越好）。TM-score 對長短不敏感，RMSD 對 outlier 殘基敏感。實驗 vs 預測對比的標配。</p></div>
+<div data-lang="en"><p>Structure comparison metrics: TM-score 0–1 (&gt; 0.5 indicates same fold; Zhang &amp; Skolnick 2004), RMSD (root-mean-square deviation in Å, lower is better). TM-score is length-insensitive; RMSD is sensitive to outlier residues. Standard for experimental-vs-predicted comparison.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔗</div><h4>Multimer / ipTM</h4>
+<div data-lang="zh"><p>AlphaFold-Multimer（Evans 2022）：多鏈 complex 預測。ipTM（interface predicted TM-score）為 0–1，量介面準確度，&gt;0.8 可信；ipTM × 0.8 + pTM × 0.2 為整體 confidence ranking。AF3 沿用此 framework。</p></div>
+<div data-lang="en"><p>AlphaFold-Multimer (Evans 2022): multi-chain complex prediction. ipTM (interface predicted TM-score) is 0–1 measuring interface accuracy; &gt;0.8 trustworthy. Overall ranking: ipTM × 0.8 + pTM × 0.2. AF3 inherits this framework.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧩</div><h4>Co-fold</h4>
+<div data-lang="zh"><p>多分子一起預測（蛋白+蛋白、蛋白+核酸、蛋白+小分子）。AF3 與 Boltz 的核心新能力。比「個別 fold 再 dock」更準，因為界面構象常需 induced fit。</p></div>
+<div data-lang="en"><p>Joint prediction of multiple molecules (protein+protein, protein+nucleic acid, protein+ligand). The core new capability of AF3 and Boltz. More accurate than "fold separately then dock" because interface conformation often requires induced fit.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔓</div><h4>Apo / Holo</h4>
+<div data-lang="zh"><p>Apo = 無 ligand 結合的「空」狀態；Holo = ligand 結合後的狀態。Apo→Holo 構象變化（induced fit / conformational selection）是 AlphaFold 預測的盲點——它通常只給一個構象。</p></div>
+<div data-lang="en"><p>Apo = unliganded "empty" state; Holo = ligand-bound state. The Apo→Holo conformational change (induced fit / conformational selection) is a blind spot for AlphaFold — it usually returns just one conformation.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌊</div><h4>Intrinsically Disordered (IDP/IDR)</h4>
+<div data-lang="zh"><p>Intrinsically Disordered Protein / Region：在生理條件下無單一穩定構象。p53 N-term、tau、α-synuclein 全程都是。AlphaFold 對 IDR 給低 pLDDT 是正確訊號（不是 bug）；要用 ensemble methods（如 IDRome、ALBATROSS）刻畫。</p></div>
+<div data-lang="en"><p>Intrinsically Disordered Protein / Region: no single stable conformation under physiological conditions. p53 N-term, tau, α-synuclein are full IDPs. AlphaFold's low pLDDT in IDRs is a correct signal (not a bug) — characterise them with ensemble methods (IDRome, ALBATROSS).</p></div>
+</div>
+<div class="card"><div class="card-icon">🕳️</div><h4>Cryptic Pocket</h4>
+<div data-lang="zh"><p>「藏起來」的 binding pocket：在 apo 結構看不到，需 ligand 結合或 conformational fluctuation 才暴露。AlphaFold 預測單一構象通常 miss，需 MD simulation（如 GROMACS）或 Markov state model（PocketMiner, Wankowicz 2024）來找。</p></div>
+<div data-lang="en"><p>"Hidden" binding pockets: invisible in the apo structure, exposed only on ligand binding or conformational fluctuation. AlphaFold's single conformation usually misses them — find via MD (GROMACS) or Markov state models (PocketMiner, Wankowicz 2024).</p></div>
+</div>
+<div class="card"><div class="card-icon">🎨</div><h4>RFdiffusion</h4>
+<div data-lang="zh"><p>Watson et al. 2023 (Nature)：用 SE(3)-equivariant diffusion 直接生成蛋白 backbone。給「我要綁這個 target」就能設計 binder。Baker lab 推出，2024 RFdiffusion All-Atom（Krishna 2024）擴展到全原子。</p></div>
+<div data-lang="en"><p>Watson et al. 2023 (Nature): SE(3)-equivariant diffusion that generates protein backbones directly. Specify "I want to bind this target" and it designs binders. Baker lab; 2024 RFdiffusion All-Atom (Krishna 2024) extends to all atoms.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚡</div><h4>Boltz</h4>
+<div data-lang="zh"><p>MIT 2024 釋出的開源 AF3-class 模型（Wohlwend et al.）。MIT 授權、可商用、benchmark 與 AF3 相當。Boltz-2（2025）加 affinity prediction。為「需要商用 + 自架」場景的最佳選擇。</p></div>
+<div data-lang="en"><p>MIT's 2024 open-source AF3-class model (Wohlwend et al.). MIT licence, commercial-use, benchmark parity with AF3. Boltz-2 (2025) adds affinity prediction. The strongest choice for "commercial + self-host" scenarios.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧬</div><h4>ESM-3</h4>
+<div data-lang="zh"><p>EvolutionaryScale 2024：把 sequence、structure、function 放進同一個 generative model。可逆向設計（從 function 描述生成 sequence），是 ESM2（Lin 2023）的繼任。商業授權不同層級，研究用版本 ESM3-open。</p></div>
+<div data-lang="en"><p>EvolutionaryScale 2024: unifies sequence, structure, and function in one generative model. Supports inverse design (function description → sequence). Successor to ESM2 (Lin 2023). Commercial licences tiered; ESM3-open for research.</p></div>
+</div>
+<div class="card"><div class="card-icon">🧮</div><h4>MSA Depth</h4>
+<div data-lang="zh"><p>Multiple Sequence Alignment 深度：AlphaFold 預測準確度的關鍵輸入。深 MSA（&gt;1000 序列）→ 準確；淺 MSA（&lt;30）→ 預測差，尤其 orphan protein、新病毒。ColabFold 用 MMseqs2 加速 MSA building（Mirdita 2022 Nat Methods）。</p></div>
+<div data-lang="en"><p>Multiple Sequence Alignment depth: a critical AlphaFold input. Deep MSA (&gt;1000 sequences) → accurate; shallow MSA (&lt;30) → poor, especially for orphan proteins and novel viruses. ColabFold uses MMseqs2 for fast MSA building (Mirdita 2022 Nat Methods).</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="2024–2026：結構生物的「ChatGPT 時刻」延續" data-en="2024–2026: structural biology's ongoing ChatGPT moment">2024–2026：結構生物的「ChatGPT 時刻」延續</h2>
+<div data-lang="zh">
+<p>2024/05，AlphaFold 3 在 Nature 發表（Abramson et al., Nature 630:493–500, DOI 10.1038/s41586-024-07487-w），把預測範圍從「純蛋白」擴大到「蛋白 + 核酸 + 小分子 + 離子 + PTM（如磷酸化、糖基化）」。同年 RoseTTAFold All-Atom（Krishna et al., Science, DOI 10.1126/science.adl2528）也達到全原子混合系統預測。</p>
+<p>2025 開源端追上：MIT 的 <strong>Boltz-1</strong> 在標準 benchmark 上達 AF3 等級，授權 MIT。EvolutionaryScale 的 <strong>ESM3</strong> 把序列／結構／功能放進同一個 generative 模型，可逆向生成新序列。設計端的 <strong>RFdiffusion / RFdiffusion All-Atom</strong> 直接生成 binder / enzyme。對研究者而言，「結構」不再是瓶頸——而是<strong>正確使用 + 合理懷疑</strong>。</p>
+</div>
+<div data-lang="en">
+<p>In May 2024, AlphaFold 3 (Abramson et al., Nature 630:493–500, DOI 10.1038/s41586-024-07487-w) extended predictions from "protein only" to "protein + nucleic acid + ligand + ion + PTM (e.g., phosphorylation, glycosylation)." RoseTTAFold All-Atom (Krishna et al., Science, DOI 10.1126/science.adl2528) also reached all-atom mixed-system prediction the same year.</p>
+<p>By 2025 the open-source side caught up: MIT's <strong>Boltz-1</strong> matches AF3 on standard benchmarks under an MIT licence. EvolutionaryScale's <strong>ESM3</strong> unifies sequence / structure / function in a generative model, enabling inverse design. <strong>RFdiffusion / RFdiffusion All-Atom</strong> directly generate binders / enzymes. For researchers, "structure" is no longer the bottleneck — <strong>correct use plus calibrated skepticism</strong> is.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>AlphaFold 給的是<strong>一個能量最佳化的單一構象</strong>，不是「真實的蛋白」。它對 stable folded domain 預測很準，但對 <strong>IDR、構象切換、配體誘導變化、長 IDP loop</strong> 都會給出看起來自信卻不對的結構。請永遠檢查 <strong>pLDDT、PAE、ipTM</strong> 三大信心分數。</span>
+<span data-lang="en"><strong>Core mindset:</strong> AlphaFold returns <strong>one energy-minimised conformation</strong>, not "the real protein." It nails stable folded domains but produces confidently wrong structures for <strong>IDRs, conformational switches, ligand-induced changes, long flexible loops</strong>. Always inspect <strong>pLDDT, PAE, ipTM</strong>.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="工具地圖" data-en="TOOL MAP">工具地圖</div>
+<h2 data-zh="一、結構 AI 五大工具" data-en="I. Five major structure-AI tools">一、結構 AI 五大工具</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">🧬</div><h4>AlphaFold 3</h4>
+<div data-lang="zh"><p>蛋白 + DNA / RNA + ligand + ion + PTM。透過 <a href="https://alphafoldserver.com" target="_blank">AlphaFold Server</a> 免費（非商用）。</p></div>
+<div data-lang="en"><p>Protein + DNA / RNA + ligand + ion + PTM. Free via <a href="https://alphafoldserver.com" target="_blank">AlphaFold Server</a> for non-commercial use.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌌</div><h4>ESM3</h4>
+<div data-lang="zh"><p>序列／結構／功能 co-design，可逆向生成新序列。EvolutionaryScale，部分權重公開。</p></div>
+<div data-lang="en"><p>Sequence / structure / function co-design; inverse design enabled. EvolutionaryScale, partial open weights.</p></div>
+</div>
+<div class="card"><div class="card-icon">⚛️</div><h4>Boltz-1</h4>
+<div data-lang="zh"><p>MIT 開源，AF3 等級效能。可自架、可商用，社群更新最快。</p></div>
+<div data-lang="en"><p>MIT-licensed open source, AF3-level performance. Self-host friendly, commercial-OK, fastest community updates.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔬</div><h4>RoseTTAFold All-Atom</h4>
+<div data-lang="zh"><p>Baker lab；全原子混合系統。對 small-molecule docking 強。Krishna et al., Science 2024。</p></div>
+<div data-lang="en"><p>Baker lab; all-atom mixed-system. Strong on small-molecule docking. Krishna et al., Science 2024.</p></div>
+</div>
+<div class="card"><div class="card-icon">✨</div><h4>RFdiffusion / RFdiff AA</h4>
+<div data-lang="zh"><p>生成式 protein design：binder、enzyme、symmetric oligomer 從零開始設計。</p></div>
+<div data-lang="en"><p>Generative protein design: binders, enzymes, symmetric oligomers designed from scratch.</p></div>
+</div>
+<div class="card"><div class="card-icon">📚</div><h4>AlphaFold DB</h4>
+<div data-lang="zh"><p>200M+ 預測結構免費下載；UniProt id 即可查。研究檢索的第一站。</p></div>
+<div data-lang="en"><p>200M+ predicted structures, free to download by UniProt ID. First stop for any lookup.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="信心分數" data-en="CONFIDENCE">信心分數</div>
+<h2 data-zh="二、pLDDT / PAE / ipTM 怎麼讀" data-en="II. How to read pLDDT / PAE / ipTM">二、pLDDT / PAE / ipTM 怎麼讀</h2>
+<div class="workflow">
+  <div class="workflow-step" data-step="1"><h4 data-zh="① pLDDT（per-residue 信心）" data-en="① pLDDT (per-residue confidence)">① pLDDT（per-residue 信心）</h4>
+  <div data-lang="zh"><p>0–100。&gt; 90 高信心；70–90 可信；50–70 低信心；&lt; 50 通常為 IDR 或錯誤。<strong>低 pLDDT ≠ 一定錯</strong>，IDP 本來就無單一構象。</p></div>
+  <div data-lang="en"><p>0–100. &gt; 90 high confidence; 70–90 reliable; 50–70 low; &lt; 50 usually IDR or wrong. <strong>Low pLDDT ≠ wrong</strong> — IDPs simply lack a single conformation.</p></div>
+  </div>
+  <div class="workflow-step" data-step="2"><h4 data-zh="② PAE（pairwise alignment error）" data-en="② PAE (pairwise alignment error)">② PAE</h4>
+  <div data-lang="zh"><p>殘基 i、j 相對位置誤差（Å）。低 PAE 區塊 = domain；跨 domain 高 PAE = domain 間相對位置不確定。</p></div>
+  <div data-lang="en"><p>Position error (Å) between residues i and j. Low-PAE blocks = a domain; high cross-block PAE = uncertain inter-domain arrangement.</p></div>
+  </div>
+  <div class="workflow-step" data-step="3"><h4 data-zh="③ ipTM（複合體 interface 信心）" data-en="③ ipTM (complex interface confidence)">③ ipTM</h4>
+  <div data-lang="zh"><p>多鏈複合體用。&gt; 0.8 高信心介面；0.6–0.8 中等；&lt; 0.6 介面很可能錯。</p></div>
+  <div data-lang="en"><p>For multi-chain complexes. &gt; 0.8 high-confidence interface; 0.6–0.8 medium; &lt; 0.6 interface likely wrong.</p></div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="信心分數預期分佈模擬" data-en="Confidence distribution simulator">信心分數預期分佈模擬</h2>
+<div data-lang="zh"><p>選蛋白 region 與 complex 類型，看 AlphaFold-style 信心分數的<strong>典型分佈</strong>（mock，用於教學）。</p></div>
+<div data-lang="en"><p>Pick a protein region and complex type to see a <strong>typical</strong> AlphaFold-style confidence distribution (mock, for teaching).</p></div>
+<div class="interactive-panel">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+    <label data-lang="zh" style="font-weight:600">區域：</label><label data-lang="en" style="font-weight:600">Region:</label>
+    <select id="regSel"><option value="core">Globular core</option><option value="surface">Surface loop</option><option value="idr">IDR / flexible</option><option value="tm">Transmembrane</option></select>
+    <label data-lang="zh" style="font-weight:600;margin-left:14px">複合體：</label><label data-lang="en" style="font-weight:600;margin-left:14px">Complex:</label>
+    <select id="cmpSel"><option value="mono">Monomer</option><option value="homo">Homodimer</option><option value="hetero">Heterocomplex + ligand</option><option value="nuc">Protein + nucleic acid</option></select>
+  </div>
+  <svg id="confSvg" viewBox="0 0 500 200" style="width:100%;max-width:560px;display:block;margin:0 auto"></svg>
+  <p id="confNote" style="font-size:.85rem;color:var(--c-ink-muted);text-align:center;margin-top:8px"></p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作 code" data-en="HANDS-ON CODE">實作 code</div>
+<h2 data-zh="三、三段 code" data-en="III. Three code snippets">三、三段 code</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'s1')">AlphaFold Server JSON</button><button class="code-tab-btn" onclick="switchTab(this,'s2')">Parse pLDDT</button><button class="code-tab-btn" onclick="switchTab(this,'s3')">Boltz-1 CLI</button></div>
+<div class="code-tab-content active" id="s1"><pre><span class="comment">// AlphaFold Server 輸入 JSON：BRAF + ATP + Mg²⁺</span>
+<span class="comment">// AlphaFold Server input JSON: BRAF + ATP + Mg²⁺</span>
+{
+  <span class="str">"name"</span>: <span class="str">"BRAF-ATP-Mg"</span>,
+  <span class="str">"modelSeeds"</span>: [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>],
+  <span class="str">"sequences"</span>: [
+    {<span class="str">"proteinChain"</span>: {<span class="str">"sequence"</span>: <span class="str">"MAALSGGGGGGAEPGQ..."</span>, <span class="str">"count"</span>: <span class="num">1</span>}},
+    {<span class="str">"ligand"</span>: {<span class="str">"ligand"</span>: <span class="str">"ATP"</span>, <span class="str">"count"</span>: <span class="num">1</span>}},
+    {<span class="str">"ion"</span>: {<span class="str">"ion"</span>: <span class="str">"MG"</span>, <span class="str">"count"</span>: <span class="num">2</span>}}
+  ]
+}</pre></div>
+<div class="code-tab-content" id="s2"><pre><span class="comment"># Python: 從 mmCIF 解析 pLDDT，依 cutoff 上色</span>
+<span class="kw">from</span> Bio.PDB <span class="kw">import</span> MMCIFParser
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+p = <span class="func">MMCIFParser</span>(QUIET=<span class="kw">True</span>).<span class="func">get_structure</span>(<span class="str">"x"</span>, <span class="str">"prediction.cif"</span>)
+plddt = []
+<span class="kw">for</span> chain <span class="kw">in</span> p[<span class="num">0</span>]:
+    <span class="kw">for</span> res <span class="kw">in</span> chain:
+        <span class="kw">if</span> <span class="str">"CA"</span> <span class="kw">in</span> res:
+            plddt.<span class="func">append</span>(res[<span class="str">"CA"</span>].bfactor)   <span class="comment"># AF3 把 pLDDT 存在 B-factor</span>
+plddt = np.<span class="func">array</span>(plddt)
+<span class="func">print</span>(<span class="str">f"high={(plddt&gt;90).mean():.1%}, IDR-like={(plddt&lt;50).mean():.1%}"</span>)
+<span class="comment"># 接著用 PyMOL: spectrum b, red_white_blue, all</span></pre></div>
+<div class="code-tab-content" id="s3"><pre><span class="comment"># Boltz-1 命令列（單蛋白 + 配體 docking）</span>
+<span class="comment"># Boltz-1 CLI (single protein + ligand docking)</span>
+$ pip install boltz
+$ cat input.yaml
+sequences:
+  - protein:
+      id: A
+      sequence: MAALSGGGG...
+  - ligand:
+      id: B
+      smiles: <span class="str">"CC(=O)Oc1ccccc1C(=O)O"</span>     <span class="comment"># aspirin</span>
+
+$ boltz predict input.yaml --use_msa_server --out_dir results/
+<span class="comment"># 輸出：results/predictions/*.cif + confidence_scores.json</span></pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="比較表" data-en="COMPARISON">比較表</div>
+<h2 data-zh="四、五工具完整對照" data-en="IV. Full five-tool comparison">四、五工具完整對照</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="工具" data-en="Tool">工具</th><th data-zh="能預測" data-en="Predicts">能預測</th><th data-zh="授權" data-en="License">授權</th><th data-zh="是否開源" data-en="Open source">開源？</th><th data-zh="商用" data-en="Commercial">商用</th><th data-zh="主要限制" data-en="Main limit">主要限制</th></tr></thead>
+<tbody>
+<tr><td>AlphaFold 3</td><td data-zh="蛋白 + 核酸 + 配體 + 離子 + PTM" data-en="Protein + nucleic acid + ligand + ion + PTM">全種類</td><td data-zh="DeepMind / Isomorphic" data-en="DeepMind / Isomorphic">DeepMind</td><td data-zh="權重部分公開" data-en="Weights partially open">部分</td><td data-zh="伺服器非商用；商用需洽 Isomorphic" data-en="Server non-commercial; commercial via Isomorphic">受限</td><td data-zh="伺服器日限額、IDR 仍弱" data-en="Server daily quota; weak on IDRs">伺服器限額</td></tr>
+<tr><td>ESM3</td><td data-zh="序列 / 結構 / 功能 co-design" data-en="Sequence / structure / function co-design">co-design</td><td>EvolutionaryScale</td><td data-zh="部分（open weights tier）" data-en="Partial (open-weights tier)">部分</td><td data-zh="API 商用授權" data-en="API for commercial">API</td><td data-zh="最大模型不公開" data-en="Top-tier weights closed">頂級權重不公開</td></tr>
+<tr><td>Boltz-1</td><td data-zh="蛋白 + 配體 + 核酸（AF3 等級）" data-en="Protein + ligand + nucleic acid (AF3-level)">AF3 等級</td><td>MIT</td><td data-zh="✅ 完全開源" data-en="✅ Fully open">✅</td><td>✅</td><td data-zh="計算資源需求高" data-en="High compute demand">高 GPU 需求</td></tr>
+<tr><td>RoseTTAFold AA</td><td data-zh="全原子混合系統" data-en="All-atom mixed system">全原子</td><td data-zh="學術 free" data-en="Academic free">學術</td><td>✅</td><td data-zh="需洽 Baker lab" data-en="Contact Baker lab">需洽談</td><td data-zh="比 AF3 稍慢" data-en="Slightly slower than AF3">速度</td></tr>
+<tr><td>RFdiffusion / AA</td><td data-zh="生成式 binder / enzyme 設計" data-en="Generative binder / enzyme design">生成設計</td><td data-zh="BSD / 學術" data-en="BSD / academic">BSD</td><td>✅</td><td data-zh="多數允許" data-en="Mostly allowed">多數可</td><td data-zh="設計成功率仍須濕實驗驗證" data-en="Wet-lab validation still required">需濕實驗驗證</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>低 pLDDT 不等於錯：</strong>內在無序蛋白（IDP）本來就沒有單一摺疊。低 pLDDT 區塊應交叉看 IUPred / MobiDB；若預測為 IDR 而你的假設依賴穩定構象，那就是科學問題，不是 AlphaFold 出錯。</span>
+<span data-lang="en"><strong>Low pLDDT ≠ wrong:</strong> Intrinsically disordered proteins (IDPs) have no single fold. Cross-check low-pLDDT regions with IUPred / MobiDB; if they're truly IDRs and your hypothesis needs a fixed conformation, that's a scientific issue — not an AlphaFold bug.</span>
+</div></div>
+</section>
+
+<!-- ===== Expanded Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：RFdiffusion COVID binder 與 AF3 GPCR allosteric pocket" data-en="Two deeper cases: RFdiffusion COVID binder &amp; AF3 GPCR allosteric pocket">兩個深入案例：RFdiffusion COVID binder 與 AF3 GPCR allosteric pocket</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🧪</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：Baker lab 用 RFdiffusion 設計 SARS-CoV-2 spike binder，從序列到實驗驗證 6 週</h4>
+<p>Bennett et al. 2023 (Nature) 與 Cao et al. 2022 (Science) 是 Baker lab 連續推出的 binder design 里程碑。2024 年延伸的案例：Baker lab 給 RFdiffusion 指定 target site（SARS-CoV-2 spike RBD 的 ACE2 binding interface），生成 ~10000 個 backbone candidate；用 ProteinMPNN（Dauparas 2022）做 sequence design；用 AlphaFold-Multimer 做 self-consistency 篩選（要求 ipTM &gt; 0.85 與 pLDDT &gt; 80）；最終挑 ~200 個 candidate 合成。實驗端用 yeast display + flow cytometry 量 affinity，~15% 有 nM 級結合，~3% 達 pM 級。從計算到完成濕實驗驗證 6 週，傳統 binder discovery 通常 1–2 年。<strong>關鍵設計</strong>：(1) RFdiffusion 用 SE(3)-equivariant diffusion 在 backbone 空間做 conditional generation——條件是「綁這個 epitope」；(2) ProteinMPNN 而非 Rosetta 做 sequence design 大幅提升 fold success rate；(3) AF2/3 self-consistency 作為「便宜的 filter」濾掉看似合理但不會 fold 的 candidate。Baker lab 後續把整套 pipeline 開源，激發了 2024 一系列 binder-by-design 論文（如 Vázquez Torres 2024 anti-IL-23）。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: Baker lab used RFdiffusion to design SARS-CoV-2 spike binders — sequence to experimental validation in 6 weeks</h4>
+<p>Bennett et al. 2023 (Nature) and Cao et al. 2022 (Science) are sequential Baker-lab milestones. A 2024 extension: the lab pointed RFdiffusion at a target site (SARS-CoV-2 spike RBD's ACE2 interface), generated ~10,000 backbone candidates, used ProteinMPNN (Dauparas 2022) for sequence design, applied AlphaFold-Multimer for self-consistency filtering (requiring ipTM &gt; 0.85 and pLDDT &gt; 80), then synthesised ~200 final candidates. Wet-lab validation used yeast display + flow cytometry: ~15% reached nM affinity, ~3% reached pM. Computation to validated binders: 6 weeks vs. 1–2 years for traditional discovery. <strong>Key design</strong>: (1) RFdiffusion uses SE(3)-equivariant diffusion to do conditional backbone generation — conditioned on "bind this epitope"; (2) ProteinMPNN (not Rosetta) for sequence design dramatically boosts fold success; (3) AF2/3 self-consistency as a "cheap filter" eliminates plausible-but-non-folding candidates. The Baker lab released the full pipeline, sparking a 2024 wave of binder-by-design papers (e.g., Vázquez Torres 2024 anti-IL-23).</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🔬</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：某 PhD 用 AF3 預測 GPCR–G protein 複合體找到新 allosteric pocket</h4>
+<p>2025 年某結構生物 PhD 想找 GPCR receptor X（class A）的 allosteric modulator。傳統做法：等實驗 cryo-EM 結構（~$200k、~1 年）。她改用 AF3：(1) 預測 receptor 與 Gαi、Gβ、Gγ 四鏈 co-fold 複合體（AF3 server 5 seeds 取最佳 ipTM）；(2) 與已知 PDB cryo-EM 結構（resolution 3.2 Å）做 RMSD 比對：跨膜 helix 0.8 Å、ICL3 1.5 Å、Gα switch II 0.9 Å——大部分區域結構合理；(3) 在 Gα subunit 與 receptor TM5/6 介面看到一個「實驗結構未見」的 cleft；(4) 用 MD（GROMACS, 500 ns × 5 replicate）驗證該 cleft 在動態中 ~30% 時間可開放；(5) 用 GLIDE docking 篩 ZINC drug-like subset，挑出 ~50 個 candidate；(6) wet-lab cAMP assay 驗證 ~5 個有 μM 級 negative allosteric modulator 活性。整個 in-silico 流程 ~2 個月，比傳統 cryo-EM 路線快 5 倍且成本 1/10。<strong>關鍵驗證</strong>：(a) 對已知 region 與實驗結構對齊是必要 sanity check；(b) MD 動態驗證可彌補 AF3「單一構象」的局限；(c) 最終仍須濕實驗 validate，AI 是「優先順序縮減」而非「替代」。論文 2026 在 <em>Nat Chem Biol</em> 發表，AF3 model 與 MD trajectory 一同 deposit 到 PDB-Dev。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: A PhD used AF3 to predict a GPCR–G protein complex and discover a new allosteric pocket</h4>
+<p>In 2025 a structural-biology PhD wanted to find an allosteric modulator for GPCR receptor X (class A). Traditional route: wait for cryo-EM (~$200k, ~1 year). She used AF3 instead: (1) predicted the four-chain receptor–Gαi–Gβ–Gγ complex (AF3 server, 5 seeds, best ipTM); (2) compared with the published 3.2-Å cryo-EM PDB structure: TM helices 0.8 Å RMSD, ICL3 1.5 Å, Gα switch II 0.9 Å — most regions trustworthy; (3) spotted an "experimentally unseen" cleft at the Gα–receptor TM5/6 interface; (4) validated with MD (GROMACS, 500 ns × 5 replicates) — the cleft was open ~30% of the time; (5) GLIDE-docked a ZINC drug-like subset, picked ~50 candidates; (6) wet-lab cAMP assay validated ~5 with μM-range negative allosteric activity. Total in-silico time: ~2 months — 5× faster, 1/10 the cost of the traditional cryo-EM route. <strong>Key validation</strong>: (a) RMSD vs. an experimental structure on known regions is a mandatory sanity check; (b) MD compensates for AF3's "one-conformation" blind spot; (c) wet-lab still required — AI prioritises, doesn't replace. Paper appeared in <em>Nat Chem Biol</em> 2026, with the AF3 model + MD trajectory deposited to PDB-Dev.</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="使用 AlphaFold / 結構 AI 最常踩的五個坑" data-en="Five common AlphaFold / structure-AI pitfalls">使用 AlphaFold / 結構 AI 最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：把低 pLDDT 區域當「disorder」vs「模型不確定」混淆</strong><br>
+為什麼錯：低 pLDDT 可能是 (a) 真的 IDR（無單一構象）；(b) 模型 simply 不知道（淺 MSA、新 fold、預測 error）。兩者實驗意義完全不同——前者該用 IDR 工具（IDRome、ALBATROSS）刻畫 ensemble；後者表示「需更多 evidence 或重跑」。<br>
+正確做法：低 pLDDT 區先比對 MobiDB / IUPred / PONDR / flDPnn 等 IDR predictor——若多個工具都標 disorder 就是 IDR；若 IDR predictor 標 ordered 但 AF pLDDT 低，就是模型不確定（嘗試加深 MSA、用 AF cluster predictions、或考慮 ESMFold/Boltz cross-check）。</div>
+<div data-lang="en"><strong>Pitfall 1: Confusing "real disorder" with "model uncertainty" in low-pLDDT regions</strong><br>
+Why wrong: low pLDDT can mean (a) genuine IDR (no single conformation), or (b) the model simply doesn't know (shallow MSA, novel fold, prediction error). These have entirely different experimental meaning — the former needs IDR tools (IDRome, ALBATROSS) for ensemble characterisation; the latter means "needs more evidence or a rerun."<br>
+Fix: cross-check low-pLDDT regions with MobiDB / IUPred / PONDR / flDPnn — if multiple call disorder, it's IDR; if they call ordered but AF pLDDT is low, it's model uncertainty (deepen MSA, use AF cluster predictions, or cross-check with ESMFold/Boltz).</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：直接信 AF3 sm-mol docking 不做 redocking</strong><br>
+為什麼錯：AF3 引入 small-molecule co-fold 是大躍進，但 2024 Buttenschoen et al. 與 2025 後續 benchmark 顯示 AF3 ligand pose 對 PoseBusters 等 cheminformatics-aware metric 表現不如專業 docking（Glide、Vina、DiffDock-L）。常見錯誤包括 bond length 不合理、立體化學翻轉、binding pose 偏離 ~3–5 Å。<br>
+正確做法：把 AF3 的 ligand pose 當「初始 hypothesis」，用 GLIDE / Vina / GNINA 在 AF3 預測的 pocket 內 redock；用 PoseBusters / PB-valid 檢查化學合理性；終極驗證仍是 wet-lab co-crystal 或 cryo-EM。</div>
+<div data-lang="en"><strong>Pitfall 2: Trusting AF3 small-molecule docking without redocking</strong><br>
+Why wrong: AF3's small-molecule co-fold is a leap, but 2024 Buttenschoen et al. and follow-up benchmarks show AF3 ligand poses underperform dedicated docking (Glide, Vina, DiffDock-L) on PoseBusters and cheminformatics-aware metrics. Common errors: implausible bond lengths, flipped stereo, binding pose off by 3–5 Å.<br>
+Fix: treat AF3 ligand poses as initial hypotheses; redock with GLIDE / Vina / GNINA inside AF3's predicted pocket; verify chemistry with PoseBusters / PB-valid; ultimate validation is still wet-lab co-crystal or cryo-EM.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：把 AF-Multimer 拿來預測 transient interaction</strong><br>
+為什麼錯：AF-Multimer / AF3 對 stable complex（PPI, dimer, trimer, GPCR-G protein）預測準，對 transient / weak interaction（kinase-substrate、signaling scaffold、IDR-mediated phase separation）預測差——因為訓練資料偏 stable PDB complex。Yin &amp; Pierce 2024（<em>Curr Opin Struct Biol</em>）整理了 AF 系列在 transient 系統上的 false-positive / false-negative 模式。<br>
+正確做法：對 transient interaction 用 (a) AF cluster predictions（多 MSA seed 看 ensemble）；(b) 結合實驗 evidence（co-IP、proximity labelling、AP-MS）；(c) MD 或 enhanced sampling 看穩定性；(d) 重要 hit 必須 cross-validate（YN2H、BLI、ITC）。</div>
+<div data-lang="en"><strong>Pitfall 3: Using AF-Multimer for transient interactions</strong><br>
+Why wrong: AF-Multimer / AF3 are accurate on stable complexes (PPI, dimers, trimers, GPCR-G protein) but poor on transient/weak interactions (kinase-substrate, signaling scaffolds, IDR-mediated phase separation) — training data is biased toward stable PDB complexes. Yin &amp; Pierce 2024 (<em>Curr Opin Struct Biol</em>) catalogues false-positive / false-negative patterns on transient systems.<br>
+Fix: for transient interactions use (a) AF cluster predictions (multiple MSA seeds for ensemble); (b) integrate experimental evidence (co-IP, proximity labelling, AP-MS); (c) MD or enhanced sampling for stability; (d) cross-validate important hits with Y2H, BLI, ITC.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：cryo-EM map 沒 cross-validate AF model</strong><br>
+為什麼錯：某些情況 cryo-EM density 不夠 resolved（4–5 Å、IDR、flexible loop），研究者用 AF model 直接 fit 進 map 完成 model building。但若 AF 預測錯而你 fit 強行對齊，map-model agreement 看起來好但實際錯。Croll &amp; Read 2024 整理 ISOLDE / Coot / Phenix 等工具的 AF-aware best practice。<br>
+正確做法：用 PHENIX 或 ISOLDE 的 cross-correlation map-to-model real-space refinement；對低 confidence 區域（pLDDT &lt; 70）用 Coot 手動審；validation 指標看 EMRinger（Barad 2015）、CC_mask、Q-score（Pintilie 2020）；對任何 pLDDT &lt; 70 + map resolution &gt; 4 Å 的區域標 "tentative" 在論文中。</div>
+<div data-lang="en"><strong>Pitfall 4: Cryo-EM maps don't cross-validate the AF model</strong><br>
+Why wrong: in some cases cryo-EM density is poorly resolved (4–5 Å, IDR, flexible loops), and researchers fit an AF model into the map to complete model-building. But if AF is wrong, forcing the fit produces good map-model agreement on the surface and is wrong underneath. Croll &amp; Read 2024 collected AF-aware best practice for ISOLDE / Coot / Phenix.<br>
+Fix: use PHENIX or ISOLDE for cross-correlation map-to-model real-space refinement; manually inspect low-confidence regions (pLDDT &lt; 70) in Coot; validate with EMRinger (Barad 2015), CC_mask, Q-score (Pintilie 2020); flag any region with pLDDT &lt; 70 and map resolution &gt; 4 Å as "tentative" in the paper.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：用 AF3 公網處理專利受限分子</strong><br>
+為什麼錯：AlphaFold Server（alphafoldserver.com）2024 起開放但有條款限制：非商用、輸入會被 Google DeepMind 保存。把 commercial drug candidate 結構或客戶受限 ligand 序列丟進去 = 專利洩漏 + 違反 ToS。Isomorphic Labs（DeepMind 子公司）有商用授權但需單獨談。<br>
+正確做法：(a) 商用、專利敏感 work 用 Boltz-1/2（MIT 授權，可商用、可自架）；(b) 機密 work 永遠自架，不走 public server；(c) 對 partner 提供結構檔案前查清楚授權（AF3 weights 為 non-commercial、Boltz 為 MIT、ESM-3 分層）；(d) IP-sensitive lab 把 AF3 server 列入 do-not-use list。</div>
+<div data-lang="en"><strong>Pitfall 5: Using AF3 public server on IP-restricted molecules</strong><br>
+Why wrong: AlphaFold Server (alphafoldserver.com, since 2024) has Terms: non-commercial use, inputs stored by Google DeepMind. Submitting a commercial drug candidate's structure or a client's restricted ligand = IP leak + ToS violation. Isomorphic Labs (DeepMind subsidiary) holds commercial licences but they're negotiated separately.<br>
+Fix: (a) commercial / IP-sensitive work uses Boltz-1/2 (MIT licence, commercial, self-hostable); (b) confidential work always self-hosted, never public servers; (c) before sharing structure files with partners, verify licensing (AF3 weights non-commercial, Boltz MIT, ESM-3 tiered); (d) IP-sensitive labs put AF3 server on a do-not-use list.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 6：以為 AF3 已能取代實驗結構</strong><br>
+為什麼錯：AF3 對 well-folded、有同源 template、深 MSA 的系統很準（CASP15 同等水準），但對 (a) novel fold、(b) post-translational modification、(c) membrane embedding、(d) conformational ensemble、(e) ligand-induced fit 仍弱。Nature 2024 後續 commentary 強調「AF3 是 hypothesis generator，不是 final answer」。<br>
+正確做法：對 publication 標明「predicted by AF3」、提供 confidence metrics（pLDDT/PAE/ipTM）、與已知實驗結構 RMSD 比對；對 drug design 必有 wet-lab validation。把 AF3 當「快速 prioritise」工具，不當「終局證據」。</div>
+<div data-lang="en"><strong>Pitfall 6: Believing AF3 can replace experimental structures</strong><br>
+Why wrong: AF3 is accurate on well-folded systems with homologous templates and deep MSAs (CASP15-level), but weak on (a) novel folds, (b) post-translational modifications, (c) membrane embedding, (d) conformational ensembles, (e) ligand-induced fit. Nature 2024 follow-up commentary stresses "AF3 is a hypothesis generator, not the final answer."<br>
+Fix: in publications, label "predicted by AF3," provide confidence metrics (pLDDT/PAE/ipTM), and report RMSD against known experimental structures; for drug design wet-lab validation is mandatory. Treat AF3 as a fast prioritisation tool, not a closing argument.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：MSA depth、PAE 解讀、diffusion models 的設計選擇" data-en="Advanced: MSA depth, PAE interpretation, diffusion models">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 MSA depth 對精度的影響、PAE matrix 解讀、diffusion (RFdiffusion) backbone-only vs all-atom" data-en="🔬 MSA depth effects, PAE matrix interpretation, RFdiffusion backbone vs all-atom">🔬 MSA depth 精度影響、PAE 解讀、RFdiffusion backbone vs all-atom</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① MSA depth 對精度的決定性影響。</strong>AlphaFold 的核心輸入是 Multiple Sequence Alignment——每個位點的進化保守性與 co-evolutionary signal 是模型推斷接觸圖的主要來源。Jumper et al. 2021 (Nature) 在原始 AF2 paper 顯示：MSA depth ≥ 1000 時 GDT_TS ~85；MSA depth 30 時 GDT_TS ~60；MSA depth 0（single sequence, ESMFold-style）時 GDT_TS ~45。MMseqs2 加速的 ColabFold（Mirdita 2022 Nat Methods）讓 MSA building 從 hour 級降到 min 級。對 orphan protein（無同源）與新病毒（突發 SARS-CoV-2 變異）MSA 太淺，這時 ESMFold（基於 ESM2 PLM、無需 MSA）反而較好。AF3 仍依賴 MSA 但對 single sequence 已有 graceful degradation。</p>
+<p><strong>② PAE matrix 的解讀技巧。</strong>PAE 是 L×L 矩陣（L 為總長），格 (i, j) 是「對齊到殘基 i 後預測殘基 j 位置的誤差 Å」。讀法：(a) 對角線附近永遠低（同一 domain 內局部正確）；(b) <strong>長距離 off-diagonal 低 PAE 區塊</strong> = 模型對該 domain pair 的相對 orientation 有把握；(c) 對 multi-chain，跨鏈區塊低 PAE = interface 可信（這也是 ipTM 的視覺化基礎）；(d) <strong>diffuse high PAE</strong> = orientation 完全不確定，常見於 flexible linker 或 IDR；(e) 突然出現「方塊狀」高 PAE 區塊 = 該段是 flexible domain 相對其他部分。對 multi-domain protein（如 hsp90、kinase + SH2 + SH3）PAE 是判斷「rigid body 還是 hinge」的關鍵 metric。</p>
+<p><strong>③ RFdiffusion: backbone-only vs all-atom 差異。</strong>RFdiffusion（Watson et al. 2023 Nature）只擾動 backbone 座標（Cα、N、C、O、Cβ）做 SE(3)-equivariant diffusion——side-chain 之後由 ProteinMPNN 設計。RFdiffusion All-Atom（Krishna et al. 2024）擴展到全原子，可同時設計 backbone + side-chain + ligand binding pocket。差別：(a) backbone-only 速度快、適合 binder design；(b) all-atom 慢但可直接做 enzyme active site design（與小分子 substrate 共同生成）；(c) all-atom 對 catalytic residue motif 與 ligand stereochemistry 處理更好。2024 後 all-atom 在 enzyme design competition（如 RFdiffusion-AA + ESM3 hybrid）開始勝出。</p>
+<p><strong>④ Boltz 與 AF3 的工程差異。</strong>AF3（Abramson et al. 2024 Nature）核心架構：Pairformer（取代 Evoformer，簡化 representation）+ diffusion module（直接生成原子座標而非用 structure module + amber relax）。Boltz-1（Wohlwend et al. 2024）公開複現此架構於 MIT 授權下；Boltz-2（2025）加 affinity prediction head，整合 docking + scoring 端到端。實際使用：AF3 server 有 Google 的 batched MSA service（快），自架 Boltz 需自己跑 MMseqs2/HH-suite。對研究 lab，Boltz 自架成本約 1× A100 / 100 蛋白/天。</p>
+<p><strong>⑤ 關鍵 references。</strong>Jumper et al. 2021 (AF2, Nature) · Abramson et al. 2024 (AF3, Nature) · Wohlwend et al. 2024 (Boltz-1) · Watson et al. 2023 (RFdiffusion, Nature) · Krishna et al. 2024 (RFdiffusion All-Atom + RoseTTAFold AA, Science) · Lin et al. 2023 (ESM2, Science) · EvolutionaryScale 2024 (ESM3) · Dauparas et al. 2022 (ProteinMPNN, Science) · Mirdita et al. 2022 (ColabFold, Nat Methods) · Buttenschoen et al. 2024 (PoseBusters) · Croll &amp; Read 2024 · Wankowicz et al. 2024 (PocketMiner).</p>
+</div>
+<div data-lang="en">
+<p><strong>① MSA depth's decisive effect on accuracy.</strong> AlphaFold's core input is the MSA — per-position evolutionary conservation and co-evolutionary signal are the model's main route to inferring contacts. Jumper et al. 2021 (Nature) AF2 paper: MSA depth ≥ 1000 → GDT_TS ~85; MSA depth ~30 → GDT_TS ~60; MSA depth 0 (single sequence, ESMFold-style) → GDT_TS ~45. MMseqs2-accelerated ColabFold (Mirdita 2022 Nat Methods) shrank MSA building from hours to minutes. For orphan proteins (no homologs) or novel viruses (sudden SARS-CoV-2 variants), MSA is too shallow — ESMFold (ESM2 PLM, no MSA) wins. AF3 still depends on MSA but degrades gracefully on single sequences.</p>
+<p><strong>② Reading the PAE matrix.</strong> PAE is L×L (L = total length); entry (i, j) = "predicted error in residue j's position after aligning on residue i, in Å." Read: (a) near-diagonal entries always low (within-domain accuracy); (b) <strong>long-range off-diagonal low-PAE blocks</strong> = model is confident in that domain pair's orientation; (c) for multi-chain, low-PAE blocks across chain boundaries = trustworthy interface (the visual basis of ipTM); (d) <strong>diffuse high PAE</strong> = orientation entirely uncertain — common for flexible linkers or IDRs; (e) sudden "blocky" high PAE = a flexible domain relative to the rest. For multi-domain proteins (hsp90, kinase + SH2 + SH3) PAE is the key metric for "rigid body vs. hinge."</p>
+<p><strong>③ RFdiffusion: backbone-only vs all-atom.</strong> RFdiffusion (Watson et al. 2023 Nature) perturbs only backbone coordinates (Cα, N, C, O, Cβ) via SE(3)-equivariant diffusion — side chains designed afterwards by ProteinMPNN. RFdiffusion All-Atom (Krishna et al. 2024) extends to all atoms, jointly designing backbone + side chains + ligand binding pocket. Differences: (a) backbone-only is fast and well-suited to binder design; (b) all-atom is slower but enables direct enzyme active-site design (joint generation with small-molecule substrate); (c) all-atom handles catalytic residue motifs and ligand stereochemistry better. Since 2024, all-atom variants (RFdiffusion-AA + ESM3 hybrids) increasingly win enzyme-design competitions.</p>
+<p><strong>④ Engineering differences between Boltz and AF3.</strong> AF3 (Abramson et al. 2024 Nature): Pairformer (replacing Evoformer, simplifying representation) + diffusion module (direct atom-coordinate generation instead of structure module + AMBER relax). Boltz-1 (Wohlwend et al. 2024) publicly reproduces this architecture under MIT licence; Boltz-2 (2025) adds an affinity-prediction head, integrating docking + scoring end-to-end. Practical use: AF3 Server has Google's batched MSA service (fast); self-hosting Boltz requires running MMseqs2/HH-suite yourself. For a research lab, self-hosted Boltz costs ~1× A100 per 100 proteins/day.</p>
+<p><strong>⑤ Key references.</strong> Jumper et al. 2021 (AF2, Nature) · Abramson et al. 2024 (AF3, Nature) · Wohlwend et al. 2024 (Boltz-1) · Watson et al. 2023 (RFdiffusion, Nature) · Krishna et al. 2024 (RFdiffusion All-Atom + RoseTTAFold AA, Science) · Lin et al. 2023 (ESM2, Science) · EvolutionaryScale 2024 (ESM3) · Dauparas et al. 2022 (ProteinMPNN, Science) · Mirdita et al. 2022 (ColabFold, Nat Methods) · Buttenschoen et al. 2024 (PoseBusters) · Croll &amp; Read 2024 · Wankowicz et al. 2024 (PocketMiner).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab 思辨這四題" data-en="Debate these four with your lab">與你的 lab 思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: AF3 商用授權限制會如何形塑生技產業？</h4>
+<p>AF3 weights 為 non-commercial、AlphaFold Server 禁商用、Isomorphic Labs 商用授權需單獨談。Boltz-1/2 為 MIT，AF3-class 開源。OpenFold（Ahdritz 2024）、ColabFold 也是開源。biotech 老闆面臨選擇：用 AF3 server 做 prototype 但 production 換 Boltz？還是直接 Boltz？某新創 CEO 抱怨：「AF3 server 對 internal hackday 完美，但合規部說一個分子都不能進」。<strong>請思考</strong>：non-commercial AF3 vs MIT Boltz 對 biotech、academic、large pharma 三類組織的決策邏輯有何不同？學術發表時是否該主動避免 commercial-only 工具？這對 reproducibility 有何影響？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: How will AF3's commercial licensing reshape biotech?</h4>
+<p>AF3 weights are non-commercial, AlphaFold Server forbids commercial use, and Isomorphic Labs licences are bespoke. Boltz-1/2 is MIT — AF3-class open source. OpenFold (Ahdritz 2024) and ColabFold are also open. Biotech leadership has to choose: prototype on AF3 Server, production on Boltz? Or Boltz throughout? A startup CEO complains: "AF3 Server is perfect for an internal hackday, but compliance says not one molecule can go in." <strong>Consider</strong>: how do non-commercial AF3 vs MIT Boltz reshape decisions at biotech, academic, and large-pharma scales? Should academic publishing actively avoid commercial-only tools? Implications for reproducibility?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 預測結構 vs 實驗結構在 paper 中該如何定位？</h4>
+<p>2024 Nature 後續 commentary 質疑：許多論文用 AF3 結構作 main figure，沒做 cryo-EM 驗證就提出機制 claim。某 reviewer 評論：「AF3 是強 hypothesis 但不是 evidence——你要說 'we propose'，不能說 'we show'」。但另一派認為 well-confident AF3 對 reasonable mechanism 已足夠，要求 cryo-EM 是 over-conservative。<strong>請思考</strong>：predict-only paper 的證據門檻該怎麼定？AF3 model + MD + binding assay 是否「足夠」？「我們認為這個 pocket 存在」（AF3）與「我們證明這個 pocket 存在」（cryo-EM）這兩種敘述該如何區分？journal 該如何審？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: How should predicted vs experimental structures be positioned in papers?</h4>
+<p>2024 Nature commentary questioned: many papers use AF3 as main figures and assert mechanisms without cryo-EM validation. A reviewer remarked: "AF3 is a strong hypothesis but not evidence — say 'we propose,' not 'we show.'" Others argue well-confident AF3 + reasonable mechanism is sufficient and demanding cryo-EM is over-conservative. <strong>Consider</strong>: what evidence threshold should predict-only papers meet? Is AF3 + MD + binding assay "enough"? How do you distinguish "we believe this pocket exists" (AF3) from "we demonstrate this pocket exists" (cryo-EM)? How should journals review?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: RFdiffusion designed protein 算 invention 嗎？</h4>
+<p>2023 Nature RFdiffusion paper 後，Baker lab 一個月內申請數百 binder 專利。但 USPTO 2024 已表態「AI 不可為 inventor」（Thaler v. Vidal 案延伸）。當 RFdiffusion 生成 10000 candidate、研究者篩 200 個合成、最終 1 個 nM binder——誰是 inventor？模型、研究者、訓練 model 的工程師、PDB 提供者？<strong>請思考</strong>：AI-designed protein 的 IP 該歸誰？「我用 RFdiffusion 設計」與「我用 LLM 寫 code」在 inventorship 上有差別嗎？OpenAI、DeepMind、Baker lab 的 generative model 是否該分享 IP？這對 biotech 商業模式有何影響？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: Are RFdiffusion-designed proteins inventions?</h4>
+<p>After the 2023 Nature RFdiffusion paper, Baker lab filed hundreds of binder patents within a month. But USPTO 2024 already held "AI cannot be inventor" (extending Thaler v. Vidal). When RFdiffusion generates 10,000 candidates, the researcher synthesises 200, and 1 nM binder emerges — who is the inventor? The model? Researcher? Engineers who trained it? PDB depositors? <strong>Consider</strong>: who owns IP for AI-designed proteins? Is "I designed it with RFdiffusion" different from "I wrote code with an LLM" for inventorship? Should OpenAI / DeepMind / Baker lab share IP through their generative models? What does this imply for biotech business models?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: 結構生物 PhD 訓練該如何調整？</h4>
+<p>傳統結構生物 PhD：3–4 年學 cryo-EM / X-ray / NMR + 1 個 milestone 結構。AlphaFold 後：「為什麼還要花 1 年解結構？」某 PI 提議改造課程：第一年仍學實驗，第二年起以 AF3 + 設計為主、wet-lab 為輔。資深 reviewer 反對：「不會解實驗結構的 structural biologist 不是 structural biologist」。<strong>請思考</strong>：2026 後 structural biology PhD 該如何訓練？「會跑 AF3 + 設計 + MD」算 structural biologist 嗎？實驗技能（cryo-EM data processing、X-ray refinement）的地位如何重新定位？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: How should structural-biology PhD training evolve?</h4>
+<p>Traditional structural-biology PhD: 3–4 years on cryo-EM / X-ray / NMR + one milestone structure. Post-AlphaFold: "why spend a year solving a structure?" A PI proposes a curriculum redesign: year-1 experimental, years 2+ centred on AF3 + design with wet-lab support. A senior reviewer pushes back: "a structural biologist who can't solve an experimental structure isn't a structural biologist." <strong>Consider</strong>: how should structural-biology PhD training look from 2026 on? Does "AF3 + design + MD" count as a structural biologist? How should experimental skills (cryo-EM data processing, X-ray refinement) be repositioned?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">1. 你拿到一個 AlphaFold 3 預測，pLDDT 在中段（殘基 200–300）平均 35。最合理推論？</p>
+<p data-lang="en">1. An AlphaFold 3 prediction has average pLDDT ~35 in the middle stretch (residues 200–300). Best interpretation?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 該段一定是錯的</span><span data-lang="en">A. That region must be wrong</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. AlphaFold 3 有 bug</span><span data-lang="en">B. AlphaFold 3 has a bug</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 該段可能是 IDR；查 MobiDB / IUPred 並考慮序列特性</span><span data-lang="en">C. The region may be an IDR; check MobiDB / IUPred and sequence features</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 換 ESMFold 跑就會準</span><span data-lang="en">D. Re-running with ESMFold will fix it</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">2. 你要做商用 binder design，預算有限，需要可自架。最合適？</p>
+<p data-lang="en">2. You need commercial binder design, on a budget, self-hostable. Best choice?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. AlphaFold Server（非商用）</span><span data-lang="en">A. AlphaFold Server (non-commercial)</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. Boltz-1 (MIT) + RFdiffusion</span><span data-lang="en">B. Boltz-1 (MIT) + RFdiffusion</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. ESM2</span><span data-lang="en">C. ESM2</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 純手工 Rosetta scoring</span><span data-lang="en">D. Manual Rosetta scoring only</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="0">
+<p data-lang="zh">3. ipTM 是用來看？</p>
+<p data-lang="en">3. ipTM tells you what?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 多鏈複合體 interface 信心</span><span data-lang="en">A. Confidence in a multi-chain interface</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 單一殘基的局部準確度</span><span data-lang="en">B. Per-residue local accuracy</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 蛋白溶解度</span><span data-lang="en">C. Protein solubility</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 蛋白熱穩定性</span><span data-lang="en">D. Thermal stability</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你的 biotech startup 想對某 GPCR 設計 nanomolar binder，目標商用申請專利。團隊有 GPU 4× A100、有 wet-lab capacity（yeast display）。CEO 問你選哪個 AI 結構工具流程？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. Your biotech startup wants to design a nanomolar binder against a GPCR, with commercial IP intent. The team has 4× A100 GPUs and wet-lab capacity (yeast display). The CEO asks which AI structure-tool pipeline you'd choose?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 用 AlphaFold Server（免費 + 最先進），把 GPCR 與 candidate 序列上傳給 Google</span><span data-lang="en">A. Use AlphaFold Server (free + state-of-the-art) — upload the GPCR and candidates to Google</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 直接靠手工 Rosetta，不用 AI</span><span data-lang="en">B. Stick to hand-tuned Rosetta, no AI</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 只買 ESM2 weights，用它做 structure prediction</span><span data-lang="en">C. Just buy ESM2 weights and use them for structure prediction</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 自架 RFdiffusion + ProteinMPNN 產 candidate、自架 Boltz-1（MIT 商用 OK）做 AF3-class self-consistency 篩選；專利敏感分子全程 on-prem；最後 yeast display + flow cytometry 驗證</span><span data-lang="en">D. Self-host RFdiffusion + ProteinMPNN for candidate generation, self-host Boltz-1 (MIT, commercial OK) for AF3-class self-consistency filtering; IP-sensitive molecules stay on-prem throughout; final yeast display + flow cytometry validation</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 MSA depth 對 AlphaFold 精度的影響，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. On MSA depth's effect on AlphaFold accuracy, which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. MSA 越淺越好，模型才能 generalise</span><span data-lang="en">A. Shallower MSAs are better for generalisation</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. AlphaFold 不需要 MSA</span><span data-lang="en">B. AlphaFold doesn't need MSAs</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. MSA depth 是精度的決定性輸入：≥1000 序列 GDT_TS ~85、~30 序列 ~60、0 序列（single-seq）~45。orphan protein 與新病毒因 MSA 太淺，用 ESMFold（無 MSA、ESM2 base）反而較好。MMseqs2 加速 MSA build 使 ColabFold 從 hour 級降到 min 級</span><span data-lang="en">C. MSA depth is the decisive accuracy input: ≥1000 sequences → GDT_TS ~85; ~30 sequences → ~60; 0 sequences (single-seq) → ~45. For orphan proteins and novel viruses with shallow MSAs, ESMFold (no MSA, ESM2-based) wins. MMseqs2 acceleration brought ColabFold MSA building from hours to minutes</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. MSA depth 只影響速度，不影響精度</span><span data-lang="en">D. MSA depth affects only speed, not accuracy</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="agents.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Prev">← 上一步</span><span class="nav-title" data-zh="Step 10: Agentic Workflows 與 MCP" data-en="Step 10: Agentic Workflows &amp;amp; MCP">Step 10: Agentic Workflows 與 MCP</span></a>
+<a href="genomic-fm.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 12: 基因組 Foundation 模型" data-en="Step 12: Genomic Foundation Models">Step 12: 基因組 Foundation 模型</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Confidence simulator (mock pLDDT histogram)
+const REG_BASE={core:[2,4,10,30,54],surface:[4,10,22,38,26],idr:[42,32,16,8,2],tm:[3,8,18,35,36]};
+const CMP_DROP={mono:0,homo:5,hetero:10,nuc:8};
+const NOTE={
+  core:{zh:'摺疊核心通常 pLDDT &gt; 90，預測高度可信。',en:'Folded cores typically score pLDDT &gt; 90 — high-confidence predictions.'},
+  surface:{zh:'表面 loop 信心中等，需注意 side-chain rotamer 不一定準。',en:'Surface loops show medium confidence; side-chain rotamers may still be off.'},
+  idr:{zh:'IDR 通常 pLDDT &lt; 50，但這不代表錯——只代表沒有單一構象。',en:'IDRs usually fall below pLDDT 50 — not "wrong," just no single conformation.'},
+  tm:{zh:'跨膜螺旋預測信心高，但脂雙層環境效應仍未捕捉。',en:'TM helices score high, but lipid-bilayer environment effects are not captured.'}
+};
+function drawConf(){
+  const r=document.getElementById('regSel').value;const c=document.getElementById('cmpSel').value;
+  const base=REG_BASE[r].slice();const drop=CMP_DROP[c];
+  base[4]=Math.max(2,base[4]-drop);base[3]=Math.max(2,base[3]-Math.round(drop/2));base[2]+=Math.round(drop/2);base[1]+=Math.round(drop/2);
+  const total=base.reduce((a,b)=>a+b,0);const perc=base.map(x=>x*100/total);
+  const labels=['&lt;50','50-70','70-80','80-90','&gt;90'];
+  const colors=['#c44a3e','#d88a3e','#d8c63e','#7ac24c','#3ea36b'];
+  const svg=document.getElementById('confSvg');
+  const w=480,h=140,x0=40,y0=20;
+  let html=`<text x="${x0}" y="14" font-size="11" fill="var(--c-ink-muted)">% of residues</text>`;
+  const bw=(w-x0-20)/5;
+  perc.forEach((p,i)=>{
+    const bh=p*1.2;const bx=x0+i*bw+4;const by=y0+h-bh;
+    html+=`<rect x="${bx}" y="${by}" width="${bw-8}" height="${bh}" fill="${colors[i]}" rx="4"/>`;
+    html+=`<text x="${bx+(bw-8)/2}" y="${by-5}" text-anchor="middle" font-size="11" fill="var(--c-ink)">${p.toFixed(0)}%</text>`;
+    html+=`<text x="${bx+(bw-8)/2}" y="${y0+h+15}" text-anchor="middle" font-size="11" fill="var(--c-ink-muted)">pLDDT ${labels[i]}</text>`;
+  });
+  svg.innerHTML=html;
+  const L=window.I18n?I18n.get():'en';
+  document.getElementById('confNote').textContent=NOTE[r][L];
+}
+document.getElementById('regSel').addEventListener('change',drawConf);
+document.getElementById('cmpSel').addEventListener('change',drawConf);
+document.addEventListener('langchange',drawConf);
+document.addEventListener('DOMContentLoaded',drawConf);
+
+// Quiz
+const QF={zh:{q1_y:'低 pLDDT 區可能是 IDR；交叉看 MobiDB / IUPred 是正確第一步。',q2_y:'Boltz-1 MIT 授權 + 開源權重，是商用自架最佳組合。',q3_y:'ipTM 衡量多鏈介面的整體準確度。',q4_y:'D 正確。專利申請場景必須避免 AF3 Server（A）——其 ToS 禁商用、輸入會被 Google 保存，等同 IP 洩漏。Rosetta-only（B）放棄 2023+ 設計革命；ESM2（C）擅長 representation 但不擅長 binder 直接設計。正確 stack：(1) RFdiffusion 條件生成 backbone 對準 target epitope；(2) ProteinMPNN 設計 sequence；(3) Boltz-1（MIT 商用 OK）做 AF3-class self-consistency 篩 ipTM &gt; 0.85 + pLDDT &gt; 80；(4) IP-sensitive 全程 on-prem；(5) yeast display 驗證篩出 nM/pM binder。這是 Baker lab 的 2023–2024 paradigm 的商用版本。',q5_y:'C 正確。Jumper et al. 2021 (Nature) AF2 paper 證明 MSA depth 是精度的決定性輸入：≥1000 序列 GDT_TS ~85；~30 序列 ~60；single sequence ~45。對 orphan protein 或新病毒（突發 SARS-CoV-2 變異）MSA 太淺時 ESMFold（無需 MSA、用 ESM2 PLM）反而較好。ColabFold 用 MMseqs2 加速 MSA 從 hour 級降到 min 級。MSA 越淺越好（A）與「不需 MSA」（B）違反 paper 證據；MSA 只影響速度（D）忽略 GDT_TS 差距。'},en:{q1_y:'Low-pLDDT regions are often IDRs; cross-checking MobiDB / IUPred is the right first step.',q2_y:'Boltz-1 (MIT) with open weights is the strongest commercial self-host option.',q3_y:'ipTM measures the global accuracy of multi-chain interfaces.',q4_y:'D is correct. For patent-bound work you must avoid AF3 Server (A) — its ToS forbids commercial use and inputs are stored by Google, an IP leak. Rosetta-only (B) abandons the 2023+ design revolution; ESM2 (C) is strong at representation but weak at direct binder design. Correct stack: (1) RFdiffusion conditioned backbone generation against the target epitope; (2) ProteinMPNN sequence design; (3) Boltz-1 (MIT, commercial OK) for AF3-class self-consistency filtering at ipTM &gt; 0.85 + pLDDT &gt; 80; (4) IP-sensitive work stays fully on-prem; (5) yeast display selects nM/pM binders. The commercial-grade version of the Baker lab 2023–2024 paradigm.',q5_y:'C is correct. Jumper et al. 2021 (Nature) AF2 showed MSA depth is the decisive accuracy input: ≥1000 sequences → GDT_TS ~85; ~30 → ~60; single sequence → ~45. For orphan proteins or novel viruses with shallow MSAs (sudden SARS-CoV-2 variants), ESMFold (no MSA, ESM2-based) wins. ColabFold + MMseqs2 brought MSA building from hours to minutes. Claims "shallower is better" (A) and "no MSA needed" (B) contradict the paper; "MSA only affects speed" (D) ignores the GDT_TS gap.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>

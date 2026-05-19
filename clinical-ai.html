@@ -1,0 +1,456 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 18: Clinical Decision AI — AI Literacy Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="intro.html">Intro</a></li><li><a href="tokens.html">Tokens</a></li><li><a href="prompting.html">Prompt</a></li><li><a href="advanced-prompting.html">Adv.Prompt</a></li><li><a href="hallucination.html">Halluc.</a></li><li><a href="literature.html">Lit.</a></li><li><a href="writing.html">Writing</a></li><li><a href="coding.html">Coding</a></li><li><a href="data-analysis.html">Data</a></li><li><a href="agents.html">Agents</a></li><li><a href="structure.html">AlphaFold</a></li><li><a href="genomic-fm.html">DNA-FM</a></li><li><a href="scfm.html">scFM</a></li><li><a href="biomedical-llm.html">Med-LLM</a></li><li><a href="bioimage.html">Image</a></li><li><a href="clinical-imaging.html">Clin.Img</a></li><li><a href="drug-discovery.html">Drug</a></li><li><a href="clinical-ai.html" class="active">Clin.AI</a></li><li><a href="ethics.html">Ethics</a></li><li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 18 / 20</div>
+<h1 data-zh="臨床決策 AI" data-en="Clinical Decision AI">臨床決策 AI</h1>
+<p class="subtitle" data-lang="zh">OpenEvidence、Glass.health、Med-Gemini——2026 年 75 萬醫師已在用，但你必須知道它做不到什麼。</p>
+<p class="subtitle" data-lang="en">OpenEvidence, Glass.health, Med-Gemini — 750k+ physicians use them in 2026, but you must know what they cannot do.</p>
+</header>
+<main class="content-wrap">
+
+<!-- ===== Glossary ===== -->
+<section class="section">
+<div class="section-label" data-zh="術語速查" data-en="GLOSSARY">術語速查</div>
+<h2 data-zh="臨床 AI 必懂十二詞" data-en="Twelve terms for clinical AI">臨床 AI 必懂十二詞</h2>
+<div data-lang="zh"><p>從工具名（OpenEvidence、Glass.health、Med-Gemini）到 EHR 整合術語（SMART on FHIR、HL7、Audit Trail），這 12 個詞是讀懂臨床決策 AI 文獻的入場券。</p></div>
+<div data-lang="en"><p>From tool names (OpenEvidence, Glass.health, Med-Gemini) to EHR integration jargon (SMART on FHIR, HL7, Audit Trail), these 12 terms are the entry ticket to clinical decision-AI literature.</p></div>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📚</div><h4>OpenEvidence</h4>
+<div data-lang="zh"><p>2022 創立，2026/1 Series D 估值 $12 B。註冊用戶 75.7 萬醫師（&gt;40% 美國執業醫師）。產品：evidence-grounded answer，自動串 PubMed + UpToDate-class summary。2024 退出 UK/EU。</p></div>
+<div data-lang="en"><p>Founded 2022; Jan 2026 Series D at $12B valuation. 757K registered physicians (&gt;40% of US practising MDs). Product: evidence-grounded answers stitched from PubMed + UpToDate-class summary. Withdrew from UK/EU in 2024.</p></div>
+</div>
+<div class="card"><div class="card-icon">🩺</div><h4>Glass.health</h4>
+<div data-lang="zh"><p>由前 ED 住院醫師 Dereck Paul 創立；專注 EHR 內 differential diagnosis 與 A/P draft。透過 SMART on FHIR 整合 Epic / eClinicalWorks / Athena，產出可寫入 progress note 的草稿。</p></div>
+<div data-lang="en"><p>Founded by ex-ED resident Dereck Paul; focuses on in-EHR differential diagnosis and A/P drafts. Integrates via SMART on FHIR with Epic / eClinicalWorks / Athena and produces drafts ready for the progress note.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔌</div><h4>SMART on FHIR</h4>
+<div data-lang="zh"><p>HL7 標準的 OAuth 2.0 + FHIR API，讓第三方 app 在 EHR 內 launch 並 access 病患資料。Glass.health、Abridge、Suki 都靠它與 Epic 整合，不需修改 EHR 本體。</p></div>
+<div data-lang="en"><p>An HL7 standard combining OAuth 2.0 + FHIR API, letting third-party apps launch inside an EHR and access patient data. Glass.health, Abridge, and Suki integrate with Epic this way without modifying the EHR core.</p></div>
+</div>
+<div class="card"><div class="card-icon">🔍</div><h4>Differential Diagnosis</h4>
+<div data-lang="zh"><p>面對 chief complaint，列出所有可能診斷並按 likelihood 排序的過程。Med-PaLM 2、Med-Gemini、Glass.health 在 NEJM CPC 案例上 differential top-3 命中率達 70–85%（McDuff 2025 <em>Nature</em>）。</p></div>
+<div data-lang="en"><p>Given a chief complaint, listing all possible diagnoses ranked by likelihood. Med-PaLM 2, Med-Gemini, and Glass.health hit top-3 differential accuracy of 70–85% on NEJM CPC cases (McDuff 2025 <em>Nature</em>).</p></div>
+</div>
+<div class="card"><div class="card-icon">🧠</div><h4>Clinical Reasoning</h4>
+<div data-lang="zh"><p>從病史 → 鑑別診斷 → 檢查 → 治療的多步推理過程。LLM 透過 chain-of-thought 或 deliberation 模擬，但對「典型表現」表現好，對「不典型」與低盛行率仍弱。</p></div>
+<div data-lang="en"><p>Multi-step reasoning from history → differential → workup → treatment. LLMs simulate this via chain-of-thought or deliberation, but perform well on typical presentations and remain weak on atypical or low-prevalence cases.</p></div>
+</div>
+<div class="card"><div class="card-icon">💎</div><h4>Med-Gemini</h4>
+<div data-lang="zh"><p>Google DeepMind 2024 + 2025 升級；多模態（文字 + CT / pathology image + 基因組）。在 Mayo Clinic / Penn Medicine / NHS 試點。Deep Search mode 用 web search + reasoning 增強 evidence retrieval。</p></div>
+<div data-lang="en"><p>Google DeepMind 2024 + 2025 upgrade; multimodal (text + CT / pathology image + genomics). Piloting at Mayo Clinic / Penn Medicine / NHS. Deep Search mode boosts evidence retrieval with web search + reasoning.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏥</div><h4>EHR Integration</h4>
+<div data-lang="zh"><p>把 AI 服務「嵌進」EHR workflow 而非另開視窗。Epic 2024 開放 App Orchard + SMART on FHIR，使 OpenEvidence、Glass、Abridge 等可在 progress note 旁直接 launch。</p></div>
+<div data-lang="en"><p>Embedding AI inside EHR workflow rather than opening a separate window. Epic 2024 opened App Orchard + SMART on FHIR so OpenEvidence, Glass, and Abridge can launch right beside the progress note.</p></div>
+</div>
+<div class="card"><div class="card-icon">📄</div><h4>HL7 FHIR</h4>
+<div data-lang="zh"><p>Health Level Seven 的 Fast Healthcare Interoperability Resources。R4（2019 stable）為當前主流，R5（2023）逐步採用。每個 EHR 元素是個 JSON resource（Patient、Observation、MedicationRequest）。</p></div>
+<div data-lang="en"><p>Health Level Seven's Fast Healthcare Interoperability Resources. R4 (stable 2019) is current mainstream; R5 (2023) is being adopted. Every EHR element is a JSON resource (Patient, Observation, MedicationRequest).</p></div>
+</div>
+<div class="card"><div class="card-icon">📋</div><h4>Audit Trail</h4>
+<div data-lang="zh"><p>記錄每次 AI 查詢的 timestamp + user + input + output + 採納與否。21 CFR Part 11 與 HIPAA 都要求；EU AI Act Annex IV 對高風險 AI 強制記錄 ≥ 10 年。</p></div>
+<div data-lang="en"><p>Logging timestamp + user + input + output + adoption for every AI query. Required by 21 CFR Part 11 and HIPAA; EU AI Act Annex IV mandates ≥10-year retention for high-risk AI.</p></div>
+</div>
+<div class="card"><div class="card-icon">🛡️</div><h4>Safety / Liability</h4>
+<div data-lang="zh"><p>AI 建議造成傷害時責任歸屬。2024 起多州判例傾向「醫師仍負主責，AI 廠商若隱瞞 limitation 共同負責」。FDA 預先審查的 CDS 算 medical device；豁免條款下的 LLM 不算。</p></div>
+<div data-lang="en"><p>Liability when AI advice causes harm. From 2024, multi-state case law trends toward "physician remains primarily liable; AI vendors share liability if limitations were concealed." FDA-cleared CDS counts as a medical device; LLMs under the exclusion clause do not.</p></div>
+</div>
+<div class="card"><div class="card-icon">💊</div><h4>Off-label</h4>
+<div data-lang="zh"><p>FDA 未批准的適應症使用。LLM 常自信地推薦 off-label use，但無法提示「未核准」狀態。臨床部署 AI 必須加 off-label 警示與證據等級標註。</p></div>
+<div data-lang="en"><p>Use for an indication not FDA-approved. LLMs confidently recommend off-label use without flagging "not approved" status. Deployed clinical AI must add off-label warnings and evidence-grade labels.</p></div>
+</div>
+<div class="card"><div class="card-icon">🏛️</div><h4>FDA CDS Exclusion</h4>
+<div data-lang="zh"><p>FDA 2022 Final Guidance「Clinical Decision Support Software」：若 AI 提供 transparent recommendation 讓醫師可獨立判斷（不是 black-box），則豁免 medical device 認證。多數 LLM 工具靠這條豁免。</p></div>
+<div data-lang="en"><p>FDA 2022 Final Guidance "Clinical Decision Support Software": AI giving transparent recommendations that physicians can independently evaluate (not black-box) is excluded from medical-device clearance. Most LLM tools rely on this exclusion.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="概覽" data-en="OVERVIEW">概覽</div>
+<h2 data-zh="2026 年的「醫師的 AI 助手」長什麼樣？" data-en="What does the 2026 physician AI assistant look like?">2026 年的「醫師的 AI 助手」長什麼樣？</h2>
+<div data-lang="zh">
+<p>2026/1 OpenEvidence 完成 Series D，估值 $12 B；註冊用戶超過 75.7 萬醫師，超過美國執業醫師的 40%。2026/3 它與 Mount Sinai 完成 Epic EHR 整合；2025/7 推出 DeepConsult（深度文獻檢索 + reasoning），2025/8 推出 Visits（門診同步 AI）。但同時，OpenEvidence 已在 2024 年退出英國與歐盟——因為 EU AI Act 對「臨床決策支援 AI」的高風險條款使監管不確定性過高。</p>
+<p>Glass.health 採另一條路：透過 SMART on FHIR 標準接入 Epic、eClinicalWorks、Athena，產出 differential diagnosis 與 assessment/plan 草稿，直接寫進醫師 workflow。Google Med-Gemini 已在 Mayo Clinic / Penn Medicine / NHS 試點。重點：這些工具不取代執照醫師，只能加速「文獻查詢、鑑別診斷、病歷草稿」三個任務。</p>
+</div>
+<div data-lang="en">
+<p>In January 2026 OpenEvidence closed a Series D at a $12 B valuation, with 757K+ registered physicians — over 40% of US practising doctors. In March 2026 it shipped Epic EHR integration with Mount Sinai. July 2025 launched DeepConsult (deep literature retrieval + reasoning); August 2025 launched Visits (in-clinic AI). But OpenEvidence withdrew from the UK and EU in 2024 because EU AI Act high-risk clauses created too much regulatory uncertainty.</p>
+<p>Glass.health takes a different path: SMART on FHIR integration with Epic, eClinicalWorks, Athena, drafting differential diagnoses and assessment/plan notes that drop into physician workflow. Google Med-Gemini is piloting with Mayo Clinic / Penn Medicine / NHS. The point: none of these replace the licensed physician — they accelerate three tasks: literature lookup, differential, and note drafting.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>核心心法：</strong>臨床 AI 的價值不是「替你看病人」，是「在病人離開診間後，把你後續 30 分鐘的文書工作壓成 5 分鐘」。它的輸出永遠是<strong>草稿</strong>，永遠需要執照醫師確認、簽名、承擔法律責任。</span>
+<span data-lang="en"><strong>Core mindset:</strong> Clinical AI's value is not "see the patient for you" — it's "compress your 30 minutes of paperwork after the visit into 5 minutes." Its output is always a <strong>draft</strong>; a licensed physician must verify, sign, and own the legal responsibility.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="三大平台" data-en="THREE PLATFORMS">三大平台</div>
+<h2 data-zh="一、2026 年三個臨床 AI 平台" data-en="I. Three 2026 Clinical AI Platforms">一、2026 年三個臨床 AI 平台</h2>
+<div class="card-grid cols-3">
+<div class="card"><div class="card-icon">📚</div><h4>OpenEvidence</h4>
+<div data-lang="zh"><p>757K+ 醫師、$12B 估值（2026/1 Series D）、Epic 整合（2026/3 Mount Sinai）、DeepConsult + Visits 兩條產品線；強項是 evidence-grounded answer。已退出 UK/EU。</p></div>
+<div data-lang="en"><p>757K+ physicians, $12 B valuation (Series D Jan 2026), Epic integration (Mount Sinai Mar 2026), DeepConsult + Visits lines; strength is evidence-grounded answers. Withdrawn from UK / EU.</p></div>
+</div>
+<div class="card"><div class="card-icon">💊</div><h4>Glass.health</h4>
+<div data-lang="zh"><p>SMART on FHIR 接 Epic / eClinicalWorks / Athena；產 differential diagnosis 與 assessment plan 草稿；強項是 EHR-native workflow，不用切換視窗。</p></div>
+<div data-lang="en"><p>SMART on FHIR integration with Epic / eClinicalWorks / Athena; drafts differential diagnosis and assessment plans; strength is EHR-native workflow — no window switching.</p></div>
+</div>
+<div class="card"><div class="card-icon">🌐</div><h4>Med-Gemini</h4>
+<div data-lang="zh"><p>Google 醫療多模態 LLM；Mayo / Penn / NHS 試點；強項是同時吃影像、實驗室數值、文字 free-text。商業部署透過 Vertex AI Healthcare。</p></div>
+<div data-lang="en"><p>Google's medical multimodal LLM; pilots at Mayo / Penn / NHS; strength is jointly ingesting images, lab values, and free text. Commercial deployment via Vertex AI Healthcare.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="情境模擬" data-en="SCENARIO SIMULATOR">情境模擬</div>
+<h2 data-zh="二、臨床情境 × AI 工具" data-en="II. Clinical Scenario × AI Tool">二、臨床情境 × AI 工具</h2>
+<div data-lang="zh"><p>選一個臨床情境，看推薦工具、預期輸出與限制。</p></div>
+<div data-lang="en"><p>Pick a clinical scenario to see the recommended tool, expected output, and limitations.</p></div>
+<div class="interactive-panel">
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="sc-btn active" data-sc="0" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-accent);background:var(--c-accent);color:#fff;cursor:pointer;font-size:.85rem">🩺 <span data-zh="鑑別診斷" data-en="Differential dx">鑑別診斷</span></button>
+    <button class="sc-btn" data-sc="1" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer;font-size:.85rem">📖 <span data-zh="證據查詢" data-en="Evidence lookup">證據查詢</span></button>
+    <button class="sc-btn" data-sc="2" style="flex:1;padding:10px;border-radius:6px;border:1px solid var(--c-border,#ccc);background:transparent;cursor:pointer;font-size:.85rem">📝 <span data-zh="病歷草稿" data-en="Note drafting">病歷草稿</span></button>
+  </div>
+  <div id="scBox" style="padding:14px;background:var(--c-bg-alt);border-radius:8px"></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作 prompt" data-en="HANDS-ON CODE">實作 prompt</div>
+<h2 data-zh="三、三種臨床 AI 使用模式" data-en="III. Three Clinical AI Patterns">三、三種臨床 AI 使用模式</h2>
+<div class="code-tabs">
+<div class="code-tab-btns"><button class="code-tab-btn active" onclick="switchTab(this,'k1')">OpenEvidence style</button><button class="code-tab-btn" onclick="switchTab(this,'k2')">SMART on FHIR</button><button class="code-tab-btn" onclick="switchTab(this,'k3')">Discharge summary</button></div>
+<div class="code-tab-content active" id="k1"><pre><span class="comment"># OpenEvidence-style query (mock — actual API is closed)</span>
+POST /api/v1/ask
+Content-Type: application/json
+Authorization: Bearer &lt;physician_token&gt;
+
+{
+  <span class="str">"question"</span>: <span class="str">"In a 65yo with HFrEF EF 25% on optimal medical therapy, what is the evidence for adding SGLT2 inhibitor?"</span>,
+  <span class="str">"context"</span>: {
+    <span class="str">"patient_age"</span>: <span class="num">65</span>,
+    <span class="str">"diagnoses"</span>: [<span class="str">"HFrEF"</span>, <span class="str">"T2DM"</span>],
+    <span class="str">"current_meds"</span>: [<span class="str">"sacubitril/valsartan"</span>, <span class="str">"carvedilol"</span>, <span class="str">"spironolactone"</span>]
+  },
+  <span class="str">"output_format"</span>: <span class="str">"evidence_summary_with_citations"</span>
+}
+
+<span class="comment"># Expected response: 200–400 word summary + 3–8 PMID citations,</span>
+<span class="comment"># each linked to the exact paragraph it supports.</span></pre></div>
+<div class="code-tab-content" id="k2"><pre><span class="comment"># SMART on FHIR — Glass.health-style EHR integration (OAuth 2.0)</span>
+<span class="comment"># Step 1: physician clicks "AI assist" inside Epic</span>
+<span class="comment"># Step 2: Epic redirects to your app with launch context</span>
+
+GET /authorize?
+    response_type=code
+    &amp;client_id=glass_clinical_app
+    &amp;scope=launch+patient/Patient.read+patient/Condition.read+patient/Observation.read
+    &amp;redirect_uri=https://app.glass.health/callback
+    &amp;aud=https://fhir.epic.example.com/api/FHIR/R4
+    &amp;launch=eyJhbGciOi...
+
+<span class="comment"># Step 3: exchange code for access_token, then pull patient bundle</span>
+GET /Patient/123
+GET /Condition?patient=123
+GET /Observation?patient=123&amp;category=laboratory
+
+<span class="comment"># Step 4: pass de-identified bundle to LLM → return differential + plan draft</span>
+<span class="comment"># Step 5: physician edits + signs in Epic</span></pre></div>
+<div class="code-tab-content" id="k3"><pre><span class="comment"># Discharge summary prompt template (works in any LLM)</span>
+<span class="kw">SYSTEM:</span> You are drafting a discharge summary for a licensed physician
+to review and sign. Do not invent vitals, labs, or procedures. If a
+required field is missing in the input, write [TO BE FILLED] rather
+than fabricating data.
+
+<span class="kw">USER:</span>
+Inputs:
+  - Admission note: &lt;text&gt;
+  - Daily progress notes: &lt;text&gt;
+  - Lab summary (admit / nadir / discharge): &lt;table&gt;
+  - Final diagnoses (problem list): &lt;list&gt;
+  - Discharge medications: &lt;list&gt;
+
+Required output sections (in order):
+  1. Admission Diagnosis
+  2. Hospital Course (3–5 sentences per problem)
+  3. Discharge Diagnosis
+  4. Discharge Medications (compare to admission, mark changes)
+  5. Follow-up Plan (appointments, labs, red-flag instructions)
+
+Constraints:
+  - 400–600 words total
+  - Bullet for follow-up; prose for hospital course
+  - Flag any inconsistency in &lt;FLAG&gt;...&lt;/FLAG&gt; tags</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="平台比較" data-en="PLATFORM COMPARISON">平台比較</div>
+<h2 data-zh="四、三平台對照表" data-en="IV. Three-Platform Comparison">四、三平台對照表</h2>
+<table class="comp-table">
+<thead><tr><th data-zh="平台" data-en="Platform">平台</th><th data-zh="主要功能" data-en="Main feature">主要功能</th><th data-zh="EHR 整合" data-en="EHR">EHR 整合</th><th data-zh="地區" data-en="Region">地區</th><th data-zh="證據 grounding" data-en="Evidence">證據 grounding</th><th data-zh="監管狀態" data-en="Regulatory">監管狀態</th></tr></thead>
+<tbody>
+<tr><td>OpenEvidence</td><td data-zh="證據查詢 / DeepConsult / Visits" data-en="Evidence Q&amp;A / DeepConsult / Visits">證據查詢 / DeepConsult / Visits</td><td data-zh="Epic (2026/3 Mount Sinai)" data-en="Epic (Mount Sinai Mar 2026)">Epic (2026/3 Mount Sinai)</td><td data-zh="僅 US（已退出 UK/EU）" data-en="US only (left UK/EU)">僅 US（已退出 UK/EU）</td><td data-zh="✅ 引用 PMID 段落級" data-en="✅ Paragraph-level PMID">✅ 引用 PMID 段落級</td><td data-zh="Clinical decision support tool（非 SaMD 路徑）" data-en="CDS tool (not SaMD path)">Clinical decision support tool（非 SaMD 路徑）</td></tr>
+<tr><td>Glass.health</td><td data-zh="differential dx / assessment plan" data-en="Differential dx / assessment plan">differential dx / assessment plan</td><td>SMART on FHIR (Epic / eCW / Athena)</td><td>US</td><td data-zh="部分（UpToDate / guidelines）" data-en="Partial (UpToDate / guidelines)">部分（UpToDate / guidelines）</td><td data-zh="CDS tool" data-en="CDS tool">CDS tool</td></tr>
+<tr><td>Med-Gemini</td><td data-zh="多模態問答 / 影像分析" data-en="Multimodal Q&amp;A / imaging">多模態問答 / 影像分析</td><td data-zh="Vertex AI Healthcare（自建整合）" data-en="Vertex AI Healthcare (custom)">Vertex AI Healthcare（自建整合）</td><td data-zh="US / UK pilots" data-en="US / UK pilots">US / UK pilots</td><td data-zh="可 RAG 接 PubMed" data-en="RAG to PubMed">可 RAG 接 PubMed</td><td data-zh="研究 / 試點" data-en="Research / pilot">研究 / 試點</td></tr>
+</tbody>
+</table>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>限制必讀：</strong>(1) 不能取代執照醫師——所有輸出皆需人類審核並簽名；(2) 有種族 / 性別 bias 風險（如曾在 PE / sepsis 模型中發現黑人病人 false-negative 較高）；(3) 必須有引用來源才能寫進病歷；(4) 公用 chatgpt.com 處理病人資料違反 HIPAA，必須用有 BAA 的版本。</span>
+<span data-lang="en"><strong>Critical limits:</strong> (1) Cannot replace licensed physicians — all output needs human review and sign-off; (2) Bias risk by race / gender (e.g., higher false-negative for Black patients in PE / sepsis models); (3) Must include source citations to enter the chart; (4) Public chatgpt.com on patient data violates HIPAA — use BAA-covered editions only.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="決策樹" data-en="DECISION TREE">決策樹</div>
+<h2 data-zh="五、臨床情境 → AI 工具選擇" data-en="V. Clinical Scenario → AI Tool Selection">五、臨床情境 → AI 工具選擇</h2>
+<div class="decision-tree">
+<h4 data-zh="臨床 AI 工具選擇" data-en="Clinical AI Tool Selection">臨床 AI 工具選擇</h4>
+<div class="dt-node"><span class="dt-q">Q1</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>需要的是「文獻證據」還是「病人 workflow」？</strong>證據 → OpenEvidence；workflow → Glass.health。</div><div data-lang="en"><strong>Need "literature evidence" or "patient workflow"?</strong> Evidence → OpenEvidence; Workflow → Glass.health.</div></div>
+<div class="dt-node"><span class="dt-q">Q2</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是否需要多模態（吃 CT / 病理影像 + 文字）？</strong>是 → Med-Gemini；否 → 文字導向工具。</div><div data-lang="en"><strong>Need multimodality (CT / pathology image + text)?</strong> Yes → Med-Gemini; No → text-only tools.</div></div>
+<div class="dt-node"><span class="dt-q">Q3</span><span class="dt-arrow">→</span><div data-lang="zh"><strong>是否在 UK / EU 部署？</strong>是 → 注意 AI Act 高風險條款（2026/8/2 生效），OpenEvidence 不可用；否（US） → 上述皆可。</div><div data-lang="en"><strong>Deploying in UK / EU?</strong> Yes → mind AI Act high-risk clauses (effective 2 Aug 2026); OpenEvidence unavailable; No (US) → any of the above.</div></div>
+</div>
+</section>
+
+<!-- ===== Expanded Case Studies ===== -->
+<section class="section">
+<div class="section-label" data-zh="真實案例" data-en="CASE STUDIES">真實案例</div>
+<h2 data-zh="兩個深入案例：OpenEvidence × Mount Sinai 與 Glass.health 學術中心部署" data-en="Two deeper cases: OpenEvidence × Mount Sinai and Glass.health academic deployment">兩個深入案例</h2>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent)"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">📚</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 1：OpenEvidence × Mount Sinai——Epic 整合改變 evidence-lookup workflow</h4>
+<p>2026 年 3 月，OpenEvidence 與紐約 Mount Sinai Health System 完成 Epic EHR 深度整合，部署於 8 家醫院、約 6,000 名執業醫師。整合方式：透過 SMART on FHIR，醫師在 Epic 病人視圖中按右上角按鈕即可開 OpenEvidence sidebar，且 query 自動帶入 chief complaint + active medication + key labs，無需手動輸入。<strong>DeepConsult 模式</strong>把 query → evidence-grounded answer 縮短到 60 秒（傳統 PubMed search + UpToDate 平均 4–8 分鐘）。Mount Sinai 內部數據：部署 90 天後，evidence lookup 次數從每醫師每月 ~3 次跳到 ~22 次（門檻下降→ 用得多）；medication-related question 的 lookup 比例提升 38%。醫師滿意度（NPS）+62。同時 OpenEvidence 揭露<strong>三項 limitation</strong>：(1) 仍偶有 hallucinated PMID（量測 &lt; 1%，但非零）；(2) 指引更新比 paper 慢 7–14 天；(3) 並非 FDA cleared CDS（依 2022 Final Guidance CDS exclusion 部署，醫師獨立判斷）。背景：截至 2026/1，OpenEvidence Series D 估值 $12 B，註冊 75.7 萬醫師，超過美國執業醫師 40%；但仍維持 US-only，2024 因 EU AI Act 高風險條款退出 UK/EU。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 1: OpenEvidence × Mount Sinai — Epic integration reshapes evidence-lookup workflow</h4>
+<p>March 2026: OpenEvidence completed deep Epic EHR integration with Mount Sinai Health System in New York, deploying across 8 hospitals and ~6,000 attending physicians. Integration via SMART on FHIR: in the Epic patient view, a top-right button opens an OpenEvidence sidebar with the chief complaint + active medications + key labs pre-populated — no manual typing. <strong>DeepConsult mode</strong> compresses query → evidence-grounded answer to about 60 seconds (versus 4–8 minutes for PubMed + UpToDate). Mount Sinai's internal data: 90 days after deployment, evidence lookups jumped from ~3 to ~22 per physician per month (lower friction → more use); medication-related lookups rose 38%. Physician NPS hit +62. OpenEvidence simultaneously disclosed <strong>three limitations</strong>: (1) rare hallucinated PMIDs (&lt;1%, but non-zero); (2) guideline updates lag papers by 7–14 days; (3) it is not FDA-cleared CDS — it deploys under the 2022 Final Guidance CDS exclusion, with the physician retaining independent judgement. Context: as of Jan 2026, OpenEvidence Series D valuation $12B with 757K registered physicians (&gt;40% US practising MDs); still US-only after withdrawing from UK/EU in 2024 over AI Act uncertainty.</p></div>
+</div></div></div>
+
+<div class="callout tip" style="display:block;border-left:4px solid var(--c-accent);margin-top:18px"><div style="display:flex;gap:10px;align-items:start">
+<span class="callout-icon">🩺</span>
+<div style="flex:1">
+<div data-lang="zh"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">案例 2：Glass.health 學術中心 SMART on FHIR 部署——differential 準確度 +18%</h4>
+<p>2025 年某美國中部學術醫療中心（450 床；附 IM residency program）在 Glass.health 與內部 IRB 合作下，做了 6 個月 prospective deployment study。設計：對 ED 接收的內科住院病人，住院醫師獨立寫 admission differential（≥ 5 個排序診斷）後，Glass.health 在 EHR 內透過 SMART on FHIR 自動產生 AI differential，住院醫師可選擇整合或拒絕。結果：以 attending 確診為 ground truth、追蹤 28 天，<strong>top-3 differential 命中率從住院醫師 single 65% 提升到 AI-assisted 83%（+18%，p &lt; 0.001）</strong>；特別在 rare disease（盛行率 &lt; 1/100k）的命中率從 12% 提升到 31%。但同時發現 3 個 caveat：(1) AI-assisted 增加 unnecessary workup 約 7%（more rule-out tests）；(2) AI 偶有 anchoring bias（病人 chief complaint 為 "chest pain" 時 cardiac differential 過度排首位）；(3) overnight resident 採納率（74%）高於 daytime（51%），需注意 over-reliance。最終該中心將 Glass.health 加入正式 IM residency curriculum，並對住院醫師強調「先寫自己的 differential 再開 AI」。這個案例後來成為 2025 ICMJE-class 期刊上 prospective clinical AI deployment 的標桿（McDuff 2025 <em>Nature</em> 廣義引用此類研究 architecture）。</p></div>
+<div data-lang="en"><h4 style="margin:0 0 8px;color:var(--c-accent-dark)">Case 2: Glass.health academic deployment via SMART on FHIR — differential accuracy +18%</h4>
+<p>In 2025 a US Midwest academic medical center (450 beds, with an IM residency) ran a 6-month prospective deployment study of Glass.health under IRB oversight. Design: for ED-admitted IM patients, residents independently wrote an admission differential (≥5 ranked diagnoses); Glass.health then auto-generated an AI differential inside the EHR via SMART on FHIR, which the resident could integrate or reject. Outcome (attending-confirmed diagnosis at 28 days as ground truth): <strong>top-3 differential accuracy rose from 65% (resident alone) to 83% (AI-assisted), +18%, p&lt;0.001</strong>; for rare diseases (prevalence &lt;1/100K) accuracy jumped from 12% to 31%. But three caveats emerged: (1) AI-assistance increased unnecessary workup by ~7% (more rule-out tests); (2) anchoring bias — when chief complaint was "chest pain," the AI over-prioritised cardiac differentials; (3) overnight resident adoption (74%) was higher than daytime (51%), raising over-reliance concerns. The center folded Glass.health into the formal IM residency curriculum, emphasising "write your own differential first, then open the AI." The case became a benchmark architecture for prospective clinical AI deployment studies (McDuff 2025 <em>Nature</em> generalises this design).</p></div>
+</div></div></div>
+</section>
+
+<!-- ===== Common Pitfalls ===== -->
+<section class="section">
+<div class="section-label" data-zh="常見誤區" data-en="PITFALLS">常見誤區</div>
+<h2 data-zh="臨床 AI 部署最常踩的五個坑" data-en="Five common clinical-AI pitfalls">臨床 AI 部署最常踩的五個坑</h2>
+
+<div class="callout warn" style="display:block"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 1：AI 建議直接寫入 EHR 沒人類審核</strong><br>
+為什麼錯：FDA CDS exclusion 與州 medical practice acts 都要求「執照醫師為臨床決策負責」。AI 建議若未經審核就 commit 到 progress note / order，等於 AI 在「practice medicine without a license」。已有 2025 多州案例對醫師 + 廠商共同提告。<br>
+正確做法：所有 AI output 必須以 draft / suggestion 形式呈現，並要求醫師明確 click「Accept / Edit / Reject」；EHR 內每個 AI 建議都附 audit trail（誰、何時、是否採納）。</div>
+<div data-lang="en"><strong>Pitfall 1: Letting AI suggestions auto-write into the EHR without human review</strong><br>
+Why wrong: the FDA CDS exclusion and state medical practice acts both require a licensed physician to own clinical decisions. AI advice committed to progress notes / orders without review is effectively "practising medicine without a license." Multi-state cases in 2025 already sued physician + vendor jointly.<br>
+Fix: all AI output must appear as draft / suggestion, with explicit Accept / Edit / Reject clicks; every AI suggestion in the EHR carries an audit trail (who, when, accepted or not).</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 2：對種族 / 性別 bias 沒監控</strong><br>
+為什麼錯：Obermeyer 2019 <em>Science</em> 已證明常見 risk-prediction algorithm 系統性低估黑人病人風險（用 cost 當 proxy 學到歷史就醫不公平）。2024 起 NIH 與多州法規（CA AB 2930）要求臨床 AI 部署前後監控 race / sex / age 子群 calibration 與 false-negative rate。沒監控等於踩 OCR Section 1557 違法線。<br>
+正確做法：部署前後計算各子群 sensitivity / specificity / calibration（ECE）；FN rate 子群差異 &gt; 10% 必須調整。記錄於 Model Card。</div>
+<div data-lang="en"><strong>Pitfall 2: No monitoring for race / sex bias</strong><br>
+Why wrong: Obermeyer 2019 <em>Science</em> proved a common risk algorithm systematically under-estimated risk in Black patients (cost as proxy → learned historical disparity). Since 2024, NIH and several state laws (CA AB 2930) require clinical AI to monitor race / sex / age subgroup calibration and FN rates before and after deployment. No monitoring = OCR Section 1557 violation.<br>
+Fix: compute subgroup sensitivity / specificity / calibration (ECE) pre- and post-deployment; FN-rate gaps &gt;10% across subgroups trigger remediation. Document in the Model Card.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 3：臨床部署沒 IRB 審核</strong><br>
+為什麼錯：對病人提供「實質會影響治療決策」的 AI 服務即使是「QI（quality improvement）」名義，多數機構 IRB 都要求 review。Common Rule 2018 修訂後對 minimal-risk AI 部署可走 exempt 或 expedited，但 must apply。Glass.health 在 Mount Sinai 部署即經 IRB ICF + waiver of consent process。<br>
+正確做法：任何 prospective clinical AI deployment 都 submit IRB；明確標示是 QI 還是 research；對 prospective study 需 IRB approval letter + version-controlled protocol。</div>
+<div data-lang="en"><strong>Pitfall 3: Clinical deployment without IRB review</strong><br>
+Why wrong: any AI service that materially affects treatment decisions — even under a "QI" label — requires IRB review at most institutions. Post-2018 Common Rule allows exempt / expedited tracks for minimal-risk AI deployment, but you must still apply. Glass.health's Mount Sinai deployment went through an IRB ICF + waiver of consent process.<br>
+Fix: submit IRB for any prospective clinical AI deployment; clearly mark QI vs research; prospective studies need an IRB approval letter + version-controlled protocol.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 4：用公網版本（沒 BAA）處理 PHI</strong><br>
+為什麼錯：公開 ChatGPT、Claude.ai 個人版、Gemini 個人版 ToS 不簽 BAA（Business Associate Agreement），HIPAA 規範下不可處理 PHI。把病人 chart 貼進公網 LLM = HIPAA breach（每筆罰款 $100–$50,000、年上限 $1.5M、嚴重者刑責）。2024 起多個美國醫院已因員工這樣操作被 HHS OCR 罰款。<br>
+正確做法：用 BAA-covered 版本（Azure OpenAI、ChatGPT for Healthcare、Claude for Work + BAA、Google Cloud Vertex AI + BAA）；非 BAA 路徑必須完整 de-identification（Safe Harbor 18 identifiers）。</div>
+<div data-lang="en"><strong>Pitfall 4: Using public versions (no BAA) for PHI</strong><br>
+Why wrong: public ChatGPT, personal Claude.ai, and personal Gemini ToS do not sign BAAs; HIPAA forbids them for PHI. Pasting a patient chart into public LLM = HIPAA breach (fines $100–$50K per record, $1.5M annual cap, criminal exposure in severe cases). Since 2024, multiple US hospitals have been fined by HHS OCR for exactly this.<br>
+Fix: use BAA-covered editions (Azure OpenAI, ChatGPT for Healthcare, Claude for Work + BAA, Google Cloud Vertex AI + BAA); non-BAA paths require full Safe Harbor 18-identifier de-identification.</div>
+</div></div></div>
+
+<div class="callout warn" style="display:block;margin-top:14px"><div style="display:flex;gap:10px;align-items:start"><span class="callout-icon">⚠️</span><div style="flex:1">
+<div data-lang="zh"><strong>誤區 5：AI 證據過時但臨床指引已更新</strong><br>
+為什麼錯：LLM training cutoff 通常落後 6–18 個月；vendor 更新 RAG corpus 也未必 daily。臨床指引（如 ACC/AHA HF、ATS pneumonia、IDSA antimicrobial）會 7–14 天內出新版本。若醫師依賴 AI 給的「最新證據」而未注意 cutoff date，可能用 outdated 標準。<br>
+正確做法：每個 AI evidence 必顯示 source publication date 與 RAG index update date；UI 對 &gt; 90 天舊資料應 warning；高 stake decision 必 cross-check current guideline。</div>
+<div data-lang="en"><strong>Pitfall 5: Outdated AI evidence after guideline updates</strong><br>
+Why wrong: LLM training cutoffs usually lag 6–18 months; vendor RAG corpora aren't always daily. Clinical guidelines (ACC/AHA HF, ATS pneumonia, IDSA antimicrobial) ship new versions within 7–14 days. Relying on the AI's "latest evidence" without checking cutoff dates can apply outdated standards.<br>
+Fix: every AI evidence display must show source publication date + RAG index update date; UI warns on data &gt;90 days old; high-stakes decisions cross-check current guidelines.</div>
+</div></div></div>
+</section>
+
+<!-- ===== Advanced details accordion ===== -->
+<section class="section">
+<div class="section-label" data-zh="資深讀者深入" data-en="ADVANCED">資深讀者深入</div>
+<h2 data-zh="進階細節：HL7 FHIR、SMART OAuth、FDA CDS exclusion、臨床高 stake 的 hallucination 特殊性" data-en="Advanced: HL7 FHIR, SMART OAuth, FDA CDS exclusion, hallucination in clinical high-stakes">進階細節</h2>
+
+<details class="accordion-item" style="margin-top:18px" open>
+<summary class="accordion-btn" style="cursor:pointer;list-style:none"><span data-zh="🔬 FHIR R4 vs R5、SMART on FHIR OAuth flow、FDA CDS exclusion、臨床 hallucination" data-en="🔬 FHIR R4 vs R5, SMART on FHIR OAuth flow, FDA CDS exclusion, clinical hallucination">🔬 FHIR R4 vs R5、SMART on FHIR OAuth flow、FDA CDS exclusion、臨床 hallucination</span></summary>
+<div class="accordion-body open" style="display:block">
+<div data-lang="zh">
+<p><strong>① HL7 FHIR R4 vs R5。</strong>FHIR R4（2019 stable normative）為目前 US Core / Epic / Cerner 主流；US Core 6.1（2023）將 USCDI v3 對齊 R4。R5（2023/3 normative，2023/3 GA）增加 SubscriptionTopic（real-time push）、改善 Bundle 處理、refine GenomicStudy / MolecularSequence。但 R5 在生產環境採用慢，主因是 Epic、Cerner 仍以 R4 為主；US Office of the National Coordinator (ONC) 2024 互通性規則仍引用 R4。實務上 2026 寫整合應以 R4 為基線，需要 real-time 才考慮 R5 + SubscriptionTopic。常用 resource：Patient、Encounter、Observation（lab + vital）、MedicationRequest、Condition（ICD-10）、Procedure、DiagnosticReport。</p>
+<p><strong>② SMART on FHIR OAuth flow。</strong>標準 flow：(1) EHR-launched，使用者在 Epic 點按鈕 → EHR 對 app 發 launch URL（含 iss、launch parameter）；(2) app 對 EHR 的 /.well-known/smart-configuration 取 authorization endpoint；(3) app redirect 使用者到 EHR authorization endpoint（含 scope 如 patient/Observation.read user/Patient.read launch/patient），使用者 / EHR 同意；(4) EHR redirect 回 app 並附 authorization code；(5) app 用 code + client_secret 換 access token（OAuth 2.0 standard）；(6) app 用 token 對 FHIR endpoint 拉資料。SMART App Launch 1.0.0 + Backend Services（system-to-system，用 JWT assertion）是 2024 兩個 normative spec。EU 的整合多用同樣 standard 加 GDPR-compliant patient consent。</p>
+<p><strong>③ FDA CDS exclusion 條款。</strong>FDA 2022/9 Final Guidance「Clinical Decision Support Software」根據 21st Century Cures Act §3060 把 CDS 分四類，<strong>同時滿足 4 個條件</strong>則排除於 medical device 之外：(a) 不依賴從 in vitro diagnostic device 或 signal acquisition system 取得的 medical image / signal / pattern；(b) 目的是顯示、分析、列印 medical information 或臨床指引；(c) 提供 recommendation 而非具體 diagnosis / treatment directive；(d) 讓 HCP 能 independently review basis 並不需 primary 仰賴。多數 LLM 工具（OpenEvidence、Glass.health）以「transparent recommendation + 提供 source」滿足 (d) 而豁免；但 Doximity GPT「直接生成 prescription」即可能落入 device 範疇。EU AI Act 不適用 CDS exclusion，臨床 CDS 直接列高風險。</p>
+<p><strong>④ AI hallucination 在臨床高 stake 的特殊性。</strong>一般 LLM 幻覺率 &gt; 0 已被接受為「成本」，但在臨床—— hallucinated 劑量、wrong drug, wrong allergic interaction—— 任何單一錯誤都可能立即傷害病人。三個 factor 放大此風險：(a) <strong>時間壓力</strong>：醫師看 AI suggestion 平均只花 3–8 秒（Glass.health 內部數據），不及深思；(b) <strong>權威偏誤</strong>：醫師對 AI confident output 易採納，特別是 overnight / 疲勞時；(c) <strong>RLHF over-confidence</strong>：RLHF 後的 LLM「sound 像 attending」，但 calibration 反而下降（Tian 2023）。對策：UI 強制顯示 confidence range + source；high-risk 類別（劑量、過敏、孕婦、兒童）特殊處理規則；對 confident-but-wrong 樣本做 adversarial red-teaming。</p>
+<p><strong>⑤ 進階參考。</strong>McDuff 2025 (Med-Gemini differential, <em>Nature</em>) · Obermeyer 2019 (algorithmic racial bias, <em>Science</em>) · Singhal 2023 (Med-PaLM 2, <em>Nature</em>) · Goh 2024 (AI clinical reasoning RCT, <em>JAMA Network Open</em>) · FDA 2022 (CDS Final Guidance) · HL7 FHIR R4 / R5 spec · SMART App Launch 1.0.0 · Char 2018 (clinical AI ethics, <em>NEJM</em>) · Topol 2019 (Deep Medicine).</p>
+</div>
+<div data-lang="en">
+<p><strong>① HL7 FHIR R4 vs R5.</strong> FHIR R4 (stable normative 2019) is mainstream in US Core / Epic / Cerner; US Core 6.1 (2023) aligns USCDI v3 to R4. R5 (normative March 2023, GA same month) adds SubscriptionTopic (real-time push), improves Bundle handling, and refines GenomicStudy / MolecularSequence. Production adoption of R5 is slow because Epic and Cerner remain on R4, and the ONC 2024 interoperability rule still cites R4. Practically, integration code in 2026 should target R4 as baseline and consider R5 + SubscriptionTopic only when real-time push is required. Common resources: Patient, Encounter, Observation (labs + vitals), MedicationRequest, Condition (ICD-10), Procedure, DiagnosticReport.</p>
+<p><strong>② SMART on FHIR OAuth flow.</strong> Standard flow: (1) EHR-launched — the clinician clicks a button in Epic; the EHR sends the app a launch URL (iss + launch); (2) the app fetches the EHR's /.well-known/smart-configuration for the authorization endpoint; (3) the app redirects the user to the EHR authorization endpoint (with scopes like patient/Observation.read, user/Patient.read, launch/patient) and the EHR / user consents; (4) the EHR redirects back with an authorization code; (5) the app exchanges code + client_secret for an access token (standard OAuth 2.0); (6) the app calls the FHIR endpoint with the token. SMART App Launch 1.0.0 + Backend Services (system-to-system, JWT assertion) are the two normative specs from 2024. EU integrations use the same standard plus GDPR-compliant patient consent.</p>
+<p><strong>③ FDA CDS exclusion clauses.</strong> The FDA Sept 2022 Final Guidance "Clinical Decision Support Software" classifies CDS into four buckets following 21st Century Cures Act §3060. <strong>Simultaneously satisfying four conditions</strong> excludes software from medical-device regulation: (a) not relying on medical images / signals / patterns from an in vitro diagnostic device or signal-acquisition system; (b) intended to display, analyse, or print medical information or clinical guidelines; (c) providing recommendations rather than specific diagnostic / treatment directives; (d) allowing HCPs to independently review the basis and not primarily rely on the software. Most LLM tools (OpenEvidence, Glass.health) satisfy (d) via transparent recommendations + sources and are excluded; tools like Doximity GPT that "directly generate prescriptions" may fall under device scope. EU AI Act does not have a CDS exclusion — clinical CDS is directly classified as high-risk.</p>
+<p><strong>④ Hallucination in clinical high-stakes settings.</strong> General LLM hallucination &gt;0 is accepted as a cost, but in clinical use — hallucinated dose, wrong drug, wrong allergy interaction — a single error can immediately harm a patient. Three factors amplify risk: (a) <strong>time pressure</strong> — clinicians spend only 3–8 seconds on an AI suggestion (Glass.health internal data); (b) <strong>authority bias</strong> — clinicians adopt confident AI output, especially overnight / fatigued; (c) <strong>RLHF over-confidence</strong> — RLHF-tuned LLMs sound like attendings but are worse-calibrated (Tian 2023). Countermeasures: force confidence range + source in the UI; special-case high-risk categories (dose, allergy, pregnancy, paediatric); adversarial red-teaming on confident-but-wrong samples.</p>
+<p><strong>⑤ Key references.</strong> McDuff 2025 (Med-Gemini differential, <em>Nature</em>) · Obermeyer 2019 (algorithmic racial bias, <em>Science</em>) · Singhal 2023 (Med-PaLM 2, <em>Nature</em>) · Goh 2024 (AI clinical reasoning RCT, <em>JAMA Network Open</em>) · FDA 2022 (CDS Final Guidance) · HL7 FHIR R4 / R5 spec · SMART App Launch 1.0.0 · Char 2018 (clinical AI ethics, <em>NEJM</em>) · Topol 2019 (Deep Medicine).</p>
+</div>
+</div>
+</details>
+</section>
+
+<!-- ===== Discussion Questions ===== -->
+<section class="section">
+<div class="section-label" data-zh="討論問題" data-en="DISCUSSION">討論問題</div>
+<h2 data-zh="與你的 lab / 科內思辨這四題" data-en="Debate these four with your lab / department">與你的 lab / 科內思辨這四題</h2>
+<div class="card-grid cols-2">
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q1: AI 給錯誤建議導致病人傷害，責任在誰？</h4>
+<p>2025 美國中西部某州出現首例 AI-related malpractice 判決：某內科醫師依 LLM CDS 建議用 off-label dose 導致病人 acute kidney injury。法院判決：醫師承擔 60% 責任（最終 prescriber）、廠商 30%（隱瞞 hallucination rate）、醫院 10%（部署 SOP 不足）。<strong>請思考</strong>：如果你是 PI 或 chief resident，會用什麼樣的「approval workflow」減少這種共同責任暴露？AI 廠商是否該對醫療傷害有產品責任險？病人 informed consent 該包含「your physician is using AI」嗎？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q1: When AI advice harms a patient, who is liable?</h4>
+<p>In 2025, a Midwest US state produced the first AI-related malpractice ruling: an IM physician followed an LLM CDS for off-label dosing, causing acute kidney injury. The court apportioned: 60% physician (final prescriber), 30% vendor (concealed hallucination rate), 10% hospital (insufficient deployment SOP). <strong>Consider</strong>: as a PI or chief resident, what approval workflow reduces this shared exposure? Should AI vendors carry product liability insurance? Should patient informed consent include "your physician is using AI"?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q2: 實習醫師該用 AI 還是先學「沒 AI 的判斷」？</h4>
+<p>住院醫師教育有兩派：(A) 「先學基本功」派認為 PGY-1/2 應先掌握 unaided clinical reasoning，PGY-3+ 才開放 AI 工具；(B) 「AI-native」派認為 2026 後的醫師工作就是與 AI 協作，何不從第一天就學「如何 supervise AI」。Glass.health 中西部案例顯示 overnight resident 採納率 74%（VS daytime 51%），令人擔心 over-reliance。<strong>請思考</strong>：你支持哪派？訓練曲線該如何設計？如何測試 resident 是否仍能在「AI 斷線」時做出正確判斷？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q2: Should trainees use AI, or first master AI-free judgement?</h4>
+<p>Resident education splits two ways: (A) "fundamentals first" — PGY-1/2 master unaided clinical reasoning, AI unlocked at PGY-3+; (B) "AI-native" — physicians' post-2026 job is co-working with AI, so teach "supervise AI" from day one. The Midwest Glass.health case showed overnight adoption at 74% vs daytime 51%, raising over-reliance concerns. <strong>Consider</strong>: which camp do you support? How do you design the training curve? How do you test that residents still reason correctly when "AI is down"?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q3: 醫師「sign off」AI 草稿太快，誰該負責？</h4>
+<p>2025 內部審計發現某 health system 醫師對 AI-drafted discharge summary 平均審核時間僅 47 秒；對 7% 草稿做了實質編輯。這算「真的 review」嗎？若 AI 草稿有錯但醫師在 47 秒內 sign 了，責任歸屬如何？<strong>請思考</strong>：你會設計什麼樣的 UI 強制 meaningful review（如必看 vital / allergy / med list 三欄）？「最低 review 時長」是否合理？怎樣避免 AI 加重醫師 burnout 而非減輕？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q3: When physicians sign off AI drafts too fast, who is liable?</h4>
+<p>A 2025 internal audit found one health system's physicians averaged 47-second review of AI-drafted discharge summaries with material edits on 7%. Is that real review? If the AI draft was wrong but the physician signed in 47 seconds, who is responsible? <strong>Consider</strong>: what UI would force meaningful review (e.g. mandatory pause on vitals / allergies / med-list)? Is a minimum review duration reasonable? How do you keep AI from compounding physician burnout instead of relieving it?</p></div>
+</div>
+
+<div class="card" style="border-left:4px solid var(--c-highlight)">
+<div data-lang="zh"><h4 style="color:var(--c-accent-dark)">Q4: EU AI Act 2026/8 生效後，跨國臨床 AI 怎麼辦？</h4>
+<p>OpenEvidence 2024 已退出 UK/EU，預期 2026/8/2 後更多 US-origin 臨床 AI 跟進；Glass.health、Med-Gemini 採取「分版本」策略（EU 版功能受限）。對研究合作（multi-national RCT）、跨境學術交流、外籍醫師訓練影響很大。<strong>請思考</strong>：你支持 EU AI Act 對臨床 AI 嚴格管制嗎？US（市場驅動）vs EU（precautionary）兩條路徑哪個對病人更安全？小型醫院或開發中國家該怎麼選工具？</p></div>
+<div data-lang="en"><h4 style="color:var(--c-accent-dark)">Q4: Cross-border clinical AI after EU AI Act takes effect August 2026?</h4>
+<p>OpenEvidence already pulled out of UK/EU in 2024; more US-origin clinical AI is likely to follow when AI Act high-risk obligations apply 2 Aug 2026. Glass.health and Med-Gemini are adopting "regional versions" (EU versions with reduced features). Impacts on multinational RCTs, cross-border academic exchange, and overseas-MD training are large. <strong>Consider</strong>: do you support EU AI Act strict regulation of clinical AI? Which path — US (market-driven) vs EU (precautionary) — is safer for patients? How should small hospitals or LMICs choose tools?</p></div>
+</div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3>📝 <span data-zh="自我檢測" data-en="Self-Check">自我檢測</span></h3>
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh">1. 為什麼 OpenEvidence 在 2024 年退出 UK 與 EU？</p>
+<p data-lang="en">1. Why did OpenEvidence withdraw from UK and EU in 2024?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 沒醫師需要</span><span data-lang="en">A. No demand</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 翻譯不夠</span><span data-lang="en">B. Translation gap</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. EU AI Act 對臨床決策支援 AI 的高風險條款使監管不確定性過高</span><span data-lang="en">C. EU AI Act high-risk clauses on clinical decision-support AI created too much regulatory uncertainty</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 太貴</span><span data-lang="en">D. Too expensive</span></div>
+</div><div class="quiz-feedback" id="fb1"></div></div>
+
+<div class="quiz-q" data-answer="1">
+<p data-lang="zh">2. SMART on FHIR 的核心價值？</p>
+<p data-lang="en">2. Core value of SMART on FHIR?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 是新型 LLM</span><span data-lang="en">A. A new LLM</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 標準化的 OAuth + FHIR API，讓第三方 AI app 直接嵌入 Epic / eCW / Athena workflow</span><span data-lang="en">B. Standardised OAuth + FHIR API that lets third-party AI apps embed directly into Epic / eCW / Athena workflows</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 取代醫師</span><span data-lang="en">C. Replaces physicians</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 開源 EHR</span><span data-lang="en">D. Open-source EHR</span></div>
+</div><div class="quiz-feedback" id="fb2"></div></div>
+
+<div class="quiz-q" data-answer="0">
+<p data-lang="zh">3. 用 AI 草擬 discharge summary 時，最重要的 constraint？</p>
+<p data-lang="en">3. Most important constraint when AI drafts a discharge summary?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 不可虛構 vitals / labs / 處置；缺欄位填 [TO BE FILLED]，最終由執照醫師審核簽名</span><span data-lang="en">A. Don't fabricate vitals / labs / procedures; mark missing fields [TO BE FILLED]; licensed physician reviews and signs</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 必須使用 GPT-4 而非 Claude</span><span data-lang="en">B. Must use GPT-4 not Claude</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 必須包含 emoji</span><span data-lang="en">C. Must include emoji</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 不能用 markdown</span><span data-lang="en">D. No markdown allowed</span></div>
+</div><div class="quiz-feedback" id="fb3"></div></div>
+
+<div class="quiz-q" data-answer="3">
+<p data-lang="zh"><strong>📋 情境題：</strong>4. 你是某教學醫院 informatics director，被要求 6 個月內為內科部署 LLM-based CDS。你的同事提出「最快路徑」：直接讓住院醫師用 ChatGPT Plus（個人版）查 evidence 與草擬 discharge summary，免簽合約、無 IT 整合、立即可用。某 attending 警告：「我們會被罰錢甚至吃官司。」根據本章 5 個 pitfall 與 advanced 章節（FDA CDS exclusion、HIPAA BAA、IRB、bias monitoring、audit trail），你應該怎麼回應？</p>
+<p data-lang="en"><strong>📋 Scenario:</strong> 4. As informatics director at a teaching hospital, you're asked to deploy an LLM-based CDS for IM within 6 months. A colleague proposes the "fast path": let residents use personal ChatGPT Plus to look up evidence and draft discharge summaries — no contract, no IT integration, immediate. An attending warns, "we'll be fined or sued." Based on the five pitfalls and the advanced section (FDA CDS exclusion, HIPAA BAA, IRB, bias monitoring, audit trail), how do you respond?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. 同意快速路徑——速度第一</span><span data-lang="en">A. Accept the fast path — speed first</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 完全禁止任何 AI 使用</span><span data-lang="en">B. Ban all AI use entirely</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. 只要 attending 簽字就 OK</span><span data-lang="en">C. Just need attending sign-off</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. 拒絕快速路徑——改為 BAA-covered 版本（Azure OpenAI / ChatGPT for Healthcare）+ SMART on FHIR 整合 + IRB 審核 + 部署前後 race / sex / age 子群 bias 監控 + EHR 內 audit trail；以 FDA 2022 CDS exclusion 為部署條件設計 UI（醫師可獨立判斷、不能 black-box）；對 PHI 嚴格遵守 HIPAA BAA</span><span data-lang="en">D. Reject the fast path — use BAA-covered versions (Azure OpenAI / ChatGPT for Healthcare) + SMART on FHIR integration + IRB review + pre/post race / sex / age subgroup bias monitoring + in-EHR audit trail; design UI under FDA 2022 CDS exclusion (physician independent review, not black-box); enforce HIPAA BAA for PHI</span></div>
+</div><div class="quiz-feedback" id="fb4"></div></div>
+
+<div class="quiz-q" data-answer="2">
+<p data-lang="zh"><strong>🎓 進階：</strong>5. 關於 FDA 2022 CDS exclusion 與 EU AI Act 對臨床 CDS 的處理差異，下列何者最準確？</p>
+<p data-lang="en"><strong>🎓 Advanced:</strong> 5. FDA 2022 CDS exclusion vs EU AI Act on clinical CDS — which is most accurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt" data-idx="0"><span data-lang="zh">A. FDA 與 EU 完全相同</span><span data-lang="en">A. FDA and EU rules are identical</span></div>
+<div class="quiz-opt" data-idx="1"><span data-lang="zh">B. 兩者都要求 medical-device clearance</span><span data-lang="en">B. Both require medical-device clearance</span></div>
+<div class="quiz-opt" data-idx="2"><span data-lang="zh">C. FDA 2022 CDS exclusion：同時滿足 4 條件（不依賴 IVD/signal、顯示資訊、提供 recommendation 而非 directive、HCP 可獨立判斷）可豁免 device 認證；EU AI Act 不適用 CDS exclusion，臨床 CDS 直接列為高風險（2026/8/2 生效，醫材嵌入式 2027/8/2）。這就是為什麼 OpenEvidence 2024 退出 EU 而留在 US</span><span data-lang="en">C. The FDA 2022 CDS exclusion releases software from device clearance if four conditions are simultaneously met (no IVD/signal reliance, displays info, provides recommendations not directives, HCP can independently review); the EU AI Act has no CDS exclusion — clinical CDS is directly classified high-risk (effective 2 Aug 2026, embedded-in-device 2 Aug 2027). That is why OpenEvidence withdrew from the EU in 2024 but stayed in the US</span></div>
+<div class="quiz-opt" data-idx="3"><span data-lang="zh">D. EU AI Act 已被廢除</span><span data-lang="en">D. The EU AI Act has been repealed</span></div>
+</div><div class="quiz-feedback" id="fb5"></div></div>
+</section>
+
+<nav class="page-nav">
+<a href="drug-discovery.html"><span class="nav-dir" data-zh="← 上一步" data-en="← Previous">← 上一步</span><span class="nav-title" data-zh="Step 17: 藥物與化學 AI" data-en="Step 17: Drug Discovery &amp;amp; Chemistry AI">Step 17: 藥物與化學 AI</span></a>
+<a href="ethics.html"><span class="nav-dir" data-zh="下一步 →" data-en="Next →">下一步 →</span><span class="nav-title" data-zh="Step 19: 學術倫理與期刊政策" data-en="Step 19: Research Ethics &amp;amp; Journal Policies">Step 19: 學術倫理與期刊政策</span></a>
+</nav>
+</main>
+<footer class="site-footer">© Charlene — AI Literacy Tutorial</footer>
+<script src="i18n.js"></script>
+<script>
+window.addEventListener('scroll',()=>{const h=document.documentElement;document.getElementById('progressBar').style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100+'%';});
+function switchTab(b,id){const p=b.closest('.code-tabs');p.querySelectorAll('.code-tab-btn').forEach(x=>x.classList.remove('active'));p.querySelectorAll('.code-tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(id).classList.add('active');}
+
+// Scenario simulator
+const SC=[
+  {zh:{name:'鑑別診斷',tool:'Glass.health（EHR 內 differential 草稿）+ OpenEvidence（rare disease 證據）',output:'5–7 個 differential 排序、各列關鍵特徵與排除步驟；建議下一步檢查。',limit:'排序仰賴主訴 + 已有 EHR 結構化資料；非典型表現仍可能漏掉罕病。需要醫師決定哪些要追。'},en:{name:'Differential diagnosis',tool:'Glass.health (in-EHR draft) + OpenEvidence (rare-disease evidence)',output:'5–7 ranked differentials, each with key features and rule-out steps; suggested next workup.',limit:'Ranking depends on chief complaint + structured EHR data; atypical presentations may still miss rare disease. Physician must decide what to chase.'}},
+  {zh:{name:'證據查詢',tool:'OpenEvidence（首選）+ Med-Gemini Deep Search',output:'200–400 字摘要，附 3–8 條 PMID 引用，每條對應段落層級。',limit:'仍須核對引用真實存在（hallucinated PMID 仍偶發）；指引變化快——以發布日為準。'},en:{name:'Evidence lookup',tool:'OpenEvidence (top pick) + Med-Gemini Deep Search',output:'200–400 word synthesis with 3–8 PMID citations, each tied to the exact paragraph.',limit:'Still verify citations exist (rare hallucinated PMIDs); guidelines update fast — always check publication date.'}},
+  {zh:{name:'病歷草稿',tool:'Glass.health Visits / Abridge / Suki / Microsoft DAX Copilot',output:'依 admission note + progress + 處置自動產 discharge summary / SOAP / H&P 草稿。',limit:'必由執照醫師審核+簽名；不可填捏造 vitals / labs；機構可能要求 ambient listening 病人同意。'},en:{name:'Note drafting',tool:'Glass.health Visits / Abridge / Suki / Microsoft DAX Copilot',output:'Generates discharge summary / SOAP / H&P drafts from admission note + progress + procedures.',limit:'Must be reviewed + signed by a licensed physician; never fabricate vitals / labs; ambient listening may require patient consent per institution policy.'}}
+];
+function pickSc(i){
+  document.querySelectorAll('.sc-btn').forEach(b=>{
+    const on=+b.dataset.sc===i;
+    b.classList.toggle('active',on);
+    b.style.background=on?'var(--c-accent)':'transparent';
+    b.style.color=on?'#fff':'inherit';
+  });
+  const L=window.I18n?I18n.get():'en';
+  const d=SC[i][L];
+  const labels=L==='zh'?{t:'推薦工具',o:'預期輸出',l:'限制'}:{t:'Recommended',o:'Expected output',l:'Limits'};
+  document.getElementById('scBox').innerHTML=
+    '<div style="font-size:1.05rem;font-weight:600;color:var(--c-accent);margin-bottom:10px">'+d.name+'</div>'+
+    '<div style="margin-bottom:8px"><span style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.t+'</span><p style="margin:4px 0;font-size:.88rem;line-height:1.5">'+d.tool+'</p></div>'+
+    '<div style="margin-bottom:8px"><span style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.o+'</span><p style="margin:4px 0;font-size:.88rem;line-height:1.5">'+d.output+'</p></div>'+
+    '<div><span style="font-size:.74rem;color:var(--c-ink-muted);text-transform:uppercase;letter-spacing:1px">'+labels.l+'</span><p style="margin:4px 0;font-size:.88rem;line-height:1.5">'+d.limit+'</p></div>';
+}
+document.querySelectorAll('.sc-btn').forEach(b=>b.addEventListener('click',()=>pickSc(+b.dataset.sc)));
+document.addEventListener('langchange',()=>{const a=document.querySelector('.sc-btn.active');pickSc(a?+a.dataset.sc:0);});
+document.addEventListener('DOMContentLoaded',()=>pickSc(0));
+
+// Quiz
+const QF={zh:{q1_y:'EU AI Act 把臨床決策 AI 列為高風險，使 OpenEvidence 在歐盟的監管不確定性過高。',q2_y:'SMART on FHIR 是 OAuth + FHIR API 標準，讓第三方 AI app 嵌入 Epic / eCW / Athena 直接拉病患資料。',q3_y:'AI 草稿不可捏造臨床資料；缺欄位填 [TO BE FILLED]，最終仍由醫師審核簽名。',q4_y:'快速路徑會同時違反 HIPAA（無 BAA 處理 PHI）、缺乏 audit trail / bias monitoring（OCR Section 1557 風險）、未經 IRB 審核、可能落入 FDA device 範疇。正確做法：BAA-covered LLM + SMART on FHIR + IRB + 子群 bias 監控 + audit trail + 依 FDA 2022 CDS exclusion 設計 UI（醫師可獨立判斷）。',q5_y:'FDA 2022 CDS exclusion 同時滿足 4 條件可豁免 device 認證；EU AI Act 不適用 CDS exclusion，臨床 CDS 直接列高風險，2026/8/2 一般生效、2027/8/2 嵌入醫材生效。這就是為什麼 OpenEvidence 2024 退出 EU 而留在 US 的監管原因。'},en:{q1_y:'The EU AI Act classifies clinical decision AI as high-risk; uncertainty made OpenEvidence pull out of the EU.',q2_y:'SMART on FHIR is an OAuth + FHIR API standard that embeds third-party AI apps into Epic / eCW / Athena.',q3_y:'AI drafts must not fabricate clinical data; missing fields → [TO BE FILLED]; licensed physician signs off.',q4_y:'The fast path simultaneously violates HIPAA (PHI without BAA), lacks audit trail / bias monitoring (OCR Section 1557 risk), skips IRB, and may fall into FDA device scope. The right path: BAA-covered LLM + SMART on FHIR + IRB + subgroup bias monitoring + audit trail + UI designed under FDA 2022 CDS exclusion (physician independent review).',q5_y:'FDA 2022 CDS exclusion releases software from device clearance if four conditions are met; EU AI Act has no CDS exclusion — clinical CDS is directly high-risk, with general obligations effective 2 Aug 2026 and embedded-device 2 Aug 2027. That regulatory gap is exactly why OpenEvidence withdrew from the EU in 2024 but remains in the US.'}};
+document.querySelectorAll('.quiz-q').forEach((q,qi)=>{const ans=+q.dataset.answer;q.querySelectorAll('.quiz-opt').forEach(o=>{o.addEventListener('click',()=>{if(q.classList.contains('answered'))return;q.classList.add('answered');const fb=document.getElementById('fb'+(qi+1));const ok=+o.dataset.idx===ans;o.classList.add(ok?'correct':'wrong');if(!ok)q.querySelectorAll('.quiz-opt')[ans].classList.add('correct');const L=I18n.get();fb.className='quiz-feedback show '+(ok?'correct-fb':'wrong-fb');fb.textContent=(ok?'✅ ':'❌ ')+(QF[L]['q'+(qi+1)+'_y']||'');});});});
+</script>
+</body></html>
