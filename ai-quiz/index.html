@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 工具素養互動考題</title>
+<style>
+:root{
+  --bg:#f5f8fa; --card:#fff; --ink:#1a2733; --soft:#5a6b7b; --line:#e0e6eb;
+  --primary:#3F51B5; --primary-soft:#E4E6F2; --primary-dark:#1A224C;
+  --accent:#FFC107; --accent-soft:#F5F0E0;
+  --exam:#7c3aed; --exam-soft:#f3e8ff;
+  --green:#2f9e44; --green-soft:#d3f9d8;
+  --red:#c92a2a; --red-soft:#ffe3e3;
+  --yellow:#d9a700; --yellow-soft:#fff4c2;
+  --grey:#f1f3f5; --grey-soft:#f8f9fa;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.04);
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei","Noto Sans TC",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+
+header{background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 100%);color:#fff;padding:14px 22px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.h-row{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+h1{font-size:18px;margin:0;font-weight:700;display:flex;align-items:center;gap:8px}
+.homelink{color:#fff;text-decoration:none;font-size:13px;padding:5px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;white-space:nowrap;cursor:pointer;background:transparent;font-family:inherit}
+.homelink:hover{background:rgba(255,255,255,.15);border-color:#fff}
+.profile-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(255,255,255,.12);cursor:pointer;font-size:13px;color:#fff;font-family:inherit}
+.profile-pill:hover{background:rgba(255,255,255,.22)}
+.profile-pill .pdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7be08d}
+.profile-pill .pname{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lang-pill{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border:1px solid rgba(255,255,255,.5);border-radius:999px;background:rgba(255,255,255,.12);cursor:pointer;font-size:13px;color:#fff;font-family:inherit}
+.lang-pill:hover{background:rgba(255,255,255,.22)}
+.mode-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.5px;border:1px solid;background:#fff}
+.mode-pill.practice{background:var(--primary-soft);color:var(--primary-dark);border-color:var(--primary)}
+.mode-pill.exam{background:var(--exam-soft);color:#5b21b6;border-color:var(--exam)}
+.stat{margin-left:auto;color:rgba(255,255,255,.95);font-size:13px}
+.stat strong{color:#fff;font-size:17px}
+
+main{max-width:1280px;margin:22px auto;padding:0 18px 40px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+.panel h2{margin:0 0 6px;font-size:16px;font-weight:600}
+.panel .desc{color:var(--soft);font-size:13px;margin-bottom:14px}
+
+.global-prog{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--primary-soft);border:1px solid var(--primary);border-radius:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.global-prog .gp-label{color:var(--primary);font-weight:600;min-width:90px}
+.global-prog .gp-bar{flex:1;height:8px;background:#fff;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line);min-width:160px}
+.global-prog .gp-fill{height:100%;background:var(--green);transition:width .35s;width:0%}
+.global-prog .gp-text{color:var(--ink);font-variant-numeric:tabular-nums}
+.global-prog .gp-reset{background:#fff;border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.global-prog .gp-reset:hover{background:var(--red);color:#fff}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.ycard{background:var(--grey-soft);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ytitle{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ytitle .ycount{color:var(--soft);font-weight:400;font-size:12px}
+.ystatus{font-size:12px;color:var(--soft);display:flex;align-items:center;gap:4px}
+.ystatus .badge-status{padding:2px 8px;border-radius:999px;font-weight:600;font-size:11px}
+.ystatus .badge-status.ip{background:var(--yellow-soft);color:#a06a00}
+.ystatus .badge-status.done{background:var(--green-soft);color:var(--green)}
+.ystatus .badge-status.exam-ip{background:var(--exam-soft);color:#5b21b6}
+.action-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;transition:all .12s;flex:1;min-width:120px;justify-content:center}
+.chip.practice{border-color:var(--primary);background:var(--primary-soft);color:var(--primary-dark)}
+.chip.practice:hover{background:var(--primary);color:#fff;transform:translateY(-1px)}
+.chip.exam{border-color:var(--exam);background:var(--exam-soft);color:#5b21b6}
+.chip.exam:hover{background:var(--exam);color:#fff;transform:translateY(-1px)}
+.legend{font-size:12px;color:var(--soft);margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.ldot{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:middle;margin-right:5px;border:1px solid var(--line)}
+.ldot.r{background:var(--primary-soft);border-color:var(--primary)}
+.ldot.ip{background:var(--yellow-soft);border-color:var(--yellow)}
+.ldot.done{background:var(--green-soft);border-color:var(--green)}
+.ldot.exam{background:var(--exam-soft);border-color:var(--exam)}
+
+.special-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.special-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink);cursor:pointer;font-family:inherit;transition:all .12s}
+.special-btn:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-1px)}
+.special-btn .badge{background:var(--red-soft);color:var(--red);font-weight:700;padding:0 8px;border-radius:999px;font-size:11px}
+
+/* Quiz layout */
+.layout{display:grid;grid-template-columns:300px 1fr;gap:22px;max-width:1280px;margin:18px auto;padding:0 18px}
+@media (max-width:880px){.layout{grid-template-columns:1fr;padding:0 14px}.sidebar{order:2;position:static}}
+.sidebar{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px;height:fit-content;position:sticky;top:78px}
+.sidebar.exam{border-color:var(--exam);background:#fdfaff}
+.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.gbtn{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--soft);font-size:13px;cursor:pointer;font-variant-numeric:tabular-nums;font-family:inherit;position:relative;padding:0}
+.gbtn:hover{border-color:var(--primary)}
+.gbtn.cur{background:var(--primary);color:#fff;border-color:var(--primary)}
+.gbtn.right{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+.gbtn.wrong{background:var(--red-soft);color:var(--red);border-color:var(--red)}
+.gbtn.answered-exam{background:var(--exam-soft);color:#5b21b6;border-color:var(--exam)}
+.gbtn.cur.answered-exam{background:var(--exam);color:#fff;border-color:var(--exam)}
+.gbtn.marked::after{content:"\2605";position:absolute;top:1px;right:3px;font-size:10px;color:var(--yellow);line-height:1;text-shadow:0 0 2px #fff}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:middle;margin-right:4px;border:1px solid var(--line)}
+.dot.r{background:var(--green-soft);border-color:var(--green)}
+.dot.w{background:var(--red-soft);border-color:var(--red)}
+.dot.exam{background:var(--exam-soft);border-color:var(--exam)}
+.submit-exam-btn{margin-top:12px;width:100%;font-size:14px;padding:12px;font-weight:700}
+
+.btn{background:var(--primary);color:#fff;border:0;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:14px;font-family:inherit;transition:all .12s}
+.btn:hover:not(:disabled){background:var(--primary-dark);transform:translateY(-1px)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover:not(:disabled){border-color:var(--primary);color:var(--primary);background:#fff}
+.btn.danger{background:#fff;color:var(--red);border:1px solid var(--red)}
+.btn.danger:hover:not(:disabled){background:var(--red);color:#fff}
+.btn.exam-c{background:var(--exam);color:#fff}
+.btn.exam-c:hover:not(:disabled){background:#5b21b6}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.main-col{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.card.exam-card{border-color:var(--exam);box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(124,58,237,.08)}
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.qnum{font-size:22px;font-weight:700;color:var(--primary)}
+.qhead.exam .qnum{color:var(--exam)}
+.qmeta{color:var(--soft);font-size:13px}
+.qtype{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.5px;border:1px solid var(--line)}
+.qtype.single{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.qtype.multi{background:#f3e8ff;color:#7c3aed;border-color:#7c3aed}
+.qtype.tf{background:#fff7e6;color:#d97706;border-color:#d97706}
+.markbtn{margin-left:auto;background:#fff;border:1px solid var(--line);color:var(--soft);padding:6px 13px;border-radius:999px;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.markbtn:hover{border-color:var(--yellow);color:var(--yellow)}
+.markbtn.marked{background:var(--yellow-soft);color:#6b4e00;border-color:var(--yellow);font-weight:600}
+.stem{font-size:16px;white-space:pre-wrap;word-break:break-word;margin-bottom:12px}
+.opts{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:8px;cursor:pointer;transition:all .12s;text-align:left;font-size:15.5px;color:var(--ink);font-family:inherit;width:100%}
+.opt:hover:not(.locked){background:var(--primary-soft);border-color:var(--primary)}
+.opt.locked{cursor:default}
+.opt.selected{background:var(--accent-soft);border-color:var(--accent)}
+.opt .label{font-weight:700;min-width:22px}
+.opt.correct{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.opt.wrong{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.submit-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.submit-row .submit-btn{font-size:14px;padding:10px 22px;font-weight:600}
+.submit-hint{color:var(--soft);font-size:13px}
+.exam-hint{padding:10px 14px;background:var(--exam-soft);border:1px solid var(--exam);border-radius:8px;font-size:13px;color:#5b21b6;margin-top:8px}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:8px;font-size:14px;line-height:1.7}
+.verdict.right{background:var(--green-soft);color:#186b29}
+.verdict.wrong{background:var(--red-soft);color:#861818}
+.verdict h3{margin:0 0 6px;font-size:14px}
+.verdict .ans-line{font-weight:600;margin-bottom:4px}
+.nav{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.summary{padding:18px}
+.summary h2{margin:0 0 8px}
+.score{font-size:32px;font-weight:700;color:var(--primary)}
+.summary.exam .score{color:var(--exam)}
+.summary-row{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0}
+.summary-row .item{font-size:13px;color:var(--soft)}
+.summary-row .item strong{color:var(--ink);font-weight:700;font-size:18px;display:block;margin-top:2px}
+.wrong-list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.wrong-row{padding:8px 12px;border:1px solid var(--line);border-radius:6px;display:flex;gap:10px;align-items:center;cursor:pointer;font-size:14px}
+.wrong-row:hover{background:var(--primary-soft);border-color:var(--primary)}
+.wrong-row .wno{font-weight:700;color:var(--primary);min-width:36px}
+
+.empty{padding:40px;text-align:center;color:var(--soft)}
+.footer{color:var(--soft);font-size:12px;text-align:center;margin:18px 0 28px}
+.hidden{display:none !important}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(15,20,30,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}
+.modal-bg.show{display:flex}
+.modal-card{background:#fff;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.18);max-width:580px;width:100%;padding:22px;max-height:90vh;overflow:auto}
+.modal-card h3{margin:0 0 4px;font-size:17px;font-weight:700}
+.modal-card .modal-sub{color:var(--soft);font-size:13px;margin-bottom:14px}
+.modal-card .hint{color:var(--soft);font-size:12px;line-height:1.6;margin:0 0 12px;background:var(--grey-soft);padding:10px 12px;border-radius:6px}
+.modal-card .modal-actions{display:flex;justify-content:flex-end;gap:8px}
+.modal-card label{display:block;font-size:13px;color:var(--soft);margin:8px 0 4px}
+.modal-card input[type="text"]{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;background:#fff}
+.modal-card .row-2{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+.profile-list{display:flex;flex-direction:column;gap:6px;margin:8px 0 14px}
+.profile-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.profile-row.active{border-color:var(--primary);background:var(--primary-soft)}
+.profile-row .pname{flex:1;font-size:14px}
+.profile-row .pdate{color:var(--soft);font-size:11px}
+.profile-row button{font-size:12px;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:pointer;color:var(--soft);font-family:inherit}
+.profile-row button:hover{border-color:var(--primary);color:var(--primary)}
+.profile-row button.danger:hover{border-color:var(--red);color:var(--red)}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;transition:opacity .2s;z-index:200;pointer-events:none}
+.toast.show{opacity:1}
+
+@media (max-width:600px){
+  h1{font-size:16px}
+  main{padding:0 12px 30px}
+  .panel{padding:14px}
+  .card{padding:16px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-row" id="headerRow">
+    <a class="homelink" href="../index.html" data-zh="&larr; 回教學首頁" data-en="&larr; Tutorial home">&larr; 回教學首頁</a>
+    <button class="homelink hidden" id="homeBtn" data-zh="&larr; 回考題首頁" data-en="&larr; Quiz home">&larr; 回考題首頁</button>
+    <h1 id="hdrTitle" data-zh="🤖 AI 素養 互動式考題" data-en="🤖 AI Literacy Interactive Quiz">🤖 AI 素養 互動式考題</h1>
+    <span id="hdrModePill"></span>
+    <button class="profile-pill" id="profileBtn" title="切換 / 管理使用者"><span class="pdot"></span><span class="pname" id="profileName" data-zh="預設使用者" data-en="Default user">預設使用者</span> ▾</button>
+    <button class="lang-pill" id="langBtn" title="切換語言 / Toggle language">🌐 <span id="langLabel">EN</span></button>
+    <div class="stat" id="stat"></div>
+  </div>
+</header>
+
+<!-- Home view -->
+<main id="homeView">
+  <div class="panel">
+    <div class="global-prog">
+      <span class="gp-label" data-zh="總體進度" data-en="Overall progress">總體進度</span>
+      <div class="gp-bar"><div class="gp-fill" id="gpFill"></div></div>
+      <span class="gp-text" id="gpText" data-zh="尚未開始作答" data-en="Not started">尚未開始作答</span>
+      <button class="gp-reset" id="gpReset" title="重置作答" data-zh="🗑️ 重置作答" data-en="🗑️ Reset answers">🗑️ 重置作答</button>
+    </div>
+    <h2 data-zh="章節列表" data-en="Chapter list">章節列表</h2>
+    <div class="desc" data-lang="zh">
+      每個章節提供「📝 練習模式」（每題立即顯示對錯與解析）與「📋 考試模式」（全部答完後一次性交卷看結果）兩種進入方式。<br>
+      鍵盤：←/→ 切題；單選 A/B/C/D 或 1-4；是非 T/F；多選空白鍵切換；Enter 送出（練習）。
+    </div>
+    <div class="desc" data-lang="en">
+      Each chapter offers two entries: "📝 Practice Mode" (per-question feedback) and "📋 Exam Mode" (single submit at the end).<br>
+      Keyboard: ←/→ navigate; single A/B/C/D or 1-4; T/F for true/false; Space toggles in multi; Enter to submit (practice).
+    </div>
+    <div class="special-row">
+      <button class="special-btn" id="reviewWrongBtn"><span data-zh="📝 錯題複習" data-en="📝 Wrong review">📝 錯題複習</span> <span class="badge" id="wrongBadge">0</span></button>
+      <button class="special-btn" id="randomBtn" data-zh="🎲 隨機練習 20 題" data-en="🎲 Random 20 Q">🎲 隨機練習 20 題</button>
+    </div>
+    <div class="legend" style="margin-top:14px">
+      <span><i class="ldot r"></i><span data-zh="尚未作答" data-en="Not answered">尚未作答</span></span>
+      <span><i class="ldot ip"></i><span data-zh="練習中／已完成練習" data-en="Practicing / completed">練習中／已完成練習</span></span>
+      <span><i class="ldot exam"></i><span data-zh="考試進行中" data-en="Exam in progress">考試進行中</span></span>
+    </div>
+  </div>
+  <div id="subjectsContainer"></div>
+  <div class="footer">
+    <span data-zh="資料來源：AI 工具素養與生醫研究加速教學 · 共 " data-en="Source: AI Literacy for Biomedical Research · Total ">資料來源：AI 工具素養與生醫研究加速教學 · 共 </span><span id="totalCount"></span><span data-zh=" 題" data-en=" questions"> 題</span>
+  </div>
+</main>
+
+<!-- Quiz view -->
+<div class="layout hidden" id="quizView">
+  <aside class="sidebar" id="sidebar">
+    <div style="font-size:13px;color:var(--soft);margin-bottom:6px"><span id="sbTotal">— 題</span></div>
+    <div class="grid" id="grid"></div>
+    <div class="legend" id="sbLegend">
+      <span><i class="dot r"></i><span data-zh="答對" data-en="Correct">答對</span></span>
+      <span><i class="dot w"></i><span data-zh="答錯" data-en="Wrong">答錯</span></span>
+      <span style="color:var(--yellow)">★ <span data-zh="已標記" data-en="Marked">已標記</span></span>
+    </div>
+    <button id="submitExamBtn" class="btn exam-c submit-exam-btn hidden">📋 交卷查看結果</button>
+    <button id="resetBtn" class="btn danger" style="margin-top:12px;width:100%;font-size:13px" data-zh="重置本卷作答" data-en="Reset this quiz">重置本卷作答</button>
+    <button id="summaryBtn" class="btn ghost" style="margin-top:6px;width:100%;font-size:13px" data-zh="📊 查看本卷總結" data-en="📊 Show summary">📊 查看本卷總結</button>
+  </aside>
+  <main class="main-col" id="quizMain"></main>
+</div>
+
+<!-- Profile modal -->
+<div class="modal-bg" id="profileModal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <h3 data-zh="👤 使用者管理" data-en="👤 User Management">👤 使用者管理</h3>
+    <div class="modal-sub" data-zh="同一台電腦可建立多個使用者，作答進度互不干擾。" data-en="Multiple users can share this device with independent progress.">同一台電腦可建立多個使用者，作答進度互不干擾。</div>
+    <div class="profile-list" id="profileList"></div>
+    <label data-zh="新增使用者" data-en="Add user">新增使用者</label>
+    <div class="row-2">
+      <input type="text" id="newProfileName" placeholder="輸入名字…" maxlength="30" data-zh-ph="輸入名字…" data-en-ph="Enter name…">
+      <button class="btn" id="addProfileBtn" data-zh="＋ 新增" data-en="＋ Add">＋ 新增</button>
+    </div>
+    <p class="hint" data-lang="zh">💡 進度儲存在瀏覽器 localStorage；換瀏覽器/裝置或清除快取會遺失。</p>
+    <p class="hint" data-lang="en">💡 Progress is saved in browser localStorage; switching browsers/devices or clearing cache will lose it.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="closeProfileBtn" data-zh="關閉" data-en="Close">關閉</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="i18n.js"></script>
+<script>
+(function(){
+  const D = window.QUIZ_DATA;
+  if(!D){ document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#c92a2a">⚠️ 找不到題庫檔 data.js</div>'; return; }
+  const EXAM_KEY = "ai_literacy";
+  const exam = D[EXAM_KEY];
+
+  // i18n helpers
+  function L(){ return (window.I18n && window.I18n.get) ? window.I18n.get() : 'en'; }
+  function T(k){ const args=[].slice.call(arguments); return window.I18n.t.apply(null, args); }
+  function getQStem(q){ return (L()==='en' && q.stem_en) ? q.stem_en : q.stem; }
+  function getQOpt(q, k){ return (L()==='en' && q[k+'_en']) ? q[k+'_en'] : q[k]; }
+  function getQExp(q){ return (L()==='en' && q.exp_en) ? q.exp_en : q.exp; }
+  function getSecName(name){
+    if(L()!=='en') return name;
+    const map = (exam && exam.labels_en) || {};
+    return map[name] || name;
+  }
+
+  // Profile
+  const KEY_PROFILES = "ai_literacy_quiz_profiles_v1";
+  const KEY_ACTIVE   = "ai_literacy_quiz_active_v1";
+  function loadJSON(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+  function saveJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function nowISO(){ return new Date().toISOString(); }
+  function genId(){ return "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  let profiles = loadJSON(KEY_PROFILES, null);
+  let activeId = localStorage.getItem(KEY_ACTIVE);
+  if(!profiles){
+    profiles = {};
+    const id = genId();
+    profiles[id] = { name:"預設使用者", createdAt: nowISO() };
+    saveJSON(KEY_PROFILES, profiles);
+    localStorage.setItem(KEY_ACTIVE, id);
+    activeId = id;
+  }
+  if(!activeId || !profiles[activeId]){
+    activeId = Object.keys(profiles)[0];
+    localStorage.setItem(KEY_ACTIVE, activeId);
+  }
+  function pkey(base){ return base + "::" + activeId; }
+  function loadActive(base, def){ return loadJSON(pkey(base), def); }
+  function saveActive(base, val){ saveJSON(pkey(base), val); }
+
+  // Stores
+  let progress  = loadActive("ai_literacy_quiz_progress_v1", {});
+  let marks     = loadActive("ai_literacy_quiz_marks_v1", {});
+  let examOngoing = loadActive("ai_literacy_quiz_exam_v1", {});
+
+  function reloadActiveData(){
+    progress    = loadActive("ai_literacy_quiz_progress_v1", {});
+    marks       = loadActive("ai_literacy_quiz_marks_v1", {});
+    examOngoing = loadActive("ai_literacy_quiz_exam_v1", {});
+  }
+
+  const state = { view:"home", quiz:null };
+
+  // Helpers
+  function escHTML(s){ return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+  function $(id){ return document.getElementById(id); }
+  function setHidden(el,h){ el.classList.toggle("hidden", h); }
+
+  // Stores accessors
+  function getSecAns(si,ci){ return ((progress[si]||{})[ci])||{}; }
+  function setSecAns(si,ci,qi,ans){
+    progress[si]=progress[si]||{}; progress[si][ci]=progress[si][ci]||{};
+    progress[si][ci][qi]=ans; saveActive("ai_literacy_quiz_progress_v1", progress);
+  }
+  function clearSecAns(si,ci){ if(progress[si]&&progress[si][ci]){ delete progress[si][ci]; saveActive("ai_literacy_quiz_progress_v1", progress); } }
+  function isMarked(si,ci,qi){ return !!(((marks[si]||{})[ci]||{})[qi]); }
+  function toggleMark(si,ci,qi){
+    marks[si]=marks[si]||{}; marks[si][ci]=marks[si][ci]||{};
+    if(marks[si][ci][qi]) delete marks[si][ci][qi]; else marks[si][ci][qi]=true;
+    saveActive("ai_literacy_quiz_marks_v1", marks);
+  }
+  function getExamOngoing(si,ci){ return ((examOngoing[si]||{})[ci])||null; }
+  function setExamOngoing(si,ci,obj){
+    examOngoing[si]=examOngoing[si]||{};
+    if(obj) examOngoing[si][ci]=obj;
+    else { if(examOngoing[si][ci]) delete examOngoing[si][ci]; if(Object.keys(examOngoing[si]||{}).length===0) delete examOngoing[si]; }
+    saveActive("ai_literacy_quiz_exam_v1", examOngoing);
+  }
+
+  function eqAns(a,b){
+    if(Array.isArray(a) && Array.isArray(b)){
+      if(a.length!==b.length) return false;
+      return a.slice().sort().join(",")===b.slice().sort().join(",");
+    }
+    return a===b;
+  }
+  function fmtAns(q){
+    if(q.type==="multi") return Array.isArray(q.ans)?q.ans.slice().sort().join("、"):"";
+    if(q.type==="tf") return q.ans==="T"?"○ 正確":"✕ 錯誤";
+    return q.ans;
+  }
+  function fmtUserAns(q,ua){
+    if(ua==null||ua==="") return L()==='en'?"(no answer)":"（未作答）";
+    if(q.type==="multi") return Array.isArray(ua)?(ua.length?ua.slice().sort().join("、"):(L()==='en'?"(none)":"（未勾選）")):String(ua);
+    if(q.type==="tf") return ua==="T"?"○ 正確":"✕ 錯誤";
+    return ua;
+  }
+
+  function totalQs(){ let n=0; Object.values(exam.subjects).forEach(s=>Object.values(s).forEach(a=>n+=a.length)); return n; }
+  function answeredCount(){
+    let n=0;
+    const subKeys = Object.keys(exam.subjects);
+    subKeys.forEach((sk,si)=>{
+      Object.keys(exam.subjects[sk]).forEach((ck,ci)=>{
+        n += Object.keys(getSecAns(si,ci)).length;
+      });
+    });
+    return n;
+  }
+  function correctCount(){
+    let n=0;
+    const subKeys = Object.keys(exam.subjects);
+    subKeys.forEach((sk,si)=>{
+      const sub = exam.subjects[sk];
+      Object.keys(sub).forEach((ck,ci)=>{
+        const arr = sub[ck]; const ans = getSecAns(si,ci);
+        arr.forEach((q,qi)=>{ if(ans[qi]!=null && eqAns(ans[qi], q.ans)) n++; });
+      });
+    });
+    return n;
+  }
+  function wrongList(){
+    const out=[];
+    const subKeys = Object.keys(exam.subjects);
+    subKeys.forEach((sk,si)=>{
+      const sub = exam.subjects[sk];
+      Object.keys(sub).forEach((ck,ci)=>{
+        const arr = sub[ck]; const ans = getSecAns(si,ci);
+        arr.forEach((q,qi)=>{ if(ans[qi]!=null && !eqAns(ans[qi], q.ans)) out.push({si,ci,qi,q,subLabel:sk,secLabel:ck,ua:ans[qi]}); });
+      });
+    });
+    return out;
+  }
+  function allItems(){
+    const out=[];
+    const subKeys = Object.keys(exam.subjects);
+    subKeys.forEach((sk,si)=>{
+      Object.keys(exam.subjects[sk]).forEach((ck,ci)=>{
+        exam.subjects[sk][ck].forEach((q,qi)=>out.push({si,ci,qi,q,subLabel:sk,secLabel:ck}));
+      });
+    });
+    return out;
+  }
+
+  // Toast
+  let toastT=null;
+  function toast(msg){
+    const t = $("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"), 1800);
+  }
+
+  // Render dispatcher
+  function render(){
+    if(state.view==="home") renderHome();
+    else if(state.view==="quiz") renderQuiz();
+    else if(state.view==="summary") renderSummary();
+  }
+
+  // ==== Home ====
+  function renderHome(){
+    setHidden($("homeView"), false); setHidden($("quizView"), true);
+    $("homeBtn").classList.add("hidden");
+    $("hdrTitle").textContent = T("appTitle");
+    $("hdrModePill").innerHTML = "";
+    $("profileName").textContent = (profiles[activeId]?.name === "預設使用者" || !profiles[activeId]?.name) ? T("defaultUser") : profiles[activeId].name;
+    $("totalCount").textContent = totalQs();
+
+    const total = totalQs(), ans = answeredCount(), correct = correctCount();
+    $("gpFill").style.width = (total ? (ans/total*100) : 0) + "%";
+    $("gpText").textContent = ans===0 ? T("notStarted") : T("progressLine", ans, total, correct);
+    $("stat").innerHTML = T("answeredOf", ans, total);
+
+    $("wrongBadge").textContent = wrongList().length;
+
+    const c = $("subjectsContainer"); c.innerHTML = "";
+    Object.entries(exam.subjects).forEach(([subName, secs], si)=>{
+      const card = document.createElement("div");
+      card.className = "panel";
+      card.innerHTML = '<h2>'+escHTML(getSecName(subName))+'</h2><div class="cards" id="cards_'+si+'"></div>';
+      c.appendChild(card);
+      const cardsEl = card.querySelector("#cards_"+si);
+      Object.entries(secs).forEach(([secName, arr], ci)=>{
+        const sa = getSecAns(si,ci);
+        const ansN = Object.keys(sa).length;
+        const tot = arr.length;
+        const correctN = arr.reduce((acc,q,qi)=>acc+(sa[qi]!=null && eqAns(sa[qi],q.ans)?1:0),0);
+        const examOn = getExamOngoing(si,ci);
+        let statusBadge = "";
+        if(examOn){
+          const tn = Object.keys(examOn.tentative||{}).length;
+          statusBadge = '<span class="badge-status exam-ip">'+T("examOngoing", tn, tot)+'</span>';
+        } else if(ansN===0){
+          statusBadge = '<span style="color:var(--soft)">'+T("notAnswered")+'</span>';
+        } else if(ansN===tot){
+          statusBadge = '<span class="badge-status done">'+T("sectionDone", correctN, tot)+'</span>';
+        } else {
+          statusBadge = '<span class="badge-status ip">'+T("practicing", ansN, tot, correctN)+'</span>';
+        }
+        const yc = document.createElement("div");
+        yc.className = "ycard";
+        yc.innerHTML =
+          '<div class="ytitle">'+escHTML(getSecName(secName))+'<span class="ycount">'+T("qCount", tot)+'</span></div>'+
+          '<div class="ystatus">'+statusBadge+'</div>'+
+          '<div class="action-row">'+
+            '<button class="chip practice" data-si="'+si+'" data-ci="'+ci+'" data-mode="practice">'+T("practiceMode")+'</button>'+
+            '<button class="chip exam" data-si="'+si+'" data-ci="'+ci+'" data-mode="exam">'+T("examMode")+'</button>'+
+          '</div>';
+        cardsEl.appendChild(yc);
+      });
+    });
+
+    document.querySelectorAll("#subjectsContainer .chip").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const si = +b.getAttribute("data-si");
+        const ci = +b.getAttribute("data-ci");
+        const mode = b.getAttribute("data-mode");
+        startQuiz({si,ci,mode});
+      });
+    });
+  }
+
+  // ==== Quiz ====
+  function startQuiz(opts){
+    // opts: {si,ci,mode}  OR {items, mode, label}
+    let items;
+    if(opts.items){
+      items = opts.items; // already a list of {q, subLabel, secLabel, si, ci, qi}
+    } else {
+      const subKeys = Object.keys(exam.subjects);
+      const sk = subKeys[opts.si];
+      const ck = Object.keys(exam.subjects[sk])[opts.ci];
+      items = exam.subjects[sk][ck].map((q,qi)=>({q, subLabel:sk, secLabel:ck, si:opts.si, ci:opts.ci, qi}));
+    }
+    state.view="quiz";
+    state.quiz = {
+      mode: opts.mode || "practice",
+      items: items,
+      cur: 0,
+      label: opts.label || null,
+      virtual: !!opts.items, // if true, this is a wrong-review or random run; don't write to exam-ongoing
+      tentative: {} // for exam mode (qi within this run -> ans)
+    };
+    if(state.quiz.mode==="exam" && !state.quiz.virtual){
+      // exam-ongoing — load tentative if exists
+      const eo = getExamOngoing(opts.si, opts.ci);
+      if(eo && eo.tentative) state.quiz.tentative = eo.tentative;
+      else setExamOngoing(opts.si, opts.ci, { tentative:{}, startedAt: nowISO() });
+    }
+    render();
+  }
+
+  function renderQuiz(){
+    setHidden($("homeView"), true); setHidden($("quizView"), false);
+    $("homeBtn").classList.remove("hidden");
+    $("hdrTitle").textContent = T("appTitle");
+    const isExam = state.quiz.mode === "exam";
+    $("hdrModePill").innerHTML = isExam
+      ? '<span class="mode-pill exam">'+T("examModePill")+'</span>'
+      : '<span class="mode-pill practice">'+(state.quiz.label==="wrong" ? T("wrongReviewPill") : state.quiz.label==="random" ? T("retryPill") : T("practicePill"))+'</span>';
+
+    const sb = $("sidebar"); sb.classList.toggle("exam", isExam);
+    const submitBtn = $("submitExamBtn"); setHidden(submitBtn, !isExam);
+
+    // Build grid
+    const items = state.quiz.items;
+    const grid = $("grid"); grid.innerHTML = "";
+    items.forEach((it, idx)=>{
+      const btn = document.createElement("button");
+      btn.className = "gbtn";
+      btn.textContent = idx+1;
+      if(idx === state.quiz.cur) btn.classList.add("cur");
+      if(isExam){
+        if(state.quiz.tentative[idx] != null) btn.classList.add("answered-exam");
+      } else {
+        // practice / random / wrong-review — use real progress when not virtual
+        const ans = state.quiz.virtual ? state.quiz.tentative[idx] : (getSecAns(it.si, it.ci)[it.qi]);
+        if(ans != null){
+          if(eqAns(ans, it.q.ans)) btn.classList.add("right");
+          else btn.classList.add("wrong");
+        }
+      }
+      if(!state.quiz.virtual && isMarked(it.si, it.ci, it.qi)) btn.classList.add("marked");
+      btn.addEventListener("click", ()=>{ state.quiz.cur = idx; renderQuiz(); });
+      grid.appendChild(btn);
+    });
+
+    // Sidebar total label
+    if(isExam){
+      const a = Object.keys(state.quiz.tentative).length;
+      $("sbTotal").textContent = T("sbTotalExam", a, items.length);
+      submitBtn.textContent = T("submitExam") + " ("+a+"/"+items.length+")";
+    } else {
+      let a=0, c=0;
+      items.forEach((it,idx)=>{
+        const ua = state.quiz.virtual ? state.quiz.tentative[idx] : getSecAns(it.si, it.ci)[it.qi];
+        if(ua != null){ a++; if(eqAns(ua, it.q.ans)) c++; }
+      });
+      $("sbTotal").textContent = T("sbTotal", items.length, a, c);
+    }
+
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const items = state.quiz.items;
+    const idx = state.quiz.cur;
+    const it = items[idx];
+    const q = it.q;
+    const isExam = state.quiz.mode === "exam";
+    const qm = $("quizMain");
+    qm.innerHTML = "";
+
+    const card = document.createElement("div");
+    card.className = "card" + (isExam ? " exam-card" : "");
+
+    const qhead = document.createElement("div");
+    qhead.className = "qhead" + (isExam ? " exam" : "");
+    const typeLabel = q.type==="single" ? T("typeSingle") : q.type==="multi" ? T("typeMulti") : T("typeTF");
+    const typeCls = q.type==="single" ? "single" : q.type==="multi" ? "multi" : "tf";
+    qhead.innerHTML =
+      '<span class="qnum">'+T("qNum", idx+1, items.length)+'</span>'+
+      '<span class="qtype '+typeCls+'">'+typeLabel+'</span>'+
+      '<span class="qmeta">'+escHTML(getSecName(it.subLabel))+' · '+escHTML(getSecName(it.secLabel))+'</span>';
+    if(!state.quiz.virtual){
+      const mk = document.createElement("button");
+      mk.className = "markbtn" + (isMarked(it.si,it.ci,it.qi) ? " marked" : "");
+      mk.textContent = isMarked(it.si,it.ci,it.qi) ? T("markedBtn") : T("markBtn");
+      mk.addEventListener("click", ()=>{ toggleMark(it.si,it.ci,it.qi); renderQuiz(); });
+      qhead.appendChild(mk);
+    }
+    card.appendChild(qhead);
+
+    const stem = document.createElement("div");
+    stem.className = "stem";
+    stem.textContent = getQStem(q);
+    card.appendChild(stem);
+
+    // Determine current answer & locked state
+    let currentAns;
+    if(isExam) currentAns = state.quiz.tentative[idx];
+    else if(state.quiz.virtual) currentAns = state.quiz.tentative[idx];
+    else currentAns = getSecAns(it.si, it.ci)[it.qi];
+    const lockedPractice = !isExam && (currentAns != null);
+
+    // Options
+    const opts = document.createElement("div");
+    opts.className = "opts";
+    function makeOpt(key, label){
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.setAttribute("data-key", key);
+      b.innerHTML = '<span class="label">'+escHTML(key)+'.</span><span class="text">'+escHTML(label)+'</span>';
+      if(lockedPractice){
+        b.classList.add("locked");
+        if(q.type==="multi"){
+          const ua = Array.isArray(currentAns) ? currentAns : [];
+          const correctSet = Array.isArray(q.ans) ? q.ans : [];
+          const userPicked = ua.includes(key);
+          const isCorrect = correctSet.includes(key);
+          if(isCorrect && userPicked) b.classList.add("correct");
+          else if(userPicked && !isCorrect) b.classList.add("wrong");
+          else if(isCorrect && !userPicked) b.classList.add("correct");
+        } else {
+          if(key === q.ans) b.classList.add("correct");
+          if(currentAns === key && currentAns !== q.ans) b.classList.add("wrong");
+        }
+      } else {
+        // Selection (unlocked)
+        if(q.type==="multi"){
+          const ua = Array.isArray(currentAns) ? currentAns : [];
+          if(ua.includes(key)) b.classList.add("selected");
+        } else if(q.type==="tf"){
+          if(currentAns === key) b.classList.add("selected");
+        } else {
+          if(currentAns === key) b.classList.add("selected");
+        }
+        b.addEventListener("click", ()=>{ pickOption(key); });
+      }
+      return b;
+    }
+
+    if(q.type==="tf"){
+      opts.appendChild(makeOpt("T", L()==='en' ? "○ True" : "○ 正確"));
+      opts.appendChild(makeOpt("F", L()==='en' ? "✕ False" : "✕ 錯誤"));
+    } else {
+      ["A","B","C","D"].forEach(k=>{
+        const text = getQOpt(q, k);
+        if(text != null) opts.appendChild(makeOpt(k, text));
+      });
+    }
+    card.appendChild(opts);
+
+    // Submit / hint area
+    if(!lockedPractice){
+      const sr = document.createElement("div");
+      sr.className = "submit-row";
+      const sbBtn = document.createElement("button");
+      sbBtn.className = "btn submit-btn" + (isExam ? " exam-c" : "");
+      sbBtn.textContent = isExam ? (L()==='en' ? "Save & Next →" : "暫存 & 下一題 →") : T("submitAnswer");
+      sbBtn.addEventListener("click", submitAnswer);
+      sr.appendChild(sbBtn);
+      const hint = document.createElement("span");
+      hint.className = "submit-hint";
+      if(q.type==="multi") hint.textContent = T("multiHint", Array.isArray(currentAns)?currentAns.length:0);
+      else if(q.type==="tf") hint.textContent = T("tfHint");
+      else hint.textContent = T("singleHint");
+      sr.appendChild(hint);
+      card.appendChild(sr);
+    }
+
+    // Verdict for practice mode
+    if(lockedPractice){
+      const correct = eqAns(currentAns, q.ans);
+      const v = document.createElement("div");
+      v.className = "verdict " + (correct ? "right" : "wrong");
+      const head = document.createElement("h3");
+      head.textContent = correct ? T("correct") : T("incorrect");
+      v.appendChild(head);
+      const al = document.createElement("div");
+      al.className = "ans-line";
+      al.innerHTML = T("answerLabel") + escHTML(fmtAns(q)) + T("yourAnswer") + escHTML(fmtUserAns(q, currentAns));
+      v.appendChild(al);
+      const expEl = document.createElement("div");
+      expEl.textContent = getQExp(q) || T("noExp");
+      v.appendChild(expEl);
+      card.appendChild(v);
+    }
+
+    if(isExam){
+      const eh = document.createElement("div");
+      eh.className = "exam-hint";
+      eh.innerHTML = T("examHintBanner");
+      card.appendChild(eh);
+    }
+
+    // Nav
+    const nav = document.createElement("div");
+    nav.className = "nav";
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "btn ghost";
+    prevBtn.textContent = T("prev");
+    prevBtn.disabled = idx === 0;
+    prevBtn.addEventListener("click", ()=>{ if(state.quiz.cur>0){ state.quiz.cur--; renderQuiz(); } });
+    nav.appendChild(prevBtn);
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn ghost";
+    nextBtn.textContent = T("next");
+    nextBtn.disabled = idx === items.length - 1;
+    nextBtn.addEventListener("click", ()=>{ if(state.quiz.cur < items.length-1){ state.quiz.cur++; renderQuiz(); } });
+    nav.appendChild(nextBtn);
+
+    if(lockedPractice){
+      const redo = document.createElement("button");
+      redo.className = "btn ghost";
+      redo.textContent = T("redo");
+      redo.addEventListener("click", ()=>{
+        if(state.quiz.virtual) delete state.quiz.tentative[idx];
+        else {
+          // remove this q's answer from progress
+          const sa = progress[it.si] && progress[it.si][it.ci] ? progress[it.si][it.ci] : null;
+          if(sa){ delete sa[it.qi]; saveActive("ai_literacy_quiz_progress_v1", progress); }
+        }
+        renderQuiz();
+      });
+      nav.appendChild(redo);
+    }
+
+    card.appendChild(nav);
+    qm.appendChild(card);
+  }
+
+  // Track current selection (multi/tf/single)
+  function pickOption(key){
+    const items = state.quiz.items;
+    const idx = state.quiz.cur;
+    const it = items[idx];
+    const q = it.q;
+    const isExam = state.quiz.mode === "exam";
+    // For exam / virtual: pick into tentative
+    function getCur(){
+      if(isExam || state.quiz.virtual) return state.quiz.tentative[idx];
+      return getSecAns(it.si, it.ci)[it.qi];
+    }
+    function setCur(v){
+      if(isExam){
+        if(v == null || (Array.isArray(v) && v.length===0)) delete state.quiz.tentative[idx];
+        else state.quiz.tentative[idx] = v;
+        if(!state.quiz.virtual) setExamOngoing(it.si, it.ci, { tentative: state.quiz.tentative, startedAt: nowISO() });
+      } else if(state.quiz.virtual){
+        if(v == null) delete state.quiz.tentative[idx];
+        else state.quiz.tentative[idx] = v;
+      } else {
+        // Practice — set tentative on the dom; submission happens via submitAnswer.
+        // We use progress as immediate cache for the "selected" UI before commit.
+        // Instead, store in a per-question selection map kept on the runtime.
+        state.quiz._sel = state.quiz._sel || {};
+        if(v == null) delete state.quiz._sel[idx];
+        else state.quiz._sel[idx] = v;
+      }
+    }
+    function getPracticeSel(){
+      state.quiz._sel = state.quiz._sel || {};
+      return state.quiz._sel[idx];
+    }
+
+    let cur;
+    if(isExam || state.quiz.virtual) cur = getCur();
+    else cur = getPracticeSel() != null ? getPracticeSel() : getCur(); // committed answers override (locked)
+
+    if(q.type==="multi"){
+      const arr = Array.isArray(cur) ? cur.slice() : [];
+      const i = arr.indexOf(key);
+      if(i>=0) arr.splice(i,1); else arr.push(key);
+      setCur(arr.length ? arr : null);
+    } else {
+      setCur(cur === key ? null : key);
+    }
+    renderQuiz();
+  }
+
+  function submitAnswer(){
+    const items = state.quiz.items;
+    const idx = state.quiz.cur;
+    const it = items[idx];
+    const q = it.q;
+    const isExam = state.quiz.mode === "exam";
+
+    if(isExam){
+      // For exam mode the "submit" button advances to next without revealing answer
+      if(idx < items.length - 1){ state.quiz.cur++; renderQuiz(); }
+      else renderQuiz();
+      return;
+    }
+    // Practice: read selection
+    let sel;
+    if(state.quiz.virtual){
+      sel = state.quiz.tentative[idx];
+    } else {
+      state.quiz._sel = state.quiz._sel || {};
+      sel = state.quiz._sel[idx];
+    }
+    const empty = sel == null || (Array.isArray(sel) && sel.length === 0);
+    if(empty){ toast(T("chooseAnswer")); return; }
+    // Commit
+    if(state.quiz.virtual){
+      // already in tentative — no further action; just lock by deleting selection? We keep tentative as both selection and commit.
+    } else {
+      setSecAns(it.si, it.ci, it.qi, sel);
+      // Clear runtime selection so committed value is the one to show
+      if(state.quiz._sel) delete state.quiz._sel[idx];
+    }
+    if(eqAns(sel, q.ans)) toast(T("toastCorrect"));
+    renderQuiz();
+  }
+
+  // Submit exam
+  function submitExam(){
+    const items = state.quiz.items;
+    const isVirtual = state.quiz.virtual;
+    const t = items.length;
+    const a = Object.keys(state.quiz.tentative).length;
+    const u = t - a;
+    const msg = T("confirmSubmitExam", t, a, u);
+    if(!confirm(msg)) return;
+    // Commit tentative answers as progress, treat unanswered as wrong (no commit, will count as unanswered)
+    if(!isVirtual){
+      const firstIt = items[0];
+      items.forEach((it,idx)=>{
+        const v = state.quiz.tentative[idx];
+        if(v != null) setSecAns(it.si, it.ci, it.qi, v);
+        else {
+          // unanswered: leave as no progress (counts unanswered)
+        }
+      });
+      setExamOngoing(firstIt.si, firstIt.ci, null);
+    }
+    state.view = "summary";
+    state.summaryItems = items.slice();
+    state.summaryFromExam = true;
+    render();
+  }
+
+  function renderSummary(){
+    setHidden($("homeView"), true); setHidden($("quizView"), false);
+    $("hdrTitle").textContent = T("appTitle");
+    const items = state.summaryItems || (state.quiz ? state.quiz.items : []);
+    const isExam = !!state.summaryFromExam;
+    $("hdrModePill").innerHTML = isExam ? '<span class="mode-pill exam">'+T("examModePill")+'</span>' : '<span class="mode-pill practice">'+T("practicePill")+'</span>';
+
+    // Sidebar grid stays
+    const grid = $("grid"); grid.innerHTML = "";
+    let answered=0, correct=0, marked=0;
+    items.forEach((it,idx)=>{
+      const ua = state.quiz && state.quiz.virtual ? state.quiz.tentative[idx] : getSecAns(it.si, it.ci)[it.qi];
+      const btn = document.createElement("button");
+      btn.className = "gbtn";
+      btn.textContent = idx+1;
+      if(ua != null){
+        answered++;
+        if(eqAns(ua, it.q.ans)){ btn.classList.add("right"); correct++; }
+        else btn.classList.add("wrong");
+      }
+      if(!state.quiz.virtual && isMarked(it.si,it.ci,it.qi)){ btn.classList.add("marked"); marked++; }
+      btn.addEventListener("click", ()=>{ state.view="quiz"; state.quiz.cur = idx; render(); });
+      grid.appendChild(btn);
+    });
+    $("sbTotal").textContent = T("sbTotal", items.length, answered, correct);
+    setHidden($("submitExamBtn"), true);
+
+    // Main
+    const qm = $("quizMain"); qm.innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "card summary" + (isExam ? " exam" : "");
+    const score = items.length ? Math.round(correct/items.length*100) : 0;
+    card.innerHTML =
+      '<h2>'+(isExam ? T("examResultTitle") : T("summaryTitle"))+'</h2>'+
+      '<div class="score">'+score+'<span style="font-size:18px;color:var(--soft)"> / 100</span></div>'+
+      '<div class="summary-row">'+
+        '<div class="item">'+T("qTotal")+'<strong>'+items.length+'</strong></div>'+
+        '<div class="item">'+T("correctN")+'<strong style="color:var(--green)">'+correct+'</strong></div>'+
+        '<div class="item">'+T("wrongN")+'<strong style="color:var(--red)">'+(answered - correct)+'</strong></div>'+
+        '<div class="item">'+T("unansN")+'<strong style="color:var(--soft)">'+(items.length - answered)+'</strong></div>'+
+      '</div>';
+    // Wrong list
+    const wrongs = [];
+    items.forEach((it,idx)=>{
+      const ua = state.quiz && state.quiz.virtual ? state.quiz.tentative[idx] : getSecAns(it.si, it.ci)[it.qi];
+      if(ua == null || !eqAns(ua, it.q.ans)) wrongs.push({idx, it, ua});
+    });
+    if(wrongs.length){
+      const wl = document.createElement("div");
+      wl.className = "wrong-list";
+      const hd = document.createElement("h3");
+      hd.style.margin = "8px 0 4px";
+      hd.style.fontSize = "14px";
+      hd.textContent = T("wrongList");
+      wl.appendChild(hd);
+      wrongs.forEach(({idx,it,ua})=>{
+        const row = document.createElement("div");
+        row.className = "wrong-row";
+        row.innerHTML = '<span class="wno">#'+(idx+1)+'</span> <span style="flex:1">'+escHTML(getQStem(it.q).slice(0,90))+(getQStem(it.q).length>90?"…":"")+'</span> <span style="color:var(--red);font-size:12px">'+escHTML(fmtUserAns(it.q, ua))+'</span>';
+        row.addEventListener("click", ()=>{ state.view="quiz"; state.quiz.cur = idx; render(); });
+        wl.appendChild(row);
+      });
+      card.appendChild(wl);
+    }
+    // Back buttons
+    const nav = document.createElement("div");
+    nav.className = "nav";
+    const backQ = document.createElement("button");
+    backQ.className = "btn ghost";
+    backQ.textContent = L()==='en' ? "← Back to quiz" : "← 返回作答";
+    backQ.addEventListener("click", ()=>{ state.view="quiz"; render(); });
+    nav.appendChild(backQ);
+    const backH = document.createElement("button");
+    backH.className = "btn";
+    backH.textContent = T("backHomeBtn");
+    backH.addEventListener("click", ()=>{ state.view="home"; state.quiz=null; state.summaryItems=null; render(); });
+    nav.appendChild(backH);
+    card.appendChild(nav);
+    qm.appendChild(card);
+  }
+
+  // ==== Header buttons ====
+  $("homeBtn").addEventListener("click", ()=>{ state.view="home"; render(); });
+  $("gpReset").addEventListener("click", ()=>{
+    if(!confirm(T("confirmResetSec"))) return;
+    progress = {}; saveActive("ai_literacy_quiz_progress_v1", progress);
+    examOngoing = {}; saveActive("ai_literacy_quiz_exam_v1", examOngoing);
+    toast(T("toastResetDone"));
+    render();
+  });
+  $("resetBtn").addEventListener("click", ()=>{
+    if(!confirm(T("confirmResetSec"))) return;
+    if(state.quiz && !state.quiz.virtual){
+      const it = state.quiz.items[0];
+      clearSecAns(it.si, it.ci);
+      setExamOngoing(it.si, it.ci, null);
+      state.quiz.tentative = {};
+      state.quiz._sel = {};
+    } else if(state.quiz){
+      state.quiz.tentative = {};
+      state.quiz._sel = {};
+    }
+    toast(T("toastResetDone"));
+    renderQuiz();
+  });
+  $("summaryBtn").addEventListener("click", ()=>{
+    if(!state.quiz) return;
+    state.summaryItems = state.quiz.items.slice();
+    state.summaryFromExam = state.quiz.mode === "exam";
+    state.view = "summary";
+    render();
+  });
+  $("submitExamBtn").addEventListener("click", submitExam);
+  $("reviewWrongBtn").addEventListener("click", ()=>{
+    const wl = wrongList();
+    if(wl.length === 0){ toast(L()==='en' ? "No wrong questions yet" : "目前沒有錯題～"); return; }
+    startQuiz({ items: wl.map(x=>({q:x.q, subLabel:x.subLabel, secLabel:x.secLabel, si:x.si, ci:x.ci, qi:x.qi})), mode:"practice", label:"wrong" });
+  });
+  $("randomBtn").addEventListener("click", ()=>{
+    const all = allItems();
+    if(all.length === 0){ toast(T("nothingToPick")); return; }
+    const n = Math.min(20, all.length);
+    const pool = all.slice();
+    for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    const items = pool.slice(0, n);
+    startQuiz({ items, mode:"practice", label:"random" });
+  });
+
+  // Profile
+  function openProfileModal(){
+    const list = $("profileList"); list.innerHTML = "";
+    Object.entries(profiles).forEach(([id, info])=>{
+      const row = document.createElement("div");
+      row.className = "profile-row" + (id === activeId ? " active" : "");
+      const dn = (info.name === "預設使用者" && L()==='en') ? T("defaultUser") : info.name;
+      row.innerHTML =
+        '<span class="pname">'+escHTML(dn)+'</span>'+
+        '<span class="pdate">'+(info.createdAt ? info.createdAt.slice(0,10) : '')+'</span>';
+      const sw = document.createElement("button");
+      sw.textContent = L()==='en' ? "Switch" : "切換";
+      sw.disabled = (id === activeId);
+      sw.addEventListener("click", ()=>{
+        activeId = id; localStorage.setItem(KEY_ACTIVE, activeId);
+        reloadActiveData();
+        toast(T("toastSwitched", dn));
+        $("profileModal").classList.remove("show");
+        state.view="home"; state.quiz=null; render();
+      });
+      row.appendChild(sw);
+      if(Object.keys(profiles).length > 1){
+        const del = document.createElement("button");
+        del.className = "danger";
+        del.textContent = L()==='en' ? "Delete" : "刪除";
+        del.addEventListener("click", ()=>{
+          if(!confirm(T("confirmDelUser", dn))) return;
+          // clean local storage of related keys
+          ["ai_literacy_quiz_progress_v1","ai_literacy_quiz_marks_v1","ai_literacy_quiz_exam_v1"].forEach(k=>{
+            try{ localStorage.removeItem(k + "::" + id); }catch(e){}
+          });
+          delete profiles[id]; saveJSON(KEY_PROFILES, profiles);
+          if(id === activeId){
+            activeId = Object.keys(profiles)[0]; localStorage.setItem(KEY_ACTIVE, activeId);
+            reloadActiveData();
+            state.view="home"; state.quiz=null;
+          }
+          openProfileModal(); render();
+        });
+        row.appendChild(del);
+      }
+      list.appendChild(row);
+    });
+    $("profileModal").classList.add("show");
+  }
+  $("profileBtn").addEventListener("click", openProfileModal);
+  $("closeProfileBtn").addEventListener("click", ()=>$("profileModal").classList.remove("show"));
+  $("addProfileBtn").addEventListener("click", ()=>{
+    const name = ($("newProfileName").value || "").trim();
+    if(!name){ toast(T("toastEnterName")); return; }
+    const id = genId();
+    profiles[id] = { name, createdAt: nowISO() };
+    saveJSON(KEY_PROFILES, profiles);
+    activeId = id; localStorage.setItem(KEY_ACTIVE, activeId);
+    reloadActiveData();
+    $("newProfileName").value = "";
+    toast(T("toastCreated", name));
+    openProfileModal();
+    state.view="home"; state.quiz=null; render();
+  });
+  $("profileModal").addEventListener("click", (e)=>{
+    if(e.target === $("profileModal")) $("profileModal").classList.remove("show");
+  });
+
+  // Language toggle
+  function updateLangLabel(){
+    $("langLabel").textContent = L()==='zh' ? 'EN' : '中';
+  }
+  $("langBtn").addEventListener("click", ()=>{
+    window.I18n.toggle();
+  });
+  document.addEventListener("langchange", ()=>{
+    updateLangLabel();
+    render();
+  });
+
+  // Keyboard
+  document.addEventListener("keydown", (e)=>{
+    if(state.view !== "quiz") return;
+    if(/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'')) return;
+    const items = state.quiz.items;
+    const q = items[state.quiz.cur].q;
+    if(e.key === "ArrowLeft"){ if(state.quiz.cur>0){ state.quiz.cur--; renderQuiz(); } e.preventDefault(); }
+    else if(e.key === "ArrowRight"){ if(state.quiz.cur < items.length-1){ state.quiz.cur++; renderQuiz(); } e.preventDefault(); }
+    else if(e.key === "Enter"){
+      const isExam = state.quiz.mode === "exam";
+      if(isExam){ if(state.quiz.cur < items.length-1){ state.quiz.cur++; renderQuiz(); } }
+      else { submitAnswer(); }
+      e.preventDefault();
+    }
+    else if(q.type === "tf"){
+      if(e.key.toLowerCase() === "t"){ pickOption("T"); e.preventDefault(); }
+      else if(e.key.toLowerCase() === "f"){ pickOption("F"); e.preventDefault(); }
+    }
+    else if(q.type === "single" || q.type === "multi"){
+      const k = e.key.toUpperCase();
+      if(["A","B","C","D"].includes(k)){ pickOption(k); e.preventDefault(); }
+      else if(["1","2","3","4"].includes(e.key)){
+        pickOption(["A","B","C","D"][parseInt(e.key,10)-1]); e.preventDefault();
+      }
+    }
+  });
+
+  // Initial render
+  updateLangLabel();
+  render();
+})();
+</script>
+</body>
+</html>
