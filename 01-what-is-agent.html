@@ -1,0 +1,355 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 1: What is an AI Agent? — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html" class="active">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 1 / 12 · <span data-zh="基礎" data-en="FOUNDATIONS">基礎</span></div>
+<h1 data-zh="什麼是 AI 代理人？" data-en="What is an AI Agent?">什麼是 AI 代理人？</h1>
+<p class="subtitle" data-lang="zh">從 Russell & Norvig 的經典定義到 2026 年的 LLM Agent——一張清晰的版圖建立直覺。</p>
+<p class="subtitle" data-lang="en">From Russell &amp; Norvig's textbook definition to the 2026 LLM Agent — a clear map for building intuition.</p>
+</header>
+<main class="content-wrap">
+
+<!-- Section 1: Definition -->
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、Agent 不只是 Chatbot" data-en="I. An Agent is not just a chatbot">一、Agent 不只是 Chatbot</h2>
+<div data-lang="zh">
+<p>「AI 代理人 (AI Agent)」在 2026 年是最熱、也最被濫用的詞之一。同樣叫做「Agent」的系統，可能是一個幫你查天氣的 chatbot，也可能是一個能自己讀程式碼、跑單元測試、開 PR 的自動化工程師。要避免概念混淆，我們先回到最根本的定義。</p>
+<p>經典 AI 教科書 Russell &amp; Norvig 的定義：<strong>任何能透過感測器 (sensors) 感知環境，並透過效應器 (actuators) 作用於環境的實體，都是 agent。</strong>這個定義廣到包含掃地機器人、自動駕駛、甚至一隻青蛙。</p>
+<p>2026 年大家在講的「AI Agent」幾乎都特指<strong>以 LLM 為核心推理引擎，可以使用工具、保有記憶、能自主規劃多步驟任務</strong>的系統。這比單純的 LLM 對話更強，但又比通用人工智慧 (AGI) 更務實。</p>
+</div>
+<div data-lang="en">
+<p>"AI Agent" is one of the most overloaded buzzwords of 2026. The same label can describe a weather chatbot or a fully autonomous engineer that reads code, runs tests, and opens PRs. To avoid the confusion, return to first principles.</p>
+<p>The Russell &amp; Norvig textbook defines an agent as: <strong>anything that perceives its environment through sensors and acts upon it through actuators.</strong> This is broad enough to include Roombas, self-driving cars, and frogs.</p>
+<p>When practitioners say "AI Agent" in 2026 they almost always mean a more specific thing: <strong>a system that uses an LLM as its reasoning engine, can call tools, retain memory, and plan multi-step tasks autonomously</strong> — stronger than a plain chat LLM, but more grounded than the AGI moonshot.</p>
+</div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>本教程的工作定義：</strong>AI Agent = <span class="spark">LLM (大腦)</span> + <span class="spark">Tools (手腳)</span> + <span class="spark">Memory (筆記本)</span> + <span class="spark">Loop (規劃迴圈)</span>。後續 11 章會逐一拆解這四個元件。</span>
+<span data-lang="en"><strong>Working definition for this tutorial:</strong> AI Agent = <span class="spark">LLM (brain)</span> + <span class="spark">Tools (hands)</span> + <span class="spark">Memory (notebook)</span> + <span class="spark">Loop (planning)</span>. The next 11 chapters dissect each piece.</span>
+</div></div>
+</section>
+
+<!-- Section 2: PEAS framework -->
+<section class="section">
+<div class="section-label" data-zh="架構分析" data-en="ANALYSIS FRAMEWORK">架構分析</div>
+<h2 data-zh="二、PEAS：分析任何 Agent 的萬用框架" data-en="II. PEAS: a universal framework for analyzing any agent">二、PEAS：分析任何 Agent 的萬用框架</h2>
+<div data-lang="zh"><p>Russell &amp; Norvig 提出的 <strong>PEAS</strong> 框架是設計或評估 agent 時必先填寫的清單。它強迫你回答四個問題：</p></div>
+<div data-lang="en"><p>Russell &amp; Norvig's <strong>PEAS</strong> framework is the checklist you fill in before designing or evaluating any agent. It forces four questions:</p></div>
+<div class="card-grid cols-4">
+<div class="card"><div class="card-icon">🎯</div><h4>P · Performance</h4>
+<div data-lang="zh"><p>怎麼算是<strong>成功</strong>？任務完成率？人類滿意度？成本？延遲？沒有定義 P，就無法評估 agent。</p></div>
+<div data-lang="en"><p>What counts as <strong>success</strong>? Task completion rate? Human satisfaction? Cost? Latency? Without P, you cannot evaluate the agent.</p></div></div>
+<div class="card"><div class="card-icon">🌍</div><h4>E · Environment</h4>
+<div data-lang="zh"><p>Agent 處在什麼<strong>環境</strong>？網頁瀏覽器？terminal？資料庫？真實世界？環境是離散或連續？可觀測或不可觀測？</p></div>
+<div data-lang="en"><p>What <strong>environment</strong>? Web browser? Terminal? Database? Real world? Discrete or continuous? Fully or partially observable?</p></div></div>
+<div class="card"><div class="card-icon">🦾</div><h4>A · Actuators</h4>
+<div data-lang="zh"><p>Agent 能<strong>做什麼動作</strong>？發 HTTP 請求？執行 shell？點擊滑鼠？呼叫資料庫？這就是後續第 4 章「工具」。</p></div>
+<div data-lang="en"><p>What <strong>actions</strong> can the agent take? HTTP requests? Shell? Mouse clicks? DB queries? This becomes Chapter 4 (Tools).</p></div></div>
+<div class="card"><div class="card-icon">📡</div><h4>S · Sensors</h4>
+<div data-lang="zh"><p>Agent 能<strong>觀測什麼</strong>？文字、圖像、API 回應、檔案系統、感測器數據？這決定了 context 的形狀。</p></div>
+<div data-lang="en"><p>What can the agent <strong>observe</strong>? Text, images, API responses, file system, sensor data? This shapes the context.</p></div></div>
+</div>
+<h3 data-zh="案例：用 PEAS 描述「程式碼修 Bug Agent」" data-en="Example: describe a 'code-fix agent' with PEAS">案例：用 PEAS 描述「程式碼修 Bug Agent」</h3>
+<div class="comp-table-wrap"><table class="comp-table">
+<thead><tr><th>PEAS</th><th data-zh="內容" data-en="Description">內容</th></tr></thead>
+<tbody>
+<tr><td><strong>P</strong></td><td data-lang="zh">所有 unit test 通過 + 不引入新 lint 警告 + 修改檔案數 ≤ 5</td><td data-lang="en">All unit tests pass + no new lint warnings + diff touches ≤ 5 files</td></tr>
+<tr><td><strong>E</strong></td><td data-lang="zh">本機 Git repo、Linux shell、CI 系統、issue tracker</td><td data-lang="en">Local Git repo, Linux shell, CI, issue tracker</td></tr>
+<tr><td><strong>A</strong></td><td data-lang="zh">讀檔、寫檔、執行 bash、執行 pytest、開 PR</td><td data-lang="en">read_file, write_file, run_bash, run_pytest, open_pr</td></tr>
+<tr><td><strong>S</strong></td><td data-lang="zh">檔案內容、test 輸出、CI 日誌、人類審查者留言</td><td data-lang="en">File contents, test output, CI logs, human reviewer comments</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<!-- Section 3: Agent types (classical) -->
+<section class="section">
+<div class="section-label" data-zh="經典分類" data-en="CLASSICAL TAXONOMY">經典分類</div>
+<h2 data-zh="三、四種經典 Agent 型態" data-en="III. Four classical agent types">三、四種經典 Agent 型態</h2>
+<div data-lang="zh"><p>從最簡單到最複雜，經典 AI 把 agent 分為四階。理解這個階層能幫你診斷「我的 LLM agent 卡在第幾階？」</p></div>
+<div data-lang="en"><p>From simplest to most capable, classical AI sorts agents into four tiers. Knowing the ladder helps you diagnose: "Which tier is my LLM agent stuck on?"</p></div>
+<div class="workflow">
+<div class="workflow-step" data-step="1">
+<h4 data-zh="① 簡單反射型 (Simple Reflex)" data-en="① Simple Reflex Agent">① 簡單反射型 (Simple Reflex)</h4>
+<p data-lang="zh">「<strong>if 看到 X，就做 Y</strong>」的純規則系統。沒有記憶、沒有規劃。例如：自動掃地機器人「碰到牆 → 轉向」。</p>
+<p data-lang="en">Pure rule-based "<strong>if see X, do Y</strong>". No memory, no planning. Example: a Roomba turning when it hits a wall.</p>
+</div>
+<div class="workflow-step" data-step="2">
+<h4 data-zh="② 模型反射型 (Model-Based Reflex)" data-en="② Model-Based Reflex Agent">② 模型反射型 (Model-Based Reflex)</h4>
+<p data-lang="zh">保留<strong>內部狀態</strong>，能根據過去的觀察推測現在無法直接看到的部分（部分可觀測環境）。例如：自駕車記得「剛才右邊有車」，即使現在感測器照不到。</p>
+<p data-lang="en">Keeps an <strong>internal state</strong>; infers parts of the world that aren't directly observable (partially observable env). Example: a self-driving car remembering "there was a car on the right" even after losing line of sight.</p>
+</div>
+<div class="workflow-step" data-step="3">
+<h4 data-zh="③ 目標型 (Goal-Based)" data-en="③ Goal-Based Agent">③ 目標型 (Goal-Based)</h4>
+<p data-lang="zh">擁有<strong>明確目標</strong>，並透過搜尋或規劃 (search / planning) 找出達成目標的動作序列。例如：A* 路徑規劃、棋類 AI。</p>
+<p data-lang="en">Has an <strong>explicit goal</strong> and uses search or planning to find an action sequence that achieves it. Examples: A* pathfinding, chess engines.</p>
+</div>
+<div class="workflow-step" data-step="4">
+<h4 data-zh="④ 效用型 (Utility-Based) 與學習型 (Learning)" data-en="④ Utility-Based & Learning Agents">④ 效用型 (Utility-Based) 與學習型 (Learning)</h4>
+<p data-lang="zh">不只判斷「達成 / 沒達成」，而是用<strong>效用函數</strong>衡量不同結果的好壞，並能<strong>從經驗中學習</strong>改進策略。現代 LLM Agent + RL fine-tuning 屬於這一階。</p>
+<p data-lang="en">Beyond binary success/failure: uses a <strong>utility function</strong> to grade outcomes and can <strong>learn from experience</strong> to improve. Modern LLM agents with RL fine-tuning sit here.</p>
+</div>
+</div>
+<div class="callout info"><span class="callout-icon">🧭</span><div>
+<span data-lang="zh"><strong>哪一階對應現代 LLM Agent？</strong> 多數實務 LLM Agent 介於 ③ 目標型與 ④ 效用型之間：使用者下達自然語言目標，agent 用 ReAct / Plan-and-Execute 進行搜尋與規劃。能不能算「學習」要看是否在每次互動後更新策略——大多數現役 agent 還做不到這點。</span>
+<span data-lang="en"><strong>Where do today's LLM agents fit?</strong> Most production LLM agents sit between ③ goal-based and ④ utility-based: the user gives a natural-language goal, the agent searches via ReAct or Plan-and-Execute. Whether they "learn" depends on whether their policy updates after each interaction — most deployed agents do not.</span>
+</div></div>
+</section>
+
+<!-- Section 4: Modern LLM agent anatomy -->
+<section class="section">
+<div class="section-label" data-zh="現代解剖" data-en="MODERN ANATOMY">現代解剖</div>
+<h2 data-zh="四、現代 LLM Agent 的四層解剖" data-en="IV. Four-layer anatomy of a modern LLM agent">四、現代 LLM Agent 的四層解剖</h2>
+<div data-lang="zh"><p>2026 年生產級 agent 普遍呈現「四層架構」（Redis、Oracle、IBM 等大廠 blog 都用類似分法）：</p></div>
+<div data-lang="en"><p>Production agents in 2026 typically follow a "four-layer" architecture (Redis, Oracle, IBM all describe variants of this):</p></div>
+<div class="diagram-box">┌──────────────────────────────────────────────┐
+│  🧠 Reasoning Layer  (LLM, prompts, sampling) │
+├──────────────────────────────────────────────┤
+│  🎼 Orchestration Layer  (Loop / Graph / DAG) │
+├──────────────────────────────────────────────┤
+│  📚 Memory & Data Layer  (Context / VectorDB) │
+├──────────────────────────────────────────────┤
+│  🔧 Tool Layer  (APIs / Shell / MCP servers)  │
+└──────────────────────────────────────────────┘</div>
+<div class="card-grid cols-2">
+<div class="card"><h4>🧠 <span data-zh="推理層" data-en="Reasoning">推理層</span></h4>
+<div data-lang="zh"><p>核心 LLM (Claude、GPT、Gemini、Llama)。負責閱讀指令、決定下一步、產出最終回應。Prompt 工程、CoT、結構化輸出都在這層發揮——詳見 <a href="02-llm-brain.html">Step 2</a> 與 <a href="03-prompting.html">Step 3</a>。</p></div>
+<div data-lang="en"><p>The core LLM (Claude, GPT, Gemini, Llama). Reads instructions, decides next steps, produces the final answer. Prompt engineering, CoT, structured output all live here — see <a href="02-llm-brain.html">Step 2</a> and <a href="03-prompting.html">Step 3</a>.</p></div></div>
+<div class="card"><h4>🎼 <span data-zh="編排層" data-en="Orchestration">編排層</span></h4>
+<div data-lang="zh"><p>把 LLM 的單次呼叫串成多步驟流程。實作可以是 while loop、有向圖 (LangGraph)、或角色式 (CrewAI)。決定何時呼叫工具、何時結束——詳見 <a href="06-planning.html">Step 6</a>。</p></div>
+<div data-lang="en"><p>Chains single LLM calls into multi-step workflows. Implementation can be a while loop, a directed graph (LangGraph), or roles (CrewAI). Decides when to call tools and when to stop — see <a href="06-planning.html">Step 6</a>.</p></div></div>
+<div class="card"><h4>📚 <span data-zh="記憶與資料層" data-en="Memory & Data">記憶與資料層</span></h4>
+<div data-lang="zh"><p>Context window 是「短期記憶」；vector DB / knowledge graph / SQL 是「長期記憶」。RAG 在這層運作——詳見 <a href="05-memory.html">Step 5</a> 與 <a href="07-rag.html">Step 7</a>。</p></div>
+<div data-lang="en"><p>The context window is "short-term memory"; vector DB / KG / SQL are "long-term memory." RAG lives here — see <a href="05-memory.html">Step 5</a> and <a href="07-rag.html">Step 7</a>.</p></div></div>
+<div class="card"><h4>🔧 <span data-zh="工具層" data-en="Tool Layer">工具層</span></h4>
+<div data-lang="zh"><p>Agent 真正「動手」的接口：API、shell、瀏覽器、機器手臂。2025 年 Anthropic 發布 MCP 後，工具層逐漸標準化——詳見 <a href="04-tool-use.html">Step 4</a> 與 <a href="11-mcp.html">Step 11</a>。</p></div>
+<div data-lang="en"><p>The interface where the agent actually "acts": APIs, shell, browser, robotic arms. After Anthropic released MCP in 2024, this layer is standardizing — see <a href="04-tool-use.html">Step 4</a> and <a href="11-mcp.html">Step 11</a>.</p></div></div>
+</div>
+</section>
+
+<!-- Section 5: interactive — agent vs LLM -->
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="五、Chat LLM vs Agent：一個能力對照表" data-en="V. Chat LLM vs Agent: a capability matrix">五、Chat LLM vs Agent：一個能力對照表</h2>
+<div class="interactive-panel">
+<div data-lang="zh"><p>下表勾選 / 取消「需要的能力」，右邊會即時告訴你需要的是哪種架構。</p></div>
+<div data-lang="en"><p>Toggle the capabilities below — the right side updates to tell you which architecture you need.</p></div>
+<div class="sim-stats" style="margin-top:14px">
+<span class="sim-stat info" id="archResult">—</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:14px">
+<label class="quiz-opt"><input type="checkbox" class="cap" value="multi" checked> <span data-zh="多步驟任務" data-en="Multi-step tasks">多步驟任務</span></label>
+<label class="quiz-opt"><input type="checkbox" class="cap" value="tool"> <span data-zh="外部工具呼叫" data-en="External tool calls">外部工具呼叫</span></label>
+<label class="quiz-opt"><input type="checkbox" class="cap" value="memory"> <span data-zh="跨對話記憶" data-en="Cross-session memory">跨對話記憶</span></label>
+<label class="quiz-opt"><input type="checkbox" class="cap" value="auto"> <span data-zh="自主決定停止條件" data-en="Self-determined stop">自主決定停止</span></label>
+<label class="quiz-opt"><input type="checkbox" class="cap" value="multiagent"> <span data-zh="多 agent 協作" data-en="Multi-agent collab">多 agent 協作</span></label>
+</div>
+</div>
+<script>
+function updateArch(){
+  const caps=[...document.querySelectorAll('.cap:checked')].map(c=>c.value);
+  const has=k=>caps.includes(k);
+  const lang=document.documentElement.lang.startsWith('zh')?'zh':'en';
+  let label='';
+  if(caps.length===0) label=lang==='zh'?'純 LLM 對話（無需 agent）':'Plain LLM chat (no agent needed)';
+  else if(!has('tool')&&!has('memory')&&!has('multiagent')) label=lang==='zh'?'LLM + Chain (簡單流程)':'LLM + Chain (simple pipeline)';
+  else if(has('tool')&&!has('multiagent')) label=lang==='zh'?'單一 Agent (Tool-using)':'Single Agent (tool-using)';
+  else if(has('multiagent')) label=lang==='zh'?'多代理人系統 (Multi-Agent)':'Multi-Agent System';
+  else label=lang==='zh'?'進階 Agent 架構':'Advanced agent architecture';
+  document.getElementById('archResult').textContent=label;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.cap').forEach(c=>c.addEventListener('change',updateArch));
+  updateArch();
+});
+document.addEventListener('langchange',updateArch);
+</script>
+</section>
+
+<!-- Section 6: Common pitfalls -->
+<section class="section">
+<div class="section-label" data-zh="常見迷思" data-en="COMMON PITFALLS">常見迷思</div>
+<h2 data-zh="六、五個常見的概念誤區" data-en="VI. Five common misconceptions">六、五個常見的概念誤區</h2>
+<div class="accordion-item"><button class="accordion-btn"><span data-zh="① 「給 LLM 多點工具就是 Agent」" data-en="① 'Just give the LLM more tools → it's an agent'">① 「給 LLM 多點工具就是 Agent」</span></button>
+<div class="accordion-body">
+<span data-lang="zh">工具呼叫只是 Agent 的<strong>必要條件</strong>之一。沒有 planning loop、沒有錯誤恢復、沒有清楚的停止條件，多工具的 LLM 還是個帶按鈕的 chatbot。</span>
+<span data-lang="en">Tool calling is just one <strong>necessary condition</strong>. Without a planning loop, error recovery, or clear stop criteria, an LLM with many tools is still a chatbot with buttons.</span>
+</div></div>
+<div class="accordion-item"><button class="accordion-btn"><span data-zh="② 「Agent 一定要 LangChain / CrewAI」" data-en="② 'Agents must be built on LangChain / CrewAI'">② 「Agent 一定要 LangChain / CrewAI」</span></button>
+<div class="accordion-body">
+<span data-lang="zh">框架是<strong>選項</strong>不是必需。OpenAI、Anthropic、Google 都提供原生的 agent SDK；如果流程簡單，純 Python while loop 就夠。詳見 Step 10。</span>
+<span data-lang="en">Frameworks are <strong>options, not requirements</strong>. OpenAI, Anthropic, and Google offer native agent SDKs. For simple flows a plain Python while-loop is enough. See Step 10.</span>
+</div></div>
+<div class="accordion-item"><button class="accordion-btn"><span data-zh="③ 「越多 agent 協作越好」" data-en="③ 'More agents collaborating = better'">③ 「越多 agent 協作越好」</span></button>
+<div class="accordion-body">
+<span data-lang="zh">多 agent 架構帶來<strong>溝通成本</strong>與<strong>錯誤傳播</strong>。先用單一 agent + 良好 prompt 跑得通，才考慮拆。OpenAI 2024 年 Swarm 報告也建議「先 monolith」。</span>
+<span data-lang="en">Multi-agent setups introduce <strong>communication overhead</strong> and <strong>error propagation</strong>. Start with a single well-prompted agent before splitting. OpenAI's 2024 Swarm report also recommends "monolith first."</span>
+</div></div>
+<div class="accordion-item"><button class="accordion-btn"><span data-zh="④ 「Agent 會自己學會新任務」" data-en="④ 'Agents learn new tasks on their own'">④ 「Agent 會自己學會新任務」</span></button>
+<div class="accordion-body">
+<span data-lang="zh">除非你打 RL fine-tuning，否則 agent <strong>不會記得「上次教過」</strong>——它只是在 context 中讀到了。要真正學習，需要把成功的軌跡寫進記憶或更新 prompt template。</span>
+<span data-lang="en">Unless you do RL fine-tuning, the agent <strong>does not remember</strong> what you "taught it" — it just read it in context. To genuinely learn, write successful trajectories to memory or update the prompt template.</span>
+</div></div>
+<div class="accordion-item"><button class="accordion-btn"><span data-zh="⑤ 「自主越多越好」" data-en="⑤ 'More autonomy = better'">⑤ 「自主越多越好」</span></button>
+<div class="accordion-body">
+<span data-lang="zh">自主性是<strong>滑桿</strong>不是開關。OWASP 2026 Top 10 for Agentic Apps 第一條就是 "Excessive Agency"——權限過大、無人工 checkpoint，是 2026 最常見的生產事故來源。詳見 Step 12。</span>
+<span data-lang="en">Autonomy is a <strong>slider, not a switch</strong>. The first item on OWASP's 2026 Top 10 for Agentic Apps is "Excessive Agency" — over-broad permissions with no human checkpoint are the most common production incident pattern of 2026. See Step 12.</span>
+</div></div>
+</section>
+
+<!-- Section 7: Code preview -->
+<section class="section">
+<div class="section-label" data-zh="動手感受" data-en="HANDS-ON">動手感受</div>
+<h2 data-zh="七、最小 Agent：用 30 行體會核心迴圈" data-en="VII. Minimal agent: feel the core loop in 30 lines">七、最小 Agent：用 30 行體會核心迴圈</h2>
+<div data-lang="zh"><p>下方範例不依賴任何框架，直接呼叫 LLM API + 兩個工具，展示 agent 的「思考 → 行動 → 觀察 → 再思考」迴圈。Step 4 與 Step 6 會深入細節。</p></div>
+<div data-lang="en"><p>Below is a framework-free minimal agent: a direct LLM API call plus two tools, illustrating the "think → act → observe → think" loop. Chapters 4 and 6 go deeper.</p></div>
+<div class="code-tabs">
+<div class="code-tab-btns">
+<button class="code-tab-btn active">Python (Anthropic SDK)</button>
+<button class="code-tab-btn">JavaScript (OpenAI SDK)</button>
+</div>
+<div class="code-tab-content active"><pre><span class="comment"># pip install anthropic</span>
+<span class="kw">from</span> anthropic <span class="kw">import</span> Anthropic
+<span class="kw">import</span> json, math, requests
+
+client = <span class="func">Anthropic</span>()
+
+<span class="comment"># 1) Define tools the agent can call</span>
+TOOLS = [{
+  <span class="str">"name"</span>: <span class="str">"calculator"</span>,
+  <span class="str">"description"</span>: <span class="str">"Evaluate a math expression. Input: a Python-safe expression string."</span>,
+  <span class="str">"input_schema"</span>: {<span class="str">"type"</span>:<span class="str">"object"</span>,<span class="str">"properties"</span>:{<span class="str">"expr"</span>:{<span class="str">"type"</span>:<span class="str">"string"</span>}},<span class="str">"required"</span>:[<span class="str">"expr"</span>]}
+},{
+  <span class="str">"name"</span>: <span class="str">"web_get"</span>,
+  <span class="str">"description"</span>: <span class="str">"HTTP GET a URL and return text."</span>,
+  <span class="str">"input_schema"</span>: {<span class="str">"type"</span>:<span class="str">"object"</span>,<span class="str">"properties"</span>:{<span class="str">"url"</span>:{<span class="str">"type"</span>:<span class="str">"string"</span>}},<span class="str">"required"</span>:[<span class="str">"url"</span>]}
+}]
+
+<span class="kw">def</span> <span class="func">run_tool</span>(name, args):
+    <span class="kw">if</span> name == <span class="str">"calculator"</span>: <span class="kw">return</span> <span class="func">str</span>(<span class="func">eval</span>(args[<span class="str">"expr"</span>], {<span class="str">"__builtins__"</span>:{}}, vars(math)))
+    <span class="kw">if</span> name == <span class="str">"web_get"</span>:  <span class="kw">return</span> requests.<span class="func">get</span>(args[<span class="str">"url"</span>]).text[:<span class="num">2000</span>]
+    <span class="kw">return</span> <span class="str">"unknown tool"</span>
+
+<span class="comment"># 2) The core agent loop</span>
+messages = [{<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>:<span class="str">"What is 2026's most-cited AI paper, and is its DOI a prime?"</span>}]
+<span class="kw">while</span> <span class="kw">True</span>:
+    resp = client.messages.<span class="func">create</span>(model=<span class="str">"claude-sonnet-4-6"</span>, max_tokens=<span class="num">1024</span>, tools=TOOLS, messages=messages)
+    <span class="kw">if</span> resp.stop_reason == <span class="str">"end_turn"</span>: <span class="kw">break</span>           <span class="comment"># agent decided to stop</span>
+    messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"assistant"</span>,<span class="str">"content"</span>:resp.content})
+    tool_results = []
+    <span class="kw">for</span> block <span class="kw">in</span> resp.content:
+        <span class="kw">if</span> block.type == <span class="str">"tool_use"</span>:
+            result = <span class="func">run_tool</span>(block.name, block.input)
+            tool_results.<span class="func">append</span>({<span class="str">"type"</span>:<span class="str">"tool_result"</span>,<span class="str">"tool_use_id"</span>:block.id,<span class="str">"content"</span>:result})
+    messages.<span class="func">append</span>({<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>:tool_results})
+
+<span class="func">print</span>(resp.content[-<span class="num">1</span>].text)</pre></div>
+<div class="code-tab-content"><pre><span class="comment">// npm install openai</span>
+<span class="kw">import</span> OpenAI <span class="kw">from</span> <span class="str">"openai"</span>;
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="func">OpenAI</span>();
+
+<span class="kw">const</span> tools = [{
+  type: <span class="str">"function"</span>,
+  function: {
+    name: <span class="str">"calculator"</span>,
+    description: <span class="str">"Evaluate a math expression."</span>,
+    parameters: { type:<span class="str">"object"</span>, properties:{expr:{type:<span class="str">"string"</span>}}, required:[<span class="str">"expr"</span>] }
+  }
+}];
+
+<span class="kw">async function</span> <span class="func">runTool</span>(name, args) {
+  <span class="kw">if</span> (name === <span class="str">"calculator"</span>) <span class="kw">return</span> <span class="func">String</span>(<span class="func">eval</span>(args.expr));
+  <span class="kw">return</span> <span class="str">"unknown"</span>;
+}
+
+<span class="kw">let</span> messages = [{ role:<span class="str">"user"</span>, content:<span class="str">"Compute 17 * 23 then check primality of the result."</span> }];
+<span class="kw">while</span> (<span class="kw">true</span>) {
+  <span class="kw">const</span> resp = <span class="kw">await</span> client.chat.completions.<span class="func">create</span>({
+    model:<span class="str">"gpt-4.1"</span>, messages, tools, tool_choice:<span class="str">"auto"</span>
+  });
+  <span class="kw">const</span> msg = resp.choices[<span class="num">0</span>].message;
+  messages.<span class="func">push</span>(msg);
+  <span class="kw">if</span> (!msg.tool_calls) <span class="kw">break</span>;
+  <span class="kw">for</span> (<span class="kw">const</span> tc <span class="kw">of</span> msg.tool_calls) {
+    <span class="kw">const</span> out = <span class="kw">await</span> <span class="func">runTool</span>(tc.function.name, <span class="func">JSON.parse</span>(tc.function.arguments));
+    messages.<span class="func">push</span>({ role:<span class="str">"tool"</span>, tool_call_id:tc.id, content:out });
+  }
+}
+<span class="func">console.log</span>(messages.<span class="func">at</span>(-<span class="num">1</span>).content);</pre></div>
+</div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>注意：</strong>範例中的 <code>eval()</code> 僅供示範。生產環境絕對不可把使用者輸入直接 eval——詳見 Step 12 安全章節。</span>
+<span data-lang="en"><strong>Note:</strong> The <code>eval()</code> calls are illustrative only. Never <code>eval</code> user input in production — see Step 12.</span>
+</div></div>
+</section>
+
+<!-- Section 8: Quiz -->
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz (3 questions)">🎓 章節小測 (3 題)</h3>
+
+<div class="quiz-q">
+<p data-lang="zh">Q1. 下列哪一項<strong>不是</strong>本教程定義的 AI Agent 必要元件？</p>
+<p data-lang="en">Q1. Which is <strong>not</strong> a required component of an AI Agent in our working definition?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) LLM (推理引擎)" data-en="A) LLM (reasoning engine)">A) LLM (推理引擎)</span></div>
+<div class="quiz-opt"><span data-zh="B) 工具 (Tools)" data-en="B) Tools">B) 工具 (Tools)</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="C) GPU (硬體加速器)" data-en="C) GPU (hardware accelerator)">C) GPU (硬體加速器)</span></div>
+<div class="quiz-opt"><span data-zh="D) Loop (規劃迴圈)" data-en="D) Loop (planning loop)">D) Loop (規劃迴圈)</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ C 是基礎設施而非 agent 的概念元件。Agent 的核心是 LLM + Tools + Memory + Loop。</span><span data-lang="en">✅ C is infrastructure, not a conceptual agent component. The core is LLM + Tools + Memory + Loop.</span></div>
+</div>
+
+<div class="quiz-q">
+<p data-lang="zh">Q2. PEAS 框架中的「P」代表什麼？</p>
+<p data-lang="en">Q2. What does the "P" in PEAS stand for?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) Planning (規劃)" data-en="A) Planning">A) Planning (規劃)</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Performance measure (效能衡量)" data-en="B) Performance measure">B) Performance measure (效能衡量)</span></div>
+<div class="quiz-opt"><span data-zh="C) Prompt (提示詞)" data-en="C) Prompt">C) Prompt (提示詞)</span></div>
+<div class="quiz-opt"><span data-zh="D) Python" data-en="D) Python">D) Python</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ PEAS = Performance, Environment, Actuators, Sensors。</span><span data-lang="en">✅ PEAS = Performance, Environment, Actuators, Sensors.</span></div>
+</div>
+
+<div class="quiz-q">
+<p data-lang="zh">Q3. 「給 LLM 五個工具就叫做 Agent」這個說法為什麼不準確？</p>
+<p data-lang="en">Q3. Why is "an LLM with five tools = an agent" inaccurate?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) Agent 需要至少十個工具" data-en="A) Agents need at least ten tools">A) Agent 需要至少十個工具</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 工具只是必要條件之一，還需要規劃迴圈與停止條件" data-en="B) Tools are just one necessary condition; the agent also needs a planning loop and stop criteria">B) 工具只是必要條件之一，還需要規劃迴圈與停止條件</span></div>
+<div class="quiz-opt"><span data-zh="C) Agent 不能使用工具" data-en="C) Agents cannot use tools">C) Agent 不能使用工具</span></div>
+<div class="quiz-opt"><span data-zh="D) 工具一定要用 MCP 才算 agent" data-en="D) Tools must be MCP-based to qualify">D) 工具一定要用 MCP 才算 agent</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 沒有 planning loop、錯誤恢復、清楚停止條件的多工具 LLM 還只是 chatbot。</span><span data-lang="en">✅ Without a planning loop, error recovery, and explicit stop criteria, a multi-tool LLM is still a chatbot.</span></div>
+</div>
+
+</section>
+
+<!-- Page nav -->
+<div class="page-nav">
+<a href="index.html"><span class="nav-dir" data-zh="← 首頁" data-en="← Home">← 首頁</span><span class="nav-title" data-zh="教程總覽" data-en="Tutorial overview">教程總覽</span></a>
+<a href="02-llm-brain.html" class="next"><span class="nav-dir" data-zh="Step 2 →" data-en="Step 2 →">Step 2 →</span><span class="nav-title" data-zh="LLM 作為大腦" data-en="LLM as the Brain">LLM 作為大腦</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 7: RAG — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html" class="active">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 7 / 12 · <span data-zh="進階能力" data-en="ADVANCED CAPABILITY">進階能力</span></div>
+<h1 data-zh="檢索增強生成 (RAG)" data-en="Retrieval-Augmented Generation">檢索增強生成 (RAG)</h1>
+<p class="subtitle" data-lang="zh">Chunking、Embedding、Hybrid Search、Rerank 與 Agentic RAG——讓 Agent 擁有可信、可更新的知識基礎。</p>
+<p class="subtitle" data-lang="en">Chunking, embedding, hybrid search, rerank, and Agentic RAG — grounding agents in trustworthy, updatable knowledge.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、為什麼非用 RAG 不可？" data-en="I. Why use RAG at all?">一、為什麼非用 RAG 不可？</h2>
+<div data-lang="zh">
+<p>LLM 的權重凍結在訓練時的知識截止日。要讓 agent 處理「公司內部文件、最新法規、即時數據」，三條路：</p>
+<ol>
+<li><strong>Fine-tuning</strong>：把知識訓練進權重。貴、慢、需要再訓、無法即時更新。</li>
+<li><strong>把所有資料塞進 context</strong>：1M context 也撐不住 100MB 文件，貴又慢。</li>
+<li><strong>RAG (Retrieval-Augmented Generation)</strong>：把資料切塊存進向量 DB，每次 query 動態檢索最相關片段塞進 prompt。</li>
+</ol>
+<p>RAG 是 90% 場景的最佳答案：知識可動態更新、成本低、可審計（你能看到 agent 引用了哪段）、降低 60–80% 幻覺。</p>
+<p>本章把 RAG 拆成 5 個關卡：<strong>切塊 → 嵌入 → 檢索 → 重排 → 生成</strong>。</p>
+</div>
+<div data-lang="en">
+<p>LLM weights freeze at training cutoff. To use "internal docs, latest regulations, live data" in an agent, three options:</p>
+<ol>
+<li><strong>Fine-tuning</strong> — bake knowledge into weights. Expensive, slow, requires retraining, no live updates.</li>
+<li><strong>Stuff all data into context</strong> — even 1M context can't hold 100MB docs, and it's slow + costly.</li>
+<li><strong>RAG (Retrieval-Augmented Generation)</strong> — chunk data into a vector DB; per query, retrieve top-K relevant snippets into the prompt.</li>
+</ol>
+<p>RAG wins 90% of cases: dynamic updates, low cost, auditable (you see what got cited), 60–80% hallucination reduction.</p>
+<p>This chapter dissects RAG's 5 stages: <strong>chunk → embed → retrieve → rerank → generate</strong>.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="五個關卡" data-en="FIVE STAGES">五個關卡</div>
+<h2 data-zh="二、RAG 管線的五個關卡" data-en="II. The five-stage RAG pipeline">二、RAG 管線的五個關卡</h2>
+<div class="diagram-box">┌─ INDEX TIME (offline) ──────────────────────────────────────────┐
+│  Docs → ① Chunk → ② Embed → store in Vector DB + Keyword Index │
+└─────────────────────────────────────────────────────────────────┘
+┌─ QUERY TIME (per request) ──────────────────────────────────────┐
+│  Query → ③ Retrieve (hybrid) → ④ Rerank → ⑤ Generate (LLM)     │
+└─────────────────────────────────────────────────────────────────┘</div>
+<div class="workflow">
+<div class="workflow-step" data-step="1"><h4 data-zh="① Chunking（切塊）" data-en="① Chunking">① Chunking（切塊）</h4>
+<p data-lang="zh">將長文件切成 200–800 token 的 chunks，搭配 10–15% overlap。Naive 切法（固定字數）容易切斷語意；建議用<strong>語意切分</strong>（依段落、heading、句末標點）。</p>
+<p data-lang="en">Split long docs into 200–800-token chunks with 10–15% overlap. Naive fixed-length splits cut semantic units; prefer <strong>semantic chunking</strong> by paragraph, heading, or sentence boundary.</p></div>
+<div class="workflow-step" data-step="2"><h4 data-zh="② Embedding（嵌入）" data-en="② Embedding">② Embedding（嵌入）</h4>
+<p data-lang="zh">用 embedding 模型（OpenAI text-embedding-3、Voyage、BGE、Cohere）把每個 chunk 轉成 1024–3072 維向量。語意相似的 chunks 在向量空間中距離近。</p>
+<p data-lang="en">An embedding model (OpenAI text-embedding-3, Voyage, BGE, Cohere) maps each chunk to a 1024–3072 dim vector. Semantically similar chunks sit close in this space.</p></div>
+<div class="workflow-step" data-step="3"><h4 data-zh="③ Retrieve（檢索）" data-en="③ Retrieve">③ Retrieve（檢索）</h4>
+<p data-lang="zh">用 query 的 embedding 找最近的 K 個 chunks（cosine similarity）。<strong>2026 業界共識：純向量檢索失敗率約 40%，務必加上 BM25 關鍵字檢索做 hybrid search</strong>。</p>
+<p data-lang="en">Use the query's embedding to find the K nearest chunks (cosine similarity). <strong>2026 consensus: pure vector retrieval fails ~40%; always add BM25 keyword search → hybrid search</strong>.</p></div>
+<div class="workflow-step" data-step="4"><h4 data-zh="④ Rerank（重排）" data-en="④ Rerank">④ Rerank（重排）</h4>
+<p data-lang="zh">用 cross-encoder（Cohere Rerank、Voyage Rerank、bge-reranker）把候選 top-50 重新排序成 top-5。Cross-encoder 比 bi-encoder 精準很多但慢，所以只對少量候選排。</p>
+<p data-lang="en">A cross-encoder (Cohere Rerank, Voyage Rerank, bge-reranker) re-orders the top-50 candidates into top-5. Cross-encoders are much more accurate than bi-encoders but slow, so only run on a small candidate set.</p></div>
+<div class="workflow-step" data-step="5"><h4 data-zh="⑤ Generate（生成）" data-en="⑤ Generate">⑤ Generate（生成）</h4>
+<p data-lang="zh">把 top-K chunks 塞進 prompt：「使用以下資料回答問題。若資料中沒有，請說『資料中沒有』」。要求 LLM <strong>引用來源</strong>。</p>
+<p data-lang="en">Stuff top-K chunks into the prompt: "Answer using the following sources. If absent, say 'not in the source.'" Require the LLM to <strong>cite sources</strong>.</p></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="實作" data-en="HANDS-ON">實作</div>
+<h2 data-zh="三、完整 RAG 範例（Hybrid + Rerank）" data-en="III. Full RAG example (hybrid + rerank)">三、完整 RAG 範例（Hybrid + Rerank）</h2>
+<div class="code-tabs"><div class="code-tab-btns"><button class="code-tab-btn active">Python (Weaviate + Cohere rerank)</button><button class="code-tab-btn">Python (純向量基本版)</button></div>
+<div class="code-tab-content active"><pre><span class="comment"># pip install weaviate-client cohere openai</span>
+<span class="kw">import</span> weaviate, cohere
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+oai = <span class="func">OpenAI</span>()
+co  = cohere.<span class="func">Client</span>()
+db  = weaviate.<span class="func">connect_to_local</span>()
+papers = db.collections.<span class="func">get</span>(<span class="str">"Papers"</span>)
+
+<span class="kw">def</span> <span class="func">rag</span>(query: <span class="cls">str</span>, k_retrieve=<span class="num">30</span>, k_final=<span class="num">5</span>):
+    <span class="comment"># ③ Hybrid retrieve: vector + BM25 fused</span>
+    hits = papers.query.<span class="func">hybrid</span>(query=query, alpha=<span class="num">0.5</span>, limit=k_retrieve).objects
+    docs = [h.properties[<span class="str">"text"</span>] <span class="kw">for</span> h <span class="kw">in</span> hits]
+
+    <span class="comment"># ④ Rerank with cross-encoder</span>
+    re = co.<span class="func">rerank</span>(model=<span class="str">"rerank-english-v3.0"</span>, query=query, documents=docs, top_n=k_final)
+    top = [docs[r.index] <span class="kw">for</span> r <span class="kw">in</span> re.results]
+
+    <span class="comment"># ⑤ Generate with citation requirement</span>
+    ctx = <span class="str">"\n\n"</span>.<span class="func">join</span>(<span class="str">f"[{i+1}] {d}"</span> <span class="kw">for</span> i,d <span class="kw">in</span> <span class="func">enumerate</span>(top))
+    resp = oai.chat.completions.<span class="func">create</span>(model=<span class="str">"gpt-4.1"</span>,
+        messages=[
+            {<span class="str">"role"</span>:<span class="str">"system"</span>,<span class="str">"content"</span>:<span class="str">"Answer ONLY from the sources. Cite [n] inline. If absent, say so."</span>},
+            {<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>:<span class="str">f"Sources:\n{ctx}\n\nQuestion: {query}"</span>}
+        ])
+    <span class="kw">return</span> resp.choices[<span class="num">0</span>].message.content, top</pre></div>
+<div class="code-tab-content"><pre><span class="comment"># Bare-bones vector RAG with Chroma</span>
+<span class="kw">import</span> chromadb
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+oai = <span class="func">OpenAI</span>()
+col = chromadb.<span class="func">PersistentClient</span>().<span class="func">get_or_create_collection</span>(<span class="str">"docs"</span>)
+
+<span class="kw">def</span> <span class="func">embed</span>(t): <span class="kw">return</span> oai.embeddings.<span class="func">create</span>(model=<span class="str">"text-embedding-3-small"</span>,input=t).data[<span class="num">0</span>].embedding
+
+<span class="kw">def</span> <span class="func">rag</span>(q,k=<span class="num">5</span>):
+    docs = col.<span class="func">query</span>(query_embeddings=[<span class="func">embed</span>(q)], n_results=k)[<span class="str">"documents"</span>][<span class="num">0</span>]
+    ctx  = <span class="str">"\n"</span>.<span class="func">join</span>(<span class="str">f"- {d}"</span> <span class="kw">for</span> d <span class="kw">in</span> docs)
+    r = oai.chat.completions.<span class="func">create</span>(model=<span class="str">"gpt-4.1-mini"</span>,
+        messages=[{<span class="str">"role"</span>:<span class="str">"user"</span>,<span class="str">"content"</span>:<span class="str">f"Use:\n{ctx}\n\nQ: {q}"</span>}])
+    <span class="kw">return</span> r.choices[<span class="num">0</span>].message.content</pre></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動模擬" data-en="INTERACTIVE">互動模擬</div>
+<h2 data-zh="四、Hybrid Search 互動模擬" data-en="IV. Hybrid search simulator">四、Hybrid Search 互動模擬</h2>
+<div class="interactive-panel">
+<div data-lang="zh"><p>調整 alpha（向量權重 vs BM25 權重）觀察結果集差異：</p></div>
+<div data-lang="en"><p>Adjust alpha (vector weight vs BM25 weight) — see how results shift:</p></div>
+<div class="slider-group"><label><span data-zh="α (向量權重)" data-en="α (vector weight)">α (向量權重)</span> <span id="valAlpha">0.5</span></label><input type="range" id="sliderAlpha" min="0" max="10" value="5" step="1"></div>
+<div id="searchOut" style="margin-top:14px"></div>
+</div>
+<script>
+const docs = [
+  {id:1, t:'BRCA1 is a tumor suppressor gene located on chromosome 17q21.', vec:0.91, bm25:0.30},
+  {id:2, t:'The c.5266dupC mutation in BRCA1 is associated with HBOC syndrome.', vec:0.88, bm25:0.95},
+  {id:3, t:'Mediterranean diet reduces cancer risk by 20% per recent meta-analysis.', vec:0.42, bm25:0.10},
+  {id:4, t:'Hereditary Breast and Ovarian Cancer (HBOC) shows autosomal dominant inheritance.', vec:0.79, bm25:0.85},
+  {id:5, t:'ClinVar database has classified c.5266dupC as Pathogenic, 5-star evidence.', vec:0.74, bm25:0.92},
+  {id:6, t:'PARP inhibitors are first-line treatment for BRCA-mutated ovarian cancer.', vec:0.68, bm25:0.40},
+];
+function renderSearch(){
+  const a=parseFloat(document.getElementById('sliderAlpha').value)/10;
+  document.getElementById('valAlpha').textContent=a.toFixed(1);
+  const scored=docs.map(d=>({...d, score: a*d.vec + (1-a)*d.bm25})).sort((x,y)=>y.score-x.score);
+  document.getElementById('searchOut').innerHTML='<div style="font-size:.85rem;color:var(--c-ink-muted);margin-bottom:6px">Query: <em>"BRCA1 c.5266dupC pathogenicity"</em></div>'+
+    scored.slice(0,5).map((d,i)=>`<div class="card" style="margin:6px 0;padding:14px"><div style="display:flex;justify-content:space-between"><span><strong>#${i+1}</strong> ${d.t}</span><span class="spark">${d.score.toFixed(2)}</span></div></div>`).join('');
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('sliderAlpha').addEventListener('input',renderSearch);
+  renderSearch();
+});
+</script>
+<div class="callout info"><span class="callout-icon">📐</span><div>
+<span data-lang="zh"><strong>觀察：</strong>α=1（純向量）會推升「概念相似」但精確 token 沒出現的文件；α=0（純 BM25）對 c.5266dupC 這種精確字串有利。生產通常 α=0.4–0.6。</span>
+<span data-lang="en"><strong>Observe:</strong> α=1 (pure vector) favors concept-similar docs even without exact tokens; α=0 (pure BM25) favors exact strings like c.5266dupC. Production typically uses α=0.4–0.6.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="進階" data-en="ADVANCED">進階</div>
+<h2 data-zh="五、Agentic RAG：讓 Agent 自主決定怎麼檢索" data-en="V. Agentic RAG: let the agent decide how to retrieve">五、Agentic RAG：讓 Agent 自主決定怎麼檢索</h2>
+<div data-lang="zh"><p>2024 年起，純單輪 RAG（一次檢索 + 生成）的限制變得明顯：</p>
+<ul>
+<li>使用者問「比較 A 與 B」，需要兩個獨立檢索；</li>
+<li>使用者問「2026 Q1 銷售」，需要先檢索定義再檢索數據；</li>
+<li>檢索結果矛盾，需要 agent 判斷誰可信。</li>
+</ul>
+<p><strong>Agentic RAG</strong> 把檢索本身變成 agent 的工具——LLM 自己決定要查什麼、查幾次、怎麼合併。常見模式：</p>
+<ol>
+<li><strong>Self-querying</strong>：LLM 把 user query 改寫成更好的 search query（加同義詞、拆解）。</li>
+<li><strong>Multi-step retrieval</strong>：第一次檢索結果不足 → 改 query 再查。</li>
+<li><strong>Routing</strong>：根據 query 類型路由到不同 index（文件、API、SQL）。</li>
+<li><strong>Verification</strong>：用第二次檢索驗證第一次答案。</li>
+</ol></div>
+<div data-lang="en"><p>From 2024 on, the limits of single-shot RAG became clear:</p>
+<ul>
+<li>"Compare A and B" needs two independent retrievals;</li>
+<li>"Q1 2026 sales" needs to retrieve a definition then the numbers;</li>
+<li>Retrieved results conflict — the agent must judge.</li>
+</ul>
+<p><strong>Agentic RAG</strong> turns retrieval itself into a tool — the LLM decides what to query, how many times, how to merge. Common patterns:</p>
+<ol>
+<li><strong>Self-querying</strong>: LLM rewrites the user query into a better search query (add synonyms, decompose).</li>
+<li><strong>Multi-step retrieval</strong>: when round 1 is insufficient → reformulate and retry.</li>
+<li><strong>Routing</strong>: route by query type to different indexes (docs, API, SQL).</li>
+<li><strong>Verification</strong>: a second retrieval verifies the first answer.</li>
+</ol></div>
+<div class="callout tip"><span class="callout-icon">🚀</span><div>
+<span data-lang="zh"><strong>2026 趨勢：</strong>VentureBeat 等媒體已開始談論「RAG 的時代結束」——對長期穩定知識 (如產品文件)，「compilation-stage knowledge layer」（把知識直接編譯進模型 weights 或快取）可能取代動態檢索。但對「即時、變動快」的知識，RAG 仍是無可替代。</span>
+<span data-lang="en"><strong>2026 trend:</strong> outlets like VentureBeat are calling time on "pure RAG" for stable knowledge (e.g. product docs) — "compilation-stage knowledge layers" (baking knowledge into weights or cache) may replace dynamic retrieval there. But for fresh, fast-changing knowledge, RAG remains irreplaceable.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="常見錯誤" data-en="COMMON PITFALLS">常見錯誤</div>
+<h2 data-zh="六、五個讓 RAG 失敗的常見錯誤" data-en="VI. Five common ways RAG fails">六、五個讓 RAG 失敗的常見錯誤</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>① <span data-zh="切塊太大或太小" data-en="Wrong chunk size">切塊太大或太小</span></h4>
+<div data-lang="zh"><p>太大 → 一個 chunk 包多個主題，相似度分數失準。太小 → 失去上下文。<strong>建議：300–600 tokens + 10% overlap</strong>。</p></div>
+<div data-lang="en"><p>Too large → one chunk holds multiple topics, similarity blurs. Too small → loses context. <strong>Rule: 300–600 tokens + 10% overlap</strong>.</p></div></div>
+<div class="card"><h4>② <span data-zh="沒做 hybrid search" data-en="No hybrid search">沒做 hybrid search</span></h4>
+<div data-lang="zh"><p>純向量檢索對「精確 ID、罕見字、人名」失效。Hybrid 是 2026 預設。</p></div>
+<div data-lang="en"><p>Pure vector retrieval misses exact IDs, rare words, names. Hybrid is the 2026 default.</p></div></div>
+<div class="card"><h4>③ <span data-zh="沒有 rerank" data-en="No reranker">沒有 rerank</span></h4>
+<div data-lang="zh"><p>第一階段 top-30 通常含很多噪音。加上 cross-encoder reranker 可把 Recall@5 從 60% 提升到 85%。</p></div>
+<div data-lang="en"><p>Stage-1 top-30 is noisy. Adding a cross-encoder reranker bumps Recall@5 from ~60% to ~85%.</p></div></div>
+<div class="card"><h4>④ <span data-zh="Prompt 沒要求引用" data-en="Prompt doesn't require citations">Prompt 沒要求引用</span></h4>
+<div data-lang="zh"><p>讓 LLM <strong>標 [1][2]</strong> 引用 chunks，否則無法審計、無法判斷是否幻覺。</p></div>
+<div data-lang="en"><p>Make the LLM cite <strong>[1][2]</strong> chunks — otherwise you can't audit or detect hallucination.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz">🎓 章節小測</h3>
+<div class="quiz-q">
+<p data-lang="zh">Q1. 2026 業界推薦的 chunk 大小是？</p>
+<p data-lang="en">Q1. The 2026 recommended chunk size is?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 越大越好（1 個 chunk = 1 個檔案）" data-en="A) As large as possible (1 chunk = whole file)">A) 越大越好</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 300–600 tokens + 10% overlap" data-en="B) 300–600 tokens with 10% overlap">B) 300–600 tokens + 10% overlap</span></div>
+<div class="quiz-opt"><span data-zh="C) 一句一個 chunk" data-en="C) One sentence per chunk">C) 一句一個 chunk</span></div>
+<div class="quiz-opt"><span data-zh="D) 必須 8192 tokens" data-en="D) Must be 8192 tokens">D) 必須 8192 tokens</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 太大相似度失準、太小失去語境，300–600 是業界共識。</span><span data-lang="en">✅ Too large blurs similarity, too small loses context; 300–600 is consensus.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q2. 為什麼 hybrid search 比純向量好？</p>
+<p data-lang="en">Q2. Why is hybrid search better than pure vector?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 純向量已被淘汰" data-en="A) Vector search is deprecated">A) 純向量已被淘汰</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) BM25 對精確字串/罕見詞有效，補上向量的弱點" data-en="B) BM25 captures exact strings and rare terms — covers vector's blind spots">B) BM25 對精確字串/罕見詞有效，補上向量的弱點</span></div>
+<div class="quiz-opt"><span data-zh="C) Hybrid 比較便宜" data-en="C) Hybrid is cheaper">C) Hybrid 比較便宜</span></div>
+<div class="quiz-opt"><span data-zh="D) 不需要 embedding" data-en="D) No embeddings needed">D) 不需要 embedding</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 向量懂語意但對精確 token 弱，BM25 反之，互補。</span><span data-lang="en">✅ Vectors capture semantics, BM25 captures exact tokens — complementary.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q3. Agentic RAG 比單輪 RAG 的核心改進是？</p>
+<p data-lang="en">Q3. The core upgrade of Agentic RAG over single-shot RAG?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 用更大的 embedding 模型" data-en="A) Use a larger embedding model">A) 用更大的 embedding</span></div>
+<div class="quiz-opt"><span data-zh="B) 跳過 retrieve" data-en="B) Skip retrieve">B) 跳過 retrieve</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="C) 把檢索變成 agent 的工具，由 LLM 動態決定查什麼/查幾次" data-en="C) Retrieval becomes an agent tool — LLM decides what/how many times to query">C) 把檢索變成 agent 的工具</span></div>
+<div class="quiz-opt"><span data-zh="D) 必須使用 Pinecone" data-en="D) Must use Pinecone">D) 必須使用 Pinecone</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 核心是把 retrieve 從固定步驟變成 agent 可自主使用的工具。</span><span data-lang="en">✅ Retrieve becomes an agent-callable tool, not a fixed pre-step.</span></div>
+</div>
+</section>
+
+<div class="page-nav">
+<a href="06-planning.html"><span class="nav-dir" data-zh="← Step 6" data-en="← Step 6">← Step 6</span><span class="nav-title" data-zh="規劃與推理" data-en="Planning & Reasoning">規劃與推理</span></a>
+<a href="08-multi-agent.html" class="next"><span class="nav-dir" data-zh="Step 8 →" data-en="Step 8 →">Step 8 →</span><span class="nav-title" data-zh="多代理人系統" data-en="Multi-Agent Systems">多代理人系統</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

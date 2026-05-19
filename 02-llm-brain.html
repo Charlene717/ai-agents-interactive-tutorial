@@ -1,0 +1,282 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 2: LLM as the Brain — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html" class="active">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 2 / 12 · <span data-zh="基礎" data-en="FOUNDATIONS">基礎</span></div>
+<h1 data-zh="LLM 作為大腦" data-en="LLM as the Brain">LLM 作為大腦</h1>
+<p class="subtitle" data-lang="zh">Token、context window、temperature、sampling——理解 Agent 推理引擎的關鍵特性與限制。</p>
+<p class="subtitle" data-lang="en">Tokens, context window, temperature, sampling — the key properties and limits of the agent's reasoning engine.</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、為什麼非用 LLM 不可？" data-en="I. Why does the agent need an LLM?">一、為什麼非用 LLM 不可？</h2>
+<div data-lang="zh">
+<p>2020 年以前，要打造能「理解自然語言指令」的 agent，只能用 <strong>意圖分類器 + 槽位填充 + 規則引擎</strong>（Dialogflow、Rasa 是代表）。每多一個意圖就要重新標數據、訓練、上線——擴展性極差。</p>
+<p>大型語言模型 (LLM) 改變了遊戲規則：<strong>同一個模型，靠 prompt 就能處理開放域任務</strong>。它不只是強大的語意理解器，更是一個能把「自然語言目標」翻譯成「具體動作序列」的通用推理引擎。這就是為什麼現代 agent 普遍以 LLM 為核心。</p>
+<p>但 LLM 不是萬能的。要把它當成 agent 的大腦，必須先理解它<strong>能做什麼、不能做什麼、何時會出錯</strong>。本章就是這個藍圖。</p>
+</div>
+<div data-lang="en">
+<p>Before 2020, building an agent that "understands natural-language instructions" meant <strong>intent classification + slot filling + rule engines</strong> (think Dialogflow, Rasa). Every new intent required relabeling, retraining, redeploying — extensibility was terrible.</p>
+<p>LLMs flipped the table: <strong>one model, configured by prompts, handles open-domain tasks</strong>. Not just a powerful semantic parser — a general reasoning engine that can translate "natural-language goal" into "concrete action sequence." That's why modern agents put an LLM at the core.</p>
+<p>LLMs are not magic, though. To use one as the brain of an agent you must understand <strong>what it can do, what it cannot, and where it fails</strong>. That's the blueprint of this chapter.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="基本原理" data-en="HOW IT WORKS">基本原理</div>
+<h2 data-zh="二、LLM 的核心：下一個 token 預測" data-en="II. The core of an LLM: next-token prediction">二、LLM 的核心：下一個 token 預測</h2>
+<div data-lang="zh"><p>儘管模型有千億參數，LLM 做的事情其實只有一件：<strong>給定前面的所有 token，預測下一個 token 的機率分佈</strong>。</p>
+<p>把它想成一個極度博學的自動完成。它沒有真正在「思考」，但因為訓練語料中包含了人類大量的推理範例，它學會了一個能「看起來像推理」的統計過程。</p></div>
+<div data-lang="en"><p>Despite the hundreds of billions of parameters, an LLM does one thing: <strong>given all preceding tokens, predict a probability distribution over the next token</strong>.</p>
+<p>Think of it as an extremely well-read autocomplete. It does not "think" in any literal sense, but because the training corpus contains enormous amounts of human reasoning, it learned a statistical process that <em>looks</em> like reasoning.</p></div>
+<div class="diagram-box">[ "The", " capital", " of", " France", " is" ] → P(next | context)
+                                                  ├─ " Paris"   p = 0.93
+                                                  ├─ " a"        p = 0.03
+                                                  ├─ " located"  p = 0.02
+                                                  └─ ...others   p = 0.02</div>
+<div class="callout info"><span class="callout-icon">🔍</span><div>
+<span data-lang="zh"><strong>關鍵洞見：</strong>整個 agent 系統都是建在這個「下一個 token 機率」之上。Tool call、JSON 輸出、ReAct 推理——全部都是 token。所有 prompt 工程的本質，是<strong>把 token 機率分佈推向你想要的方向</strong>。</span>
+<span data-lang="en"><strong>Key insight:</strong> The entire agent stack sits on top of this "next-token probability." Tool calls, JSON outputs, ReAct reasoning — all just tokens. Every prompt engineering technique is, at heart, <strong>nudging the token distribution toward what you want</strong>.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="Token 經濟學" data-en="TOKEN ECONOMICS">Token 經濟學</div>
+<h2 data-zh="三、Tokenization：你的 prompt 不是字" data-en="III. Tokenization: your prompt is not characters">三、Tokenization：你的 prompt 不是字</h2>
+<div data-lang="zh"><p>LLM 看不到字元也看不到單字，它看到的是<strong>token</strong>——介於字元與單字之間的子單位。常見的 tokenizer 是 BPE (Byte-Pair Encoding) 或 SentencePiece。</p>
+<ul>
+<li>英文：1 token ≈ <strong>0.75 個單字</strong>（"hello world" = 2 tokens）</li>
+<li>中文：1 個漢字常常 = <strong>1–3 tokens</strong>（取決於 tokenizer）</li>
+<li>程式碼：縮排與符號常常各算 1 token</li>
+<li>Emoji：1 個 emoji 通常 = <strong>2–5 tokens</strong></li>
+</ul>
+<p>為什麼這重要？因為 <strong>API 價格、context window 上限、延遲</strong>都按 token 算。同一段中文比英文消耗 2–3 倍 token，等於成本也高 2–3 倍。</p></div>
+<div data-lang="en"><p>An LLM does not see characters or words — it sees <strong>tokens</strong>, sub-units between characters and words, produced by BPE or SentencePiece.</p>
+<ul>
+<li>English: 1 token ≈ <strong>0.75 words</strong> ("hello world" = 2 tokens)</li>
+<li>Chinese: 1 Han character = <strong>1–3 tokens</strong> (depends on tokenizer)</li>
+<li>Code: indentation and symbols usually each count as 1 token</li>
+<li>Emoji: 1 emoji = <strong>2–5 tokens</strong></li>
+</ul>
+<p>Why does it matter? Because <strong>API pricing, context limits, and latency all bill by token</strong>. The same paragraph in Chinese costs 2–3× as many tokens as in English — i.e., 2–3× the cost.</p></div>
+<div class="interactive-panel">
+<div data-lang="zh"><p>輸入文字，估算 token 數（粗略估算：英文每 4 字元 ≈ 1 token；中文每字 ≈ 2 tokens）：</p></div>
+<div data-lang="en"><p>Type text, estimate tokens (rough: 1 token ≈ 4 chars English; 2 tokens / Chinese char):</p></div>
+<textarea id="tokenInput" rows="3" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--c-border);font-family:var(--font-body)" placeholder="Type or paste text here..."></textarea>
+<div class="sim-stats" style="margin-top:12px">
+<span class="sim-stat info" id="charCount">Characters: 0</span>
+<span class="sim-stat info" id="tokenCount">~Tokens: 0</span>
+<span class="sim-stat warn" id="costEst">Cost @ $3/M: $0.0000</span>
+</div>
+</div>
+<script>
+function estTokens(t){
+  let cn=0, en=0;
+  for(const c of t){ if(/[一-鿿]/.test(c)) cn++; else en++; }
+  return Math.ceil(cn*1.8 + en/4);
+}
+function updTok(){
+  const t=document.getElementById('tokenInput').value;
+  document.getElementById('charCount').textContent=`Characters: ${t.length}`;
+  const tok=estTokens(t);
+  document.getElementById('tokenCount').textContent=`~Tokens: ${tok}`;
+  document.getElementById('costEst').textContent=`Cost @ $3/M: $${(tok*3/1e6).toFixed(6)}`;
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('tokenInput').addEventListener('input',updTok);
+  updTok();
+});
+</script>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="Context Window" data-en="CONTEXT WINDOW">Context Window</div>
+<h2 data-zh="四、Context Window：Agent 的「短期記憶」上限" data-en="IV. Context Window: the agent's short-term memory cap">四、Context Window：Agent 的「短期記憶」上限</h2>
+<div data-lang="zh"><p>Context window 是 LLM 一次能讀進去的 token 上限。它包含：system prompt + 歷史對話 + 工具描述 + 工具回傳結果 + 你目前的問題。</p>
+<p>2026 年的旗艦模型大致範圍：</p>
+<ul>
+<li><strong>Claude Sonnet 4.6</strong>：200K tokens（約一本中篇小說）</li>
+<li><strong>GPT-4.1 / 5</strong>：1M tokens（旗艦版本）</li>
+<li><strong>Gemini 2.5 Pro</strong>：2M tokens</li>
+<li><strong>開源 Llama / Mistral</strong>：通常 32K – 128K</li>
+</ul>
+<p>但「能塞」不等於「有效」。<strong>Lost in the middle</strong> 現象指出：當 context 接近上限時，模型對中段資訊的回憶率明顯下降。實務上，agent 要主動<strong>裁剪、摘要、檢索</strong>來控制 context 的有效長度。</p></div>
+<div data-lang="en"><p>The context window is the maximum tokens an LLM can read at once. It contains: system prompt + chat history + tool descriptions + tool results + your current question.</p>
+<p>Flagship 2026 ranges:</p>
+<ul>
+<li><strong>Claude Sonnet 4.6</strong>: 200K tokens (a short novel)</li>
+<li><strong>GPT-4.1 / 5</strong>: 1M tokens (flagship variant)</li>
+<li><strong>Gemini 2.5 Pro</strong>: 2M tokens</li>
+<li><strong>Open-source Llama / Mistral</strong>: typically 32K – 128K</li>
+</ul>
+<p>But "fits" ≠ "effective." The <strong>"lost in the middle"</strong> phenomenon shows that recall of mid-context information drops sharply when the window fills. Production agents must actively <strong>trim, summarize, and retrieve</strong> to keep effective context short.</p></div>
+<div class="callout warn"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>實務指南：</strong>即使你有 1M context，盡量讓真正用到的 prompt + history 不超過 30K。超過後品質會明顯下滑且成本陡增。長對話請主動 summarize 或用 RAG 檢索。</span>
+<span data-lang="en"><strong>Rule of thumb:</strong> Even with 1M tokens available, keep effective prompt + history under ~30K. Quality drops and cost spikes beyond that. Summarize long chats or use RAG.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="Sampling" data-en="SAMPLING">Sampling</div>
+<h2 data-zh="五、Temperature 與 Sampling：可控的隨機性" data-en="V. Temperature and Sampling: controllable randomness">五、Temperature 與 Sampling：可控的隨機性</h2>
+<div data-lang="zh"><p>LLM 預測的是<strong>機率分佈</strong>，所以可以用不同策略從中抽樣：</p>
+<ul>
+<li><strong>Greedy</strong>：永遠選機率最高的 token。確定性高，但容易產生重複、單調。</li>
+<li><strong>Temperature (T)</strong>：把分佈變得平緩 (T&gt;1) 或變得尖銳 (T&lt;1)。<br>T=0 ≈ greedy；T=1 是原始分佈；T=2 非常隨機。</li>
+<li><strong>top-p (nucleus sampling)</strong>：只從累積機率 ≥ p 的最小 token 集合中抽樣，動態裁掉長尾。</li>
+<li><strong>top-k</strong>：只從機率最高的 k 個 token 中抽樣。</li>
+</ul></div>
+<div data-lang="en"><p>The LLM emits a <strong>distribution</strong>, so we can sample with different strategies:</p>
+<ul>
+<li><strong>Greedy</strong>: always pick the highest-probability token. Deterministic but repetitive.</li>
+<li><strong>Temperature (T)</strong>: flattens (T&gt;1) or sharpens (T&lt;1) the distribution. T=0 ≈ greedy; T=1 raw; T=2 wild.</li>
+<li><strong>top-p (nucleus)</strong>: sample only from the smallest set whose cumulative probability ≥ p — dynamic tail truncation.</li>
+<li><strong>top-k</strong>: sample only from the k highest-probability tokens.</li>
+</ul></div>
+<div class="interactive-panel">
+<div data-lang="zh"><p>觀察 temperature 如何改變 token 分佈（綠色 = 被採樣到的 token）：</p></div>
+<div data-lang="en"><p>See how temperature reshapes the distribution (green = sampled token):</p></div>
+<div class="slider-group"><label><span data-zh="Temperature" data-en="Temperature">Temperature</span> <span id="valTemp">0.7</span></label><input type="range" id="sliderTemp" min="0" max="20" value="7" step="1"></div>
+<div class="chart-container"><canvas id="tempChart"></canvas></div>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center" data-lang="zh">建議：事實性任務 / 工具呼叫 用 0~0.3；創意寫作用 0.7~1.2。</p>
+<p style="font-size:.82rem;color:var(--c-ink-muted);text-align:center" data-lang="en">Rule: factual / tool-calling tasks use 0–0.3; creative writing 0.7–1.2.</p>
+</div>
+<script>
+let tempChart;
+const baseLogits=[3.5,2.8,2.0,1.5,1.0,0.6,0.3,0.0,-0.3,-0.6];
+const tokens=['Paris','France','city','beautiful','located','known','one','many','also','place'];
+function softmax(arr,T){
+  const exp=arr.map(x=>Math.exp(x/T));
+  const s=exp.reduce((a,b)=>a+b,0);
+  return exp.map(x=>x/s);
+}
+function drawTemp(){
+  const T=parseFloat(document.getElementById('sliderTemp').value)/10;
+  document.getElementById('valTemp').textContent=T.toFixed(1);
+  const probs=softmax(baseLogits,Math.max(T,0.01));
+  // Sample one token
+  const r=Math.random(); let cum=0, picked=0;
+  for(let i=0;i<probs.length;i++){ cum+=probs[i]; if(r<=cum){picked=i;break;} }
+  const colors=probs.map((_,i)=>i===picked?'#3b3a8c':'#cdcaf0');
+  if(!tempChart){
+    const ctx=document.getElementById('tempChart').getContext('2d');
+    tempChart=new Chart(ctx,{type:'bar',data:{labels:tokens,datasets:[{data:probs,backgroundColor:colors,borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'Token probability distribution'}},
+      scales:{y:{beginAtZero:true,max:1,title:{display:true,text:'P(token)'}}}}});
+  } else { tempChart.data.datasets[0].data=probs; tempChart.data.datasets[0].backgroundColor=colors; tempChart.update('none'); }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('sliderTemp').addEventListener('input',drawTemp);
+  setTimeout(drawTemp,100);
+});
+</script>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="模型選擇" data-en="MODEL CHOICE">模型選擇</div>
+<h2 data-zh="六、2026 年主流 LLM 對照表" data-en="VI. Mainstream LLMs in 2026 — comparison">六、2026 年主流 LLM 對照表</h2>
+<div class="comp-table-wrap"><table class="comp-table">
+<thead><tr><th data-zh="模型" data-en="Model">模型</th><th data-zh="Context" data-en="Context">Context</th><th data-zh="長處" data-en="Strengths">長處</th><th data-zh="價格 / 1M tok" data-en="Price / 1M tok">價格 / 1M tok</th><th data-zh="適合 Agent" data-en="Agent fit">適合 Agent</th></tr></thead>
+<tbody>
+<tr><td><strong>Claude Sonnet 4.6</strong></td><td>200K</td><td data-lang="zh">強推理、強 tool use、寫程式</td><td data-lang="en">Strong reasoning, tool use, code</td><td>$3 / $15</td><td data-lang="zh">★★★★★ 工程 agent 首選</td><td data-lang="en">★★★★★ top pick for engineering</td></tr>
+<tr><td><strong>Claude Opus 4.6</strong></td><td>200K</td><td data-lang="zh">最強推理、複雜規劃</td><td data-lang="en">Top reasoning, complex planning</td><td>$15 / $75</td><td data-lang="zh">★★★★★ 高難度規劃任務</td><td data-lang="en">★★★★★ high-stakes planning</td></tr>
+<tr><td><strong>Claude Haiku 4.5</strong></td><td>200K</td><td data-lang="zh">便宜快速、適合分流</td><td data-lang="en">Cheap & fast routing</td><td>$0.8 / $4</td><td data-lang="zh">★★★★ 子任務 / router</td><td data-lang="en">★★★★ subtasks / router</td></tr>
+<tr><td><strong>GPT-4.1</strong></td><td>1M</td><td data-lang="zh">超長 context、tool 強</td><td data-lang="en">Huge context, tool use</td><td>$2 / $8</td><td data-lang="zh">★★★★★ 文件密集場景</td><td data-lang="en">★★★★★ document-heavy tasks</td></tr>
+<tr><td><strong>GPT-5 mini</strong></td><td>400K</td><td data-lang="zh">便宜、tool 不錯</td><td data-lang="en">Cheap, decent tools</td><td>$0.5 / $2</td><td data-lang="zh">★★★★ 量大型應用</td><td data-lang="en">★★★★ high-volume apps</td></tr>
+<tr><td><strong>Gemini 2.5 Pro</strong></td><td>2M</td><td data-lang="zh">最大 context、多模態</td><td data-lang="en">Largest context, multimodal</td><td>$1.25 / $10</td><td data-lang="zh">★★★★ 長影音 / 文件</td><td data-lang="en">★★★★ long video / docs</td></tr>
+<tr><td><strong>Llama 4 70B (open)</strong></td><td>128K</td><td data-lang="zh">自託管、隱私</td><td data-lang="en">Self-hosted, private</td><td data-lang="zh">自有 GPU 成本</td><td data-lang="en">your GPU cost</td><td data-lang="zh">★★★ 內網 / 醫療</td><td data-lang="en">★★★ on-prem / medical</td></tr>
+</tbody>
+</table></div>
+<div class="callout tip"><span class="callout-icon">💡</span><div>
+<span data-lang="zh"><strong>選型建議：</strong>不是每個子任務都需要旗艦模型。常見策略是「<strong>Router + 主力 + 廉價執行</strong>」——用 Haiku/mini 分流，Sonnet/4.1 處理核心推理，Llama 跑大量低風險批次任務。</span>
+<span data-lang="en"><strong>Selection rule:</strong> not every subtask needs the flagship. A common pattern is "<strong>Router + Workhorse + Bulk executor</strong>" — Haiku/mini for routing, Sonnet/4.1 for core reasoning, Llama for high-volume low-risk batches.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="LLM 的限制" data-en="LIMITS">LLM 的限制</div>
+<h2 data-zh="七、四個 Agent 開發者必知的 LLM 失敗模式" data-en="VII. Four LLM failure modes every agent dev must know">七、四個 Agent 開發者必知的 LLM 失敗模式</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>🌀 <span data-zh="幻覺 (Hallucination)" data-en="Hallucination">幻覺 (Hallucination)</span></h4>
+<div data-lang="zh"><p>LLM 會自信地編造不存在的事實、API、套件名。Agent 場景特別嚴重——它會「呼叫」根本不存在的工具。<strong>對策：</strong>強制工具用 schema 驗證、結構化輸出、RAG 接地。</p></div>
+<div data-lang="en"><p>LLMs confidently invent non-existent facts, APIs, package names. In agents this is critical — they "call" tools that don't exist. <strong>Mitigation:</strong> JSON schema validation, structured output, RAG grounding.</p></div></div>
+<div class="card"><h4>♾️ <span data-zh="無窮迴圈" data-en="Infinite loops">無窮迴圈</span></h4>
+<div data-lang="zh"><p>Agent 反覆呼叫同一個失敗的工具、或在兩個動作間來回。<strong>對策：</strong>設 max_iterations、相同 action 偵測、強制 reflection。</p></div>
+<div data-lang="en"><p>Agent repeatedly calls the same failing tool or oscillates between two actions. <strong>Mitigation:</strong> max_iterations cap, repeat-action detection, forced reflection.</p></div></div>
+<div class="card"><h4>⏱️ <span data-zh="延遲與成本爆炸" data-en="Latency & cost explosion">延遲與成本爆炸</span></h4>
+<div data-lang="zh"><p>10 步 ReAct loop = 10 次 LLM 呼叫。Context 滾雪球累積，後幾步可能比前幾步貴 5×。<strong>對策：</strong>summarize、window slide、改用便宜模型做子步驟。</p></div>
+<div data-lang="en"><p>A 10-step ReAct loop = 10 LLM calls. Context snowballs, late steps may be 5× more expensive than early ones. <strong>Mitigation:</strong> summarize, sliding window, cheaper model for subtasks.</p></div></div>
+<div class="card"><h4>📉 <span data-zh="Lost in the middle" data-en="Lost in the middle">Lost in the middle</span></h4>
+<div data-lang="zh"><p>長 context 中間段資訊召回率下降。Agent 在第 5 輪可能「忘了」第 1 輪的 system 指令。<strong>對策：</strong>關鍵指令放開頭與結尾、定期重申、用工具回顧 history。</p></div>
+<div data-lang="en"><p>Recall drops for mid-context info. By turn 5 the agent may "forget" turn 1's system rules. <strong>Mitigation:</strong> place critical rules at start AND end, restate periodically, give the agent a "review history" tool.</p></div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz (3 questions)">🎓 章節小測 (3 題)</h3>
+<div class="quiz-q">
+<p data-lang="zh">Q1. 下列哪一項對「temperature = 0」的描述最準確？</p>
+<p data-lang="en">Q1. Which best describes "temperature = 0"?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 模型完全不會輸出" data-en="A) The model produces nothing">A) 模型完全不會輸出</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 接近 greedy 採樣，趨於確定性" data-en="B) Approaches greedy sampling — near-deterministic">B) 接近 greedy 採樣，趨於確定性</span></div>
+<div class="quiz-opt"><span data-zh="C) 輸出最隨機" data-en="C) Maximally random output">C) 輸出最隨機</span></div>
+<div class="quiz-opt"><span data-zh="D) 跳過 LLM 直接走規則" data-en="D) Skip LLM, use rules">D) 跳過 LLM 直接走規則</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ T=0 把分佈推到極尖銳，接近總是選最高機率 token。</span><span data-lang="en">✅ T=0 sharpens the distribution to near-greedy.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q2. Agent 設計時為什麼要主動 summarize 對話？</p>
+<p data-lang="en">Q2. Why should an agent actively summarize history?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) Token 一定會用完" data-en="A) Tokens will always run out">A) Token 一定會用完</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Context 過長會發生 lost-in-the-middle 與成本爆炸" data-en="B) Long context causes lost-in-the-middle and cost spikes">B) Context 過長會發生 lost-in-the-middle 與成本爆炸</span></div>
+<div class="quiz-opt"><span data-zh="C) 為了讓 LLM 更聰明" data-en="C) To make the LLM smarter">C) 為了讓 LLM 更聰明</span></div>
+<div class="quiz-opt"><span data-zh="D) 為了符合 GDPR" data-en="D) For GDPR compliance">D) 為了符合 GDPR</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 召回品質下降 + 每輪 token 累積成本，是兩大原因。</span><span data-lang="en">✅ Recall degradation and snowballing per-call cost are the two main reasons.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q3. 「同一段中文比英文消耗 2–3 倍 token」最直接的原因是？</p>
+<p data-lang="en">Q3. The most direct reason "Chinese consumes 2–3× more tokens than English" is?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 中文模型比較笨" data-en="A) Chinese models are dumber">A) 中文模型比較笨</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) BPE tokenizer 對中文字元劃分較細" data-en="B) BPE tokenizer splits Chinese into finer pieces">B) BPE tokenizer 對中文字元劃分較細</span></div>
+<div class="quiz-opt"><span data-zh="C) 中文 prompt 一定要更長" data-en="C) Chinese prompts must be longer">C) 中文 prompt 一定要更長</span></div>
+<div class="quiz-opt"><span data-zh="D) GPU 不支援中文" data-en="D) GPUs don't support Chinese">D) GPU 不支援中文</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 訓練語料以英文為主，中文字元在 vocab 中佔比小，因此被切得更碎。</span><span data-lang="en">✅ English-dominant training corpora mean Chinese characters are split more finely.</span></div>
+</div>
+</section>
+
+<div class="page-nav">
+<a href="01-what-is-agent.html"><span class="nav-dir" data-zh="← Step 1" data-en="← Step 1">← Step 1</span><span class="nav-title" data-zh="什麼是 AI 代理人" data-en="What is an AI Agent">什麼是 AI 代理人</span></a>
+<a href="03-prompting.html" class="next"><span class="nav-dir" data-zh="Step 3 →" data-en="Step 3 →">Step 3 →</span><span class="nav-title" data-zh="Prompt 工程" data-en="Prompt Engineering">Prompt 工程</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Step 9: Agent Evaluation — AI Agents Tutorial</title>
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<nav class="top-nav"><div class="top-nav-inner">
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
+  <ul class="top-nav-links">
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html" class="active">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
+    <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
+  </ul>
+</div></nav>
+<div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+<header class="page-hero"><div class="step-badge">STEP 9 / 12 · <span data-zh="進階能力" data-en="ADVANCED CAPABILITY">進階能力</span></div>
+<h1 data-zh="Agent 評估" data-en="Agent Evaluation">Agent 評估</h1>
+<p class="subtitle" data-lang="zh">Outcome vs trajectory metrics、SWE-bench / GAIA / TAU-bench、觀測性與成本追蹤——把 agent 從「demo」變成「可量化的產品」。</p>
+<p class="subtitle" data-lang="en">Outcome vs trajectory metrics, SWE-bench / GAIA / TAU-bench, observability and cost tracking — turning agents from "demo" into "measurable product."</p>
+</header>
+<main class="content-wrap">
+
+<section class="section">
+<div class="section-label" data-zh="出發點" data-en="STARTING POINT">出發點</div>
+<h2 data-zh="一、為什麼 Agent 評估比 LLM 評估難 10 倍？" data-en="I. Why agent evaluation is 10× harder than LLM evaluation">一、為什麼 Agent 評估比 LLM 評估難 10 倍？</h2>
+<div data-lang="zh">
+<p>LLM 的評估相對直接：給 N 個 prompt，比對輸出與 gold answer，算準確率。</p>
+<p>Agent 完全不同——它的輸出是<strong>一連串動作</strong>。同樣的最終結果，可能來自精彩、最短的 3 步，也可能來自混亂的 30 步嘗試錯誤。我們既要評估「答對沒」，也要評估「過程合不合理、貴不貴」。</p>
+<p>LangChain 2026 報告指出：57% 組織已部署 agent 到生產，但 32% 的人把「品質」列為最大瓶頸；&gt;40% 的 agentic AI 專案預計在 2027 年底前被取消——多數死於「demo 漂亮，跑久了不行」。</p>
+<p>本章拆解 agent 評估的三個面向：<strong>結果、軌跡、生產觀測</strong>。</p>
+</div>
+<div data-lang="en">
+<p>LLM evaluation is relatively simple: feed N prompts, compare outputs to gold answers, compute accuracy.</p>
+<p>Agents are different — their output is a <strong>sequence of actions</strong>. The same final answer can come from an elegant 3-step path or a chaotic 30-step trial-and-error. You must evaluate both "did it get the right answer" and "was the process sensible and affordable."</p>
+<p>LangChain's 2026 report: 57% of organizations have agents in production, but 32% cite "quality" as the top deployment blocker; &gt;40% of agentic AI projects are projected to be cancelled by end-2027 — most die from "great demo, terrible after a month."</p>
+<p>This chapter covers three evaluation axes: <strong>outcome, trajectory, production observability</strong>.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="兩種指標" data-en="TWO KINDS">兩種指標</div>
+<h2 data-zh="二、Outcome Metrics vs Trajectory Metrics" data-en="II. Outcome vs Trajectory metrics">二、Outcome Metrics vs Trajectory Metrics</h2>
+<div class="comp-table-wrap"><table class="comp-table">
+<thead><tr><th></th><th data-zh="Outcome（結果）" data-en="Outcome">Outcome</th><th data-zh="Trajectory（軌跡）" data-en="Trajectory">Trajectory</th></tr></thead>
+<tbody>
+<tr><td data-lang="zh">問題</td><td data-lang="en">Question</td><td data-lang="zh">「答案對嗎？」</td><td data-lang="en">"Is the answer right?"</td><td data-lang="zh">「過程合不合理？」</td><td data-lang="en">"Was the process sensible?"</td></tr>
+<tr><td data-lang="zh">範例</td><td data-lang="en">Examples</td><td>task_success_rate, F1, BLEU, pass@1</td><td>tool_call_precision, plan_quality, step_count</td></tr>
+<tr><td data-lang="zh">優點</td><td data-lang="en">Pros</td><td data-lang="zh">客觀、易自動化</td><td data-lang="en">Objective, easy to automate</td><td data-lang="zh">能定位「為什麼失敗」</td><td data-lang="en">Locates "why it failed"</td></tr>
+<tr><td data-lang="zh">缺點</td><td data-lang="en">Cons</td><td data-lang="zh">看不見過程</td><td data-lang="en">Blind to process</td><td data-lang="zh">需要 ground truth trajectory，昂貴</td><td data-lang="en">Needs ground-truth trajectory — expensive</td></tr>
+</tbody>
+</table></div>
+<div class="callout info"><span class="callout-icon">📐</span><div>
+<span data-lang="zh"><strong>Google Vertex AI 範式：</strong>同時用 <code>trajectory_exact_match</code>、<code>trajectory_precision</code>、<code>trajectory_recall</code> 三個軌跡指標 + 結果指標 <code>task_success_rate</code> 與 <code>response_quality</code>。</span>
+<span data-lang="en"><strong>Google Vertex AI pattern:</strong> use <code>trajectory_exact_match</code>, <code>trajectory_precision</code>, <code>trajectory_recall</code> alongside outcome metrics <code>task_success_rate</code> and <code>response_quality</code>.</span>
+</div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="主要 Benchmarks" data-en="KEY BENCHMARKS">主要 Benchmarks</div>
+<h2 data-zh="三、2026 必懂的五大 Agent Benchmarks" data-en="III. Five must-know agent benchmarks of 2026">三、2026 必懂的五大 Agent Benchmarks</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>🐝 <strong>SWE-bench</strong></h4>
+<div data-lang="zh"><p>2310 個來自 GitHub 真實 Python repo 的 PR 修 bug 任務。Agent 必須讀 codebase、找 bug、寫 patch、跑 test 全綠才算成功。SWE-bench Verified 是其專家驗證子集。2026 SOTA 約 70%（人類專家 90%）。</p></div>
+<div data-lang="en"><p>2,310 real-Python-repo PR bug-fixes from GitHub. The agent must read the codebase, locate the bug, write a patch, and pass tests. SWE-bench Verified is the expert-vetted subset. 2026 SOTA ≈ 70% (human experts ≈ 90%).</p></div></div>
+<div class="card"><h4>🌐 <strong>GAIA</strong></h4>
+<div data-lang="zh"><p>由 Meta + HuggingFace + AutoGPT 團隊出題，466 題真實世界研究問題（如「2023 年 NeurIPS 最佳論文獎得主有幾個是日本人？」）。考驗網頁瀏覽 + 多模態 + 推理。2026 SOTA 在 Level 1 ≈ 80%、Level 3 ≈ 30%。</p></div>
+<div data-lang="en"><p>From Meta + HuggingFace + AutoGPT, 466 real-world research questions (e.g., "How many Japanese authors won NeurIPS Best Paper 2023?"). Tests web browsing + multimodal + reasoning. 2026 SOTA: ~80% on Level 1, ~30% on Level 3.</p></div></div>
+<div class="card"><h4>🛠️ <strong>TAU-bench / τ²-bench</strong></h4>
+<div data-lang="zh"><p>Sierra 提出，模擬企業客服 / 訂票 / 修改訂單等多輪工具呼叫。2026 τ²-bench 新增語音與檢索領域，含 38 個模型 leaderboard（2026-04 更新）。</p></div>
+<div data-lang="en"><p>From Sierra, simulates enterprise customer-service / booking / order-modification with multi-turn tool calls. The 2026 τ²-bench adds voice and retrieval domains, with a 38-model leaderboard (April 2026 update).</p></div></div>
+<div class="card"><h4>📋 <strong>AgentBench</strong></h4>
+<div data-lang="zh"><p>清華大學提出的 8 領域 benchmark（OS、DB、KG、Card Game、Web Shopping 等），是學界對 agent 的綜合能力測試。比 SWE-bench 更廣但深度較淺。</p></div>
+<div data-lang="en"><p>From Tsinghua, 8-domain benchmark (OS, DB, KG, card game, web shopping, etc.). The academic-side broad-capability test. Wider than SWE-bench but shallower per domain.</p></div></div>
+<div class="card"><h4>🌐 <strong>WebArena</strong></h4>
+<div data-lang="zh"><p>真實網站環境的瀏覽器 agent 評測（GitLab、Reddit、E-commerce sandbox）。考驗長距離 web 操作。2026 SOTA 仍 &lt; 60%——browser agent 仍是難題。</p></div>
+<div data-lang="en"><p>Browser-agent eval in realistic site environments (GitLab, Reddit, e-commerce sandbox). Tests long-horizon web operations. 2026 SOTA still &lt;60% — browser agents remain hard.</p></div></div>
+<div class="card"><h4>⚖️ <strong>Static benchmarks 的限制</strong></h4>
+<div data-lang="zh"><p>前緣模型進步太快，靜態 benchmark 上線數月就飽和。Kili Technology 2026 報告：lab benchmark 與真實部署之間有 <strong>37% 表現落差</strong>，相同準確度的成本可差 50×。靜態 benchmark 是必要起點，但不是終點。</p></div>
+<div data-lang="en"><p>Frontier models improve fast enough that static benchmarks saturate in months. Kili Technology 2026: a <strong>37% performance gap</strong> between lab benchmarks and real deployment, with 50× cost variation at similar accuracy. Static benchmarks are a starting point, not the finish line.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="自建 eval 集" data-en="BUILDING YOUR OWN EVAL">自建 eval 集</div>
+<h2 data-zh="四、為自己的 Agent 建一個 eval set" data-en="IV. Building your own agent eval set">四、為自己的 Agent 建一個 eval set</h2>
+<div data-lang="zh"><p>業界共識：通用 benchmark 只能粗略比較模型，<strong>每個生產 agent 都需要自己的 eval set</strong>。建構步驟：</p>
+<ol>
+<li><strong>蒐集真實對話 100–500 條</strong>：從生產 log、客服票、使用者回報。</li>
+<li><strong>分層標註</strong>：(a) 期望最終回答 (b) 期望必須呼叫的工具 (c) 不該呼叫的工具 (d) 對話風險等級。</li>
+<li><strong>建立失敗模式清單</strong>：「幻覺價格」「未經授權發送」「迴圈」「未引用來源」。</li>
+<li><strong>定期 regression run</strong>：每次改 prompt / 換模型 / 更新工具，跑完整 eval set。</li>
+<li><strong>LLM-as-Judge 補強</strong>：用 GPT-5 / Claude Opus 當裁判給開放性問題打分。注意要校正 (用人類抽樣比對)。</li>
+</ol></div>
+<div data-lang="en"><p>Industry consensus: generic benchmarks only roughly compare models. <strong>Every production agent needs its own eval set</strong>. Steps:</p>
+<ol>
+<li><strong>Collect 100–500 real conversations</strong> from production logs, support tickets, user reports.</li>
+<li><strong>Layered labels:</strong> (a) expected final answer (b) tools that must be called (c) tools that must NOT be called (d) risk tier.</li>
+<li><strong>Failure-mode list:</strong> "hallucinated price," "unauthorized send," "loop," "no citation."</li>
+<li><strong>Regression runs:</strong> every prompt / model / tool change → full eval pass.</li>
+<li><strong>LLM-as-Judge augmentation:</strong> GPT-5 / Claude Opus scores open-ended questions. Calibrate vs human samples.</li>
+</ol></div>
+<div class="code-tabs"><div class="code-tab-btns"><button class="code-tab-btn active">Python (DeepEval / pytest 風格)</button></div>
+<div class="code-tab-content active"><pre><span class="comment"># pip install deepeval</span>
+<span class="kw">from</span> deepeval <span class="kw">import</span> assert_test
+<span class="kw">from</span> deepeval.metrics <span class="kw">import</span> ToolCorrectnessMetric, AnswerRelevancyMetric, GEval
+<span class="kw">from</span> deepeval.test_case <span class="kw">import</span> LLMTestCase, ToolCall
+
+<span class="kw">def</span> <span class="func">test_refund_flow</span>():
+    case = <span class="func">LLMTestCase</span>(
+      input=<span class="str">"I want a refund for order #4421"</span>,
+      actual_output=<span class="func">my_agent</span>(<span class="str">"I want a refund for order #4421"</span>),
+      tools_called=[<span class="func">ToolCall</span>(name=<span class="str">"lookup_order"</span>), <span class="func">ToolCall</span>(name=<span class="str">"issue_refund"</span>)],
+      expected_tools=[<span class="func">ToolCall</span>(name=<span class="str">"lookup_order"</span>), <span class="func">ToolCall</span>(name=<span class="str">"issue_refund"</span>)],
+      expected_output=<span class="str">"Refund issued. Funds in 3-5 business days."</span>
+    )
+    <span class="func">assert_test</span>(case, metrics=[
+      <span class="func">ToolCorrectnessMetric</span>(threshold=<span class="num">0.9</span>),
+      <span class="func">AnswerRelevancyMetric</span>(threshold=<span class="num">0.85</span>),
+      <span class="func">GEval</span>(name=<span class="str">"Politeness"</span>, criteria=<span class="str">"Reply is polite and apologetic"</span>, threshold=<span class="num">0.8</span>)
+    ])</pre></div></div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="生產觀測" data-en="OBSERVABILITY">生產觀測</div>
+<h2 data-zh="五、Agent 生產觀測必裝四件事" data-en="V. Four must-haves for agent observability">五、Agent 生產觀測必裝四件事</h2>
+<div class="card-grid cols-2">
+<div class="card"><h4>① <span data-zh="完整 trace" data-en="Full traces">完整 trace</span></h4>
+<div data-lang="zh"><p>每個 user → agent 對話留下：所有 LLM 呼叫、所有工具呼叫、輸入輸出、耗時、token 數。LangSmith、Langfuse、Arize、OpenAI Traces 都提供。</p></div>
+<div data-lang="en"><p>For each user → agent session: log every LLM call, every tool call, I/O, latency, tokens. LangSmith, Langfuse, Arize, OpenAI Traces all provide this.</p></div></div>
+<div class="card"><h4>② <span data-zh="成本儀表板" data-en="Cost dashboard">成本儀表板</span></h4>
+<div data-lang="zh"><p>按使用者 / task type / model 拆解 token 與美元。沒有這個，模型升級時你會看不到後果。</p></div>
+<div data-lang="en"><p>Token + dollar cost broken down by user / task type / model. Without it, model upgrades hide their impact.</p></div></div>
+<div class="card"><h4>③ <span data-zh="失敗警報" data-en="Failure alarms">失敗警報</span></h4>
+<div data-lang="zh"><p>對「達 max_iterations、tool 連續失敗、escalate_to_human、成本暴衝」自動 Slack/PagerDuty 通知。</p></div>
+<div data-lang="en"><p>Auto Slack/PagerDuty for "max_iterations hit, tool failed twice, escalate_to_human, cost spike."</p></div></div>
+<div class="card"><h4>④ <span data-zh="A/B 與 canary" data-en="A/B & canary">A/B 與 canary</span></h4>
+<div data-lang="zh"><p>新 prompt 或新模型先在 5% 流量跑，觀察 trajectory + 結果指標再放量。LangSmith / Statsig 都支援。</p></div>
+<div data-lang="en"><p>Roll new prompts / models to 5% traffic first; watch trajectory + outcome metrics before scaling. Supported in LangSmith / Statsig.</p></div></div>
+</div>
+</section>
+
+<section class="section">
+<div class="section-label" data-zh="互動展示" data-en="INTERACTIVE">互動展示</div>
+<h2 data-zh="六、Agent 評分卡視覺化" data-en="VI. Agent scorecard visualization">六、Agent 評分卡視覺化</h2>
+<div class="interactive-panel">
+<div data-lang="zh"><p>下表是三個版本 agent 在同一 eval set 上的指標——v3 是當前 production。觀察「不要只看一個指標」：</p></div>
+<div data-lang="en"><p>The table shows three agent versions on the same eval set — v3 is currently in production. Notice "don't optimize a single metric":</p></div>
+<table class="comp-table" style="margin-top:14px">
+<thead><tr><th>Metric</th><th>v1 (baseline)</th><th>v2 (more tools)</th><th>v3 (better prompt)</th></tr></thead>
+<tbody>
+<tr><td><strong>Task Success</strong></td><td>62%</td><td>71%</td><td style="background:var(--c-accent-light)"><strong>78%</strong></td></tr>
+<tr><td><strong>Tool Precision</strong></td><td>0.65</td><td style="background:var(--c-danger-light)">0.51 ⚠</td><td>0.82</td></tr>
+<tr><td><strong>Avg Steps</strong></td><td>4.2</td><td>7.8 ⚠</td><td>3.9</td></tr>
+<tr><td><strong>Cost / Task</strong></td><td>$0.04</td><td>$0.11 ⚠</td><td>$0.05</td></tr>
+<tr><td><strong>Hallucination Rate</strong></td><td>7%</td><td>6%</td><td style="background:var(--c-accent-light)"><strong>2%</strong></td></tr>
+</tbody>
+</table>
+<div class="callout warn" style="margin-top:14px"><span class="callout-icon">⚠️</span><div>
+<span data-lang="zh"><strong>觀察：</strong>v2 加了更多工具，task success 提升，但 tool precision 暴跌、步驟暴增、成本翻 3 倍——這就是「指標跨領域 trade-off」。v3 透過更好的 prompt 把工具選擇變精準，全面贏。</span>
+<span data-lang="en"><strong>Observation:</strong> v2 added more tools → success up, but tool precision plummeted, steps exploded, cost 3×ed — classic "metric trade-off." v3 used a better prompt to sharpen tool selection — wins on every axis.</span>
+</div></div>
+</div>
+</section>
+
+<section class="quiz-section">
+<h3 data-zh="🎓 章節小測 (3 題)" data-en="🎓 Chapter Quiz">🎓 章節小測</h3>
+<div class="quiz-q">
+<p data-lang="zh">Q1. SWE-bench 主要測什麼能力？</p>
+<p data-lang="en">Q1. What does SWE-bench primarily measure?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 圖像理解" data-en="A) Image understanding">A) 圖像理解</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 在真實 GitHub Python repo 中修 bug 並通過測試" data-en="B) Fixing bugs in real GitHub Python repos and passing tests">B) GitHub repo 修 bug 並通過測試</span></div>
+<div class="quiz-opt"><span data-zh="C) 客服對話品質" data-en="C) Customer service quality">C) 客服對話品質</span></div>
+<div class="quiz-opt"><span data-zh="D) 創意寫作" data-en="D) Creative writing">D) 創意寫作</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ SWE-bench 是 GitHub 真實 PR bug-fix 任務，是 coding agent 的旗艦 benchmark。</span><span data-lang="en">✅ SWE-bench is real-GitHub-PR bug-fixing, the flagship coding-agent benchmark.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q2. 為什麼通用 benchmark 不能單獨用來評估生產 agent？</p>
+<p data-lang="en">Q2. Why aren't generic benchmarks enough for production agents?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) Benchmark 不可信" data-en="A) Benchmarks are dishonest">A) Benchmark 不可信</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) Lab vs 真實部署有顯著表現落差（~37%），且每個生產場景特性不同" data-en="B) ~37% lab-vs-deployment gap, plus production has its own quirks">B) Lab vs 真實部署有顯著落差，且每個場景不同</span></div>
+<div class="quiz-opt"><span data-zh="C) Benchmark 沒有 license" data-en="C) Benchmarks have no license">C) Benchmark 沒有 license</span></div>
+<div class="quiz-opt"><span data-zh="D) 只看 outcome 不看 trajectory" data-en="D) Only test outcomes">D) 只看結果</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 必須搭配自家 eval set + 生產觀測，才能反映真實品質。</span><span data-lang="en">✅ You need your own eval set + production observability for real quality signal.</span></div>
+</div>
+<div class="quiz-q">
+<p data-lang="zh">Q3. Trajectory metric 解決什麼 outcome metric 解決不了的問題？</p>
+<p data-lang="en">Q3. What does trajectory metric do that outcome metric can't?</p>
+<div class="quiz-options">
+<div class="quiz-opt"><span data-zh="A) 完全取代 outcome" data-en="A) Fully replace outcome">A) 完全取代 outcome</span></div>
+<div class="quiz-opt" data-correct="1"><span data-zh="B) 定位「為什麼失敗 / 為什麼成本暴增」" data-en="B) Locates 'why it failed / why cost spiked'">B) 定位「為什麼失敗」</span></div>
+<div class="quiz-opt"><span data-zh="C) 比 outcome 便宜" data-en="C) Cheaper than outcome">C) 比 outcome 便宜</span></div>
+<div class="quiz-opt"><span data-zh="D) 不需要標註" data-en="D) No labels required">D) 不需要標註</span></div>
+</div>
+<div class="quiz-feedback"><span data-lang="zh">✅ 結果對但過程亂、或結果錯但接近，都需要看 trajectory 才看得出。</span><span data-lang="en">✅ "Right answer, bad process" or "wrong but close" both need trajectory signal.</span></div>
+</div>
+</section>
+
+<div class="page-nav">
+<a href="08-multi-agent.html"><span class="nav-dir" data-zh="← Step 8" data-en="← Step 8">← Step 8</span><span class="nav-title" data-zh="多代理人系統" data-en="Multi-Agent">多代理人系統</span></a>
+<a href="10-frameworks.html" class="next"><span class="nav-dir" data-zh="Step 10 →" data-en="Step 10 →">Step 10 →</span><span class="nav-title" data-zh="框架比較" data-en="Framework Comparison">框架比較</span></a>
+</div>
+
+</main>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial</footer>
+<script src="i18n.js"></script>
+</body></html>

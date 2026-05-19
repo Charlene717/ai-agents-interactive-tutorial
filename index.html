@@ -1,77 +1,73 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AI 工具素養與生醫研究加速 · Interactive Tutorial</title>
-<meta name="description" content="Bilingual interactive tutorial on AI literacy for biomedical researchers — LLMs, prompt engineering, scientific writing, coding, agentic workflows, AlphaFold, single-cell foundation models, bioimage AI, ethics, and reproducibility.">
+<title>AI Agents Interactive Tutorial</title>
+<meta name="description" content="Complete bilingual AI Agents interactive tutorial — concept, implementation, and advanced topics.">
 <link rel="stylesheet" href="styles.css"></head><body>
 <nav class="top-nav"><div class="top-nav-inner">
-  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 素養教學" data-en="AI Literacy Tutorial">AI 素養教學</span></a>
+  <a href="index.html" class="top-nav-brand"><span>🤖</span> <span data-zh="AI 代理人教學" data-en="AI Agents Tutorial">AI 代理人教學</span></a>
   <ul class="top-nav-links">
-    <li><a href="intro.html">Intro</a></li>
-    <li><a href="tokens.html">Tokens</a></li>
-    <li><a href="prompting.html">Prompt</a></li>
-    <li><a href="advanced-prompting.html">Adv.Prompt</a></li>
-    <li><a href="hallucination.html">Halluc.</a></li>
-    <li><a href="literature.html">Lit.</a></li>
-    <li><a href="writing.html">Writing</a></li>
-    <li><a href="coding.html">Coding</a></li>
-    <li><a href="data-analysis.html">Data</a></li>
-    <li><a href="agents.html">Agents</a></li>
-    <li><a href="structure.html">AlphaFold</a></li>
-    <li><a href="genomic-fm.html">DNA-FM</a></li>
-    <li><a href="scfm.html">scFM</a></li>
-    <li><a href="biomedical-llm.html">Med-LLM</a></li>
-    <li><a href="bioimage.html">Image</a></li>
-    <li><a href="clinical-imaging.html">Clin.Img</a></li>
-    <li><a href="drug-discovery.html">Drug</a></li>
-    <li><a href="clinical-ai.html">Clin.AI</a></li>
-    <li><a href="ethics.html">Ethics</a></li>
-    <li><a href="reproducibility.html">Repro.</a></li>
+    <li><a href="01-what-is-agent.html">01 What</a></li>
+    <li><a href="02-llm-brain.html">02 LLM</a></li>
+    <li><a href="03-prompting.html">03 Prompt</a></li>
+    <li><a href="04-tool-use.html">04 Tool</a></li>
+    <li><a href="05-memory.html">05 Memory</a></li>
+    <li><a href="06-planning.html">06 Plan</a></li>
+    <li><a href="07-rag.html">07 RAG</a></li>
+    <li><a href="08-multi-agent.html">08 Multi</a></li>
+    <li><a href="09-evaluation.html">09 Eval</a></li>
+    <li><a href="10-frameworks.html">10 Fwk</a></li>
+    <li><a href="11-mcp.html">11 MCP</a></li>
+    <li><a href="12-safety.html">12 Safety</a></li>
     <li><a href="references/index.html" data-zh="📚 參考資料" data-en="📚 References">📚 參考資料</a></li>
   </ul>
 </div></nav>
-<header class="hub-hero"><div style="position:relative;z-index:1;">
-<h1 data-zh="AI 工具素養與生醫研究加速" data-en="AI Literacy &amp; Biomedical Research Acceleration">AI 工具素養與生醫研究加速</h1>
-<p data-lang="zh">從 LLM 原理到 AlphaFold 3、從 prompt 工程到 agentic workflow——20 個主題帶生醫研究者掌握 2026 年 AI 工具，並建立倫理與可重現性的最佳實踐。</p>
-<p data-lang="en">From LLM fundamentals to AlphaFold 3, from prompt engineering to agentic workflows — 20 modules guide biomedical researchers through 2026's AI toolbox, with ethics and reproducibility built in.</p>
-</div></header>
+<header class="hub-hero">
+<h1 data-zh="AI 代理人互動式教學" data-en="AI Agents Interactive Tutorial">AI 代理人互動式教學</h1>
+<p data-lang="zh">從理論基礎到生產實作——12 個主題帶你掌握 AI Agent 的完整版圖，含互動模擬、Python/JS 雙語範例與 2026 最新工具鏈。</p>
+<p data-lang="en">From theory to production — master AI Agents in 12 topics with interactive simulations, Python/JS examples, and 2026's latest toolchain.</p>
+</header>
 
-<h2 class="hub-section-title"><span>01</span> <span data-zh="AI 基礎與通用工作流" data-en="AI Fundamentals &amp; General Workflows">AI 基礎與通用工作流</span></h2>
+<h2 class="hub-section-title"><span>01</span> <span data-zh="核心概念與基礎" data-en="Core Concepts & Foundations">核心概念與基礎</span></h2>
 <div class="hub-steps-grid">
-  <a href="intro.html" class="hub-card"><div class="hub-emoji">🧠</div><span class="step-num">Step 1</span><h3 data-zh="AI 與 LLM 基礎" data-en="AI &amp; LLM Foundations">AI 與 LLM 基礎</h3><p data-lang="zh">從 ML / DL / Transformer 到 GPT-5.5、Claude 4.6、Gemini 2.5——理解語言模型如何運作。</p><p data-lang="en">From ML / DL / Transformer to GPT-5.5, Claude 4.6, Gemini 2.5 — understand how language models work.</p></a>
-  <a href="tokens.html" class="hub-card"><div class="hub-emoji">🔤</div><span class="step-num">Step 2</span><h3 data-zh="Token 與 Context Window" data-en="Tokens &amp; Context Window">Token 與 Context Window</h3><p data-lang="zh">模型怎麼「看」你的文字？Context 1M 是什麼意思？計費、截斷與長文本策略。</p><p data-lang="en">How does the model "see" your text? What does 1M context mean? Pricing, truncation, and long-document strategies.</p></a>
-  <a href="prompting.html" class="hub-card"><div class="hub-emoji">✍️</div><span class="step-num">Step 3</span><h3 data-zh="Prompt 工程基礎" data-en="Prompt Engineering Basics">Prompt 工程基礎</h3><p data-lang="zh">角色、結構、明確輸出格式——讓 AI 第一次就給出可用結果的六大原則。</p><p data-lang="en">Roles, structure, explicit output formats — six principles for getting usable answers on the first try.</p></a>
-  <a href="advanced-prompting.html" class="hub-card"><div class="hub-emoji">🔬</div><span class="step-num">Step 4</span><h3 data-zh="進階 Prompt 與 RAG" data-en="Advanced Prompting &amp; RAG">進階 Prompt 與 RAG</h3><p data-lang="zh">Few-shot、Chain-of-Thought、自一致性、RAG 檢索增強——研究級 prompt 戰術。</p><p data-lang="en">Few-shot, Chain-of-Thought, self-consistency, RAG — research-grade prompting tactics.</p></a>
-  <a href="hallucination.html" class="hub-card"><div class="hub-emoji">⚠️</div><span class="step-num">Step 5</span><h3 data-zh="幻覺與事實核查" data-en="Hallucination &amp; Fact-Checking">幻覺與事實核查</h3><p data-lang="zh">為什麼 LLM 會「自信地亂掰」？三層防護：grounding、引用驗證、不確定性提示。</p><p data-lang="en">Why do LLMs confidently fabricate? Three layers of defense: grounding, citation verification, uncertainty prompts.</p></a>
-  <a href="literature.html" class="hub-card"><div class="hub-emoji">📚</div><span class="step-num">Step 6</span><h3 data-zh="文獻探索 AI" data-en="Literature AI">文獻探索 AI</h3><p data-lang="zh">Elicit、NotebookLM、Consensus、SciSpace——四款工具各自適合哪種文獻任務？</p><p data-lang="en">Elicit, NotebookLM, Consensus, SciSpace — which tool fits which literature task?</p></a>
-  <a href="writing.html" class="hub-card"><div class="hub-emoji">📝</div><span class="step-num">Step 7</span><h3 data-zh="學術寫作 AI" data-en="Academic Writing AI">學術寫作 AI</h3><p data-lang="zh">Paperpal、Writefull、Grammarly、Claude 寫作流程——從 outline 到 cover letter，含期刊政策。</p><p data-lang="en">Paperpal, Writefull, Grammarly, Claude — workflow from outline to cover letter, including journal policies.</p></a>
-  <a href="coding.html" class="hub-card"><div class="hub-emoji">💻</div><span class="step-num">Step 8</span><h3 data-zh="編程輔助 AI" data-en="AI-Assisted Coding">編程輔助 AI</h3><p data-lang="zh">Copilot、Claude Code、Cursor、Windsurf——2026 年 agentic coding 工具如何選？</p><p data-lang="en">Copilot, Claude Code, Cursor, Windsurf — how to choose the right 2026 agentic coding tool.</p></a>
-  <a href="data-analysis.html" class="hub-card"><div class="hub-emoji">📊</div><span class="step-num">Step 9</span><h3 data-zh="資料分析加速" data-en="AI-Accelerated Data Analysis">資料分析加速</h3><p data-lang="zh">用 AI 跑 R / Python、debug、解釋圖表——從 boxplot 到 omics 全流程提速 5×。</p><p data-lang="en">Use AI to run R / Python, debug, explain plots — boxplot to omics, 5× faster.</p></a>
-  <a href="agents.html" class="hub-card"><div class="hub-emoji">🤖</div><span class="step-num">Step 10</span><h3 data-zh="Agentic 工作流與 MCP" data-en="Agentic Workflows &amp; MCP">Agentic 工作流與 MCP</h3><p data-lang="zh">Claude Code subagents、Anthropic MCP、LangGraph、CrewAI——把多步驟研究串成自動流程。</p><p data-lang="en">Claude Code subagents, Anthropic MCP, LangGraph, CrewAI — chaining multi-step research into autonomous flows.</p></a>
+  <a href="01-what-is-agent.html" class="hub-card"><div class="hub-emoji">🤖</div><span class="step-num">Step 1</span><h3 data-zh="什麼是 AI 代理人？" data-en="What is an AI Agent?">什麼是 AI 代理人？</h3><p data-lang="zh">從經典 AI 教科書到 LLM 時代：定義、PEAS、代理人類型，以及現代 LLM Agent 的核心配方。</p><p data-lang="en">From classical AI textbooks to the LLM era: definitions, PEAS, agent types, and the modern LLM Agent recipe.</p></a>
+  <a href="02-llm-brain.html" class="hub-card"><div class="hub-emoji">🧠</div><span class="step-num">Step 2</span><h3 data-zh="LLM 作為大腦" data-en="LLM as the Brain">LLM 作為大腦</h3><p data-lang="zh">Tokenization、context window、temperature 與 sampling：理解 Agent 推理引擎的關鍵特性與限制。</p><p data-lang="en">Tokenization, context window, temperature & sampling: key properties and limits of the agent's reasoning engine.</p></a>
+  <a href="03-prompting.html" class="hub-card"><div class="hub-emoji">💬</div><span class="step-num">Step 3</span><h3 data-zh="Prompt 工程" data-en="Prompt Engineering">Prompt 工程</h3><p data-lang="zh">System prompt 設計、角色工程、few-shot、Chain-of-Thought 與結構化輸出。</p><p data-lang="en">System prompt design, role engineering, few-shot, Chain-of-Thought, and structured output.</p></a>
 </div>
 
-<h2 class="hub-section-title"><span>02</span> <span data-zh="生醫專用 AI 模型" data-en="Biomedical-Specific AI Models">生醫專用 AI 模型</span></h2>
+<h2 class="hub-section-title"><span>02</span> <span data-zh="Agent 核心元件" data-en="Agent Core Components">Agent 核心元件</span></h2>
 <div class="hub-steps-grid">
-  <a href="structure.html" class="hub-card"><div class="hub-emoji">🧬</div><span class="step-num">Advanced</span><h3 data-zh="AlphaFold 與蛋白結構" data-en="AlphaFold &amp; Protein Structure">AlphaFold 與蛋白結構</h3><p data-lang="zh">AlphaFold 3、ESM3、Boltz-1、RFdiffusion——結構預測、生成式設計與限制。</p><p data-lang="en">AlphaFold 3, ESM3, Boltz-1, RFdiffusion — structure prediction, generative design, and limits.</p></a>
-  <a href="genomic-fm.html" class="hub-card"><div class="hub-emoji">🧫</div><span class="step-num">Advanced</span><h3 data-zh="基因組 Foundation 模型" data-en="Genomic Foundation Models">基因組 Foundation 模型</h3><p data-lang="zh">Nucleotide Transformer、DNABERT-2、Caduceus——DNA 級的 BERT，用在 variant effect、調控分析。</p><p data-lang="en">Nucleotide Transformer, DNABERT-2, Caduceus — DNA-scale BERTs for variant effect and regulation.</p></a>
-  <a href="scfm.html" class="hub-card"><div class="hub-emoji">🔬</div><span class="step-num">Advanced</span><h3 data-zh="單細胞 Foundation 模型" data-en="Single-Cell Foundation Models">單細胞 Foundation 模型</h3><p data-lang="zh">scGPT、Geneformer、scFoundation、UCE——zero-shot 註釋、perturbation 預測與爭議。</p><p data-lang="en">scGPT, Geneformer, scFoundation, UCE — zero-shot annotation, perturbation prediction, and debates.</p></a>
-  <a href="biomedical-llm.html" class="hub-card"><div class="hub-emoji">⚕️</div><span class="step-num">Advanced</span><h3 data-zh="生醫文本 LLM" data-en="Biomedical Text LLMs">生醫文本 LLM</h3><p data-lang="zh">Med-Gemini、MedGemma 1.5、BioMistral、BioGPT——醫療領域微調與其評測。</p><p data-lang="en">Med-Gemini, MedGemma 1.5, BioMistral, BioGPT — medical fine-tuning and benchmarks.</p></a>
-  <a href="bioimage.html" class="hub-card"><div class="hub-emoji">🔍</div><span class="step-num">Advanced</span><h3 data-zh="生物影像 AI" data-en="Bioimage AI">生物影像 AI</h3><p data-lang="zh">Cellpose-SAM、StarDist、SAM 2、CellSAM——細胞分割、追蹤與 BioImage Model Zoo。</p><p data-lang="en">Cellpose-SAM, StarDist, SAM 2, CellSAM — cell segmentation, tracking, and the BioImage Model Zoo.</p></a>
-  <a href="clinical-imaging.html" class="hub-card"><div class="hub-emoji">🏥</div><span class="step-num">Advanced</span><h3 data-zh="醫療影像 Foundation" data-en="Clinical Imaging Foundation Models">醫療影像 Foundation</h3><p data-lang="zh">Med-Gemini、RETFound、CONCH、Virchow 2——病理、放射、眼科基礎模型。</p><p data-lang="en">Med-Gemini, RETFound, CONCH, Virchow 2 — pathology, radiology, and ophthalmology foundation models.</p></a>
-  <a href="drug-discovery.html" class="hub-card"><div class="hub-emoji">💊</div><span class="step-num">Advanced</span><h3 data-zh="藥物與化學 AI" data-en="Drug Discovery &amp; Chemistry AI">藥物與化學 AI</h3><p data-lang="zh">ChemCrow、RFdiffusion All-Atom、Boltz-1、AlphaFold-Multimer 在 hit-to-lead 流程的應用。</p><p data-lang="en">ChemCrow, RFdiffusion All-Atom, Boltz-1, AlphaFold-Multimer in hit-to-lead pipelines.</p></a>
-  <a href="clinical-ai.html" class="hub-card"><div class="hub-emoji">🩺</div><span class="step-num">Advanced</span><h3 data-zh="臨床決策 AI" data-en="Clinical Decision AI">臨床決策 AI</h3><p data-lang="zh">OpenEvidence、Glass.health、Med-Gemini——臨床查詢、鑑別診斷與 Epic / FHIR 整合。</p><p data-lang="en">OpenEvidence, Glass.health, Med-Gemini — clinical lookup, differential diagnosis, Epic / FHIR integration.</p></a>
+  <a href="04-tool-use.html" class="hub-card"><div class="hub-emoji">🔧</div><span class="step-num">Step 4</span><h3 data-zh="工具呼叫 (Tool Use)" data-en="Tool Use / Function Calling">工具呼叫</h3><p data-lang="zh">Function calling 規格、JSON schema 設計、工具描述、錯誤處理與並行工具呼叫。</p><p data-lang="en">Function calling spec, JSON schema design, tool descriptions, error handling, and parallel tool calls.</p></a>
+  <a href="05-memory.html" class="hub-card"><div class="hub-emoji">🧩</div><span class="step-num">Step 5</span><h3 data-zh="記憶系統" data-en="Memory Systems">記憶系統</h3><p data-lang="zh">工作記憶、情節記憶、語意記憶與長期記憶：用向量檢索與知識圖譜串起跨任務一致性。</p><p data-lang="en">Working, episodic, semantic, and long-term memory — vector search and knowledge graphs for cross-task consistency.</p></a>
+  <a href="06-planning.html" class="hub-card"><div class="hub-emoji">🗺️</div><span class="step-num">Step 6</span><h3 data-zh="規劃與推理" data-en="Planning & Reasoning">規劃與推理</h3><p data-lang="zh">ReAct、Plan-and-Execute、Tree-of-Thoughts 與 Reflection：四種主流規劃迴圈解析。</p><p data-lang="en">ReAct, Plan-and-Execute, Tree-of-Thoughts, and Reflection — four mainstream planning loops dissected.</p></a>
 </div>
 
-<h2 class="hub-section-title"><span>03</span> <span data-zh="倫理、隱私與可重現性" data-en="Ethics, Privacy &amp; Reproducibility">倫理、隱私與可重現性</span></h2>
+<h2 class="hub-section-title"><span>03</span> <span data-zh="進階能力" data-en="Advanced Capabilities">進階能力</span></h2>
 <div class="hub-steps-grid">
-  <a href="ethics.html" class="hub-card"><div class="hub-emoji">⚖️</div><span class="step-num">Essential</span><h3 data-zh="學術倫理與期刊政策" data-en="Research Ethics &amp; Journal Policies">學術倫理與期刊政策</h3><p data-lang="zh">ICMJE 2025、Nature / Science / Cell 對 AI 的最新規範、AI 圖像禁令、揭露範本。</p><p data-lang="en">ICMJE 2025, latest Nature / Science / Cell rules on AI, AI image bans, disclosure templates.</p></a>
-  <a href="reproducibility.html" class="hub-card"><div class="hub-emoji">🔁</div><span class="step-num">Essential</span><h3 data-zh="隱私、法規與可重現性" data-en="Privacy, Regulation &amp; Reproducibility">隱私、法規與可重現性</h3><p data-lang="zh">HIPAA + AI、EU AI Act 2026、Model / Data Card、prompt 版本控管、IRB 與 BAA。</p><p data-lang="en">HIPAA + AI, EU AI Act 2026, Model / Data Cards, prompt versioning, IRB, and BAAs.</p></a>
+  <a href="07-rag.html" class="hub-card"><div class="hub-emoji">📚</div><span class="step-num">Step 7</span><h3 data-zh="RAG 檢索增強" data-en="Retrieval-Augmented Generation">RAG 檢索增強</h3><p data-lang="zh">Chunking、embedding、hybrid search、rerank 與 Agentic RAG——讓 Agent 擁有可信知識。</p><p data-lang="en">Chunking, embedding, hybrid search, rerank, and Agentic RAG — grounding agents in trustworthy knowledge.</p></a>
+  <a href="08-multi-agent.html" class="hub-card"><div class="hub-emoji">👥</div><span class="step-num">Step 8</span><h3 data-zh="多代理人系統" data-en="Multi-Agent Systems">多代理人系統</h3><p data-lang="zh">Supervisor、Swarm、Debate、Hierarchical：協作模式、訊息協定與 hand-off 設計。</p><p data-lang="en">Supervisor, swarm, debate, hierarchical: collaboration patterns, message protocols, and hand-off design.</p></a>
+  <a href="09-evaluation.html" class="hub-card"><div class="hub-emoji">📊</div><span class="step-num">Step 9</span><h3 data-zh="Agent 評估" data-en="Agent Evaluation">Agent 評估</h3><p data-lang="zh">Outcome vs trajectory metrics、SWE-bench / GAIA / TAU-bench、觀測與成本追蹤。</p><p data-lang="en">Outcome vs trajectory metrics, SWE-bench / GAIA / TAU-bench, observability, and cost tracking.</p></a>
 </div>
 
-<h2 class="hub-section-title"><span>04</span> <span data-zh="延伸學習" data-en="Further Learning">延伸學習</span></h2>
+<h2 class="hub-section-title"><span>04</span> <span data-zh="生產實戰與生態" data-en="Production & Ecosystem">生產實戰與生態</span></h2>
 <div class="hub-steps-grid">
-  <a href="references/index.html" class="hub-card"><div class="hub-emoji">📚</div><span class="step-num">References</span><h3 data-zh="參考資料佐證" data-en="References &amp; Citations">參考資料佐證</h3><p data-lang="zh">20 主題的學術論文、官方文件、API 文件、benchmark 與政策原文，附 DOI / GitHub / arXiv 連結。</p><p data-lang="en">Academic papers, official docs, API references, benchmarks, and policy primary sources for all 20 topics — with DOI / GitHub / arXiv links.</p></a>
-  <a href="ai-quiz/index.html" class="hub-card" target="_blank" rel="noopener"><div class="hub-emoji">📝</div><span class="step-num">Quiz</span><h3 data-zh="互動式考題" data-en="Interactive Quiz">互動式考題</h3><p data-lang="zh">涵蓋 20 主題的單選、多選、是非與情境題，內建錯題複習、隨機練習與多使用者進度。</p><p data-lang="en">Single-choice, multi-select, true/false, and scenario questions for all 20 topics — with wrong-answer review, random practice, and multi-user progress.</p></a>
+  <a href="10-frameworks.html" class="hub-card"><div class="hub-emoji">⚙️</div><span class="step-num">Advanced</span><h3 data-zh="框架比較" data-en="Framework Comparison">框架比較</h3><p data-lang="zh">LangGraph、CrewAI、AutoGen / AG2、LlamaIndex Agents、OpenAI Agents SDK——選擇指南。</p><p data-lang="en">LangGraph, CrewAI, AutoGen/AG2, LlamaIndex Agents, OpenAI Agents SDK — a selection guide.</p></a>
+  <a href="11-mcp.html" class="hub-card"><div class="hub-emoji">🔌</div><span class="step-num">Advanced</span><h3 data-zh="MCP 協定" data-en="Model Context Protocol">MCP 協定</h3><p data-lang="zh">2024 年發布、2025 年成為 Linux Foundation 標準的 Model Context Protocol：工具/資源/Prompt 三原語。</p><p data-lang="en">Released 2024, Linux Foundation–hosted in 2025: Model Context Protocol's tools / resources / prompts primitives.</p></a>
+  <a href="12-safety.html" class="hub-card"><div class="hub-emoji">🛡️</div><span class="step-num">Advanced</span><h3 data-zh="安全與部署" data-en="Safety & Deployment">安全與部署</h3><p data-lang="zh">OWASP Top 10 for Agentic Apps、prompt injection、tool misuse、護欄設計與生產監控。</p><p data-lang="en">OWASP Top 10 for Agentic Apps, prompt injection, tool misuse, guardrails, and production monitoring.</p></a>
 </div>
+
+<h2 class="hub-section-title"><span>05</span> <span data-zh="延伸學習" data-en="Further Learning">延伸學習</span></h2>
+<div class="hub-steps-grid">
+  <a href="references/index.html" class="hub-card"><div class="hub-emoji">📚</div><span class="step-num">References</span><h3 data-zh="參考資料佐證" data-en="References & Citations">參考資料佐證</h3><p data-lang="zh">12 主題的學術論文、官方規格、廠商指南與 benchmark 完整整理，附 arXiv / DOI 連結與疑義注記。</p><p data-lang="en">Academic papers, official specs, vendor guides, and benchmarks for all 12 topics — with arXiv/DOI links and errata notes.</p></a>
+  <a href="ai-agents-quiz/index.html" class="hub-card" target="_blank" rel="noopener"><div class="hub-emoji">📝</div><span class="step-num">Quiz</span><h3 data-zh="互動式考題" data-en="Interactive Quiz">互動式考題</h3><p data-lang="zh">涵蓋 12 主題的單選、多選、是非題，內建錯題複習、隨機練習、考試模式與多使用者進度。</p><p data-lang="en">Single-choice, multi-select, and true/false questions covering all 12 topics, with wrong-answer review, random practice, exam mode, and multi-user progress tracking.</p></a>
+</div>
+
+<h2 class="hub-section-title"><span>06</span> <span data-zh="如何使用本教學" data-en="How to Use This Tutorial">如何使用本教學</span></h2>
+<div class="hub-steps-grid">
+  <a href="01-what-is-agent.html" class="hub-card"><div class="hub-emoji">🎯</div><span class="step-num">Path A</span><h3 data-zh="初學路線" data-en="Beginner Path">初學路線</h3><p data-lang="zh">建議依序閱讀 Step 1 → Step 9，每章末完成 Quiz；不必死記程式碼，先抓概念與直覺。</p><p data-lang="en">Read sequentially Step 1 → 9; do each chapter's quiz. Don't memorize code — build intuition first.</p></a>
+  <a href="04-tool-use.html" class="hub-card"><div class="hub-emoji">🔬</div><span class="step-num">Path B</span><h3 data-zh="工程師路線" data-en="Engineer Path">工程師路線</h3><p data-lang="zh">直接從 Step 4 (Tool Use) 進入，搭配 Step 6 (Planning)、Step 10 (Frameworks)、Step 11 (MCP)。</p><p data-lang="en">Jump to Step 4 (Tool Use), then Step 6 (Planning), Step 10 (Frameworks), and Step 11 (MCP).</p></a>
+  <a href="09-evaluation.html" class="hub-card"><div class="hub-emoji">🏗️</div><span class="step-num">Path C</span><h3 data-zh="生產路線" data-en="Production Path">生產路線</h3><p data-lang="zh">關心如何部署、評估與安全：聚焦 Step 9 (Eval)、Step 12 (Safety) 與 Step 10 (Frameworks)。</p><p data-lang="en">Focus on shipping: Step 9 (Eval), Step 12 (Safety), and Step 10 (Frameworks).</p></a>
+</div>
+
 <div style="height:60px"></div>
-<footer class="site-footer">© Charlene — AI Literacy for Biomedical Research · Interactive Tutorial · 2026</footer>
+<footer class="site-footer">© Charlene — AI Agents Interactive Tutorial · <span data-zh="2026 春季版" data-en="Spring 2026 Edition">2026 春季版</span></footer>
 <script src="i18n.js"></script>
 </body></html>
