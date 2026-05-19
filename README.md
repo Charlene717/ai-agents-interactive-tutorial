@@ -1,6 +1,6 @@
 # AI 工具素養與生醫研究加速 · Interactive Tutorial
 
-**🌐 Live demo / 線上瀏覽**: <https://charlene717.github.io/ai-literacy-tutorial/>
+**🌐 Live demo / 線上瀏覽**: <https://charlene717.github.io/ai-literacy-interactive-tutorial/>
 
 ## 中文簡介
 
